@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0b1220;
+  --foreground: #e5e7eb;
+}
+
+html, body { height: 100%; }
+body {
+  background: radial-gradient(1200px 800px at 50% -10%, rgba(234,179,8,.08), transparent 60%),
+              linear-gradient(180deg, #070b14, var(--background));
+  color: var(--foreground);
+}
+
+.container { @apply mx-auto px-4 sm:px-6 lg:px-8; }
+
+
