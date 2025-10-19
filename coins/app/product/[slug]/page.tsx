@@ -2,6 +2,15 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
+// Static sample slugs for export. Replace with real data source later.
+export function generateStaticParams() {
+  return [
+    { slug: '2024-gold-eagle-1oz' },
+    { slug: '2023-silver-maple-1oz' },
+    { slug: '1907-st-gaudens' }
+  ];
+}
+
 const images = [
   'https://images.unsplash.com/photo-1611078489935-0cb9649b008c?q=80&w=1600&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1611078489982-4bbf9d78e07f?q=80&w=1600&auto=format&fit=crop',

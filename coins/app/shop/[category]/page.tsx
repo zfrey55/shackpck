@@ -1,5 +1,13 @@
 import { ProductCard } from '@/components/ProductCard';
 
+export function generateStaticParams() {
+  return [
+    { category: 'gold' },
+    { category: 'silver' },
+    { category: 'rare' }
+  ];
+}
+
 const sample = [
   {
     slug: 'sample-gold-1',
