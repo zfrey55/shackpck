@@ -1,5 +1,7 @@
 [build]
-  publish = "."
+  base = "coins"
+  publish = "out"
+  command = "npm ci && npm run build"
 
 [[headers]]
   for = "/*"
@@ -9,11 +11,5 @@
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(), geolocation=(), microphone=()"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
-
-# Redirect all 404s to index.html (handy for single-page apps; harmless here)
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
 
 
