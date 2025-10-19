@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 
 export const metadata: Metadata = {
   title: 'Shackpck Coins — Premium Gold & Silver Collectibles',
