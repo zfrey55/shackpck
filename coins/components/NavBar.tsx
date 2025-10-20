@@ -33,9 +33,9 @@ export function NavBar() {
               </Menu.Items>
             </Transition>
           </Menu>
-          <Link href="/faqs" className="hover:text-gold">FAQs</Link>
+          <Link href="/checklist" className="hover:text-gold">Checklist</Link>
+          <Link href="/repacks" className="hover:text-gold">Repacks</Link>
           <Link href="/contact" className="hover:text-gold">Contact</Link>
-          <Link href="/about" className="hover:text-gold">About</Link>
         </nav>
 
         <div className="flex items-center gap-4">
