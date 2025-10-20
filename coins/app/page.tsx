@@ -28,7 +28,7 @@ export default function HomePage() {
               <p className="mt-2 max-w-prose text-slate-200/90">Bullion, proofs, and rare mints curated for quality.</p>
               <div className="mt-6 flex gap-4">
                 <Link href="/shop" className="rounded-md bg-gold px-5 py-2.5 font-medium text-black hover:opacity-90">Shop Coins</Link>
-                <Link href="/about" className="rounded-md border border-slate-700 px-5 py-2.5 font-medium hover:border-slate-600">About Us</Link>
+                <Link href="/contact" className="rounded-md border border-slate-700 px-5 py-2.5 font-medium hover:border-slate-600">Contact Us</Link>
               </div>
             </div>
           </div>

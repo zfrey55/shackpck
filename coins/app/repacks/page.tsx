@@ -3,44 +3,114 @@ import { RepackCard } from '@/components/RepackCard';
 
 const repacks = [
   {
-    id: 'premium-gold-pack',
-    name: 'Premium Gold Pack',
-    price: '$2,500',
-    description: 'Curated selection of premium gold coins including Eagles, Maple Leafs, and rare finds.',
+    id: 'shack-pack',
+    name: 'Shack Pack',
+    price: '$99',
+    description: 'Our signature starter pack featuring a curated selection of quality coins.',
     image: 'https://images.unsplash.com/photo-1611078489935-0cb9649b008c?q=80&w=1200&auto=format&fit=crop',
-    coinCount: '5-7 coins',
-    metalType: 'Gold',
-    availability: 'Limited'
-  },
-  {
-    id: 'silver-starter-pack',
-    name: 'Silver Starter Pack',
-    price: '$150',
-    description: 'Perfect introduction to silver collecting with government and private mint coins.',
-    image: 'https://images.unsplash.com/photo-1608472714553-9fa1a8f2c2af?q=80&w=1200&auto=format&fit=crop',
-    coinCount: '8-10 coins',
-    metalType: 'Silver',
+    coinCount: '3-5 coins',
+    metalType: 'Mixed',
     availability: 'In Stock'
   },
   {
-    id: 'mixed-precious-pack',
-    name: 'Mixed Precious Metals Pack',
-    price: '$800',
-    description: 'Diverse collection featuring both gold and silver coins from various mints worldwide.',
+    id: 'shack-pack-deluxe',
+    name: 'Shack Pack Deluxe',
+    price: '$199',
+    description: 'Premium selection with higher grade coins and rare finds.',
+    image: 'https://images.unsplash.com/photo-1608472714553-9fa1a8f2c2af?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '5-7 coins',
+    metalType: 'Mixed',
+    availability: 'In Stock'
+  },
+  {
+    id: 'shack-pack-x-treme',
+    name: 'Shack Pack X-Treme',
+    price: '$299',
+    description: 'Extreme value pack with premium coins and exclusive selections.',
     image: 'https://images.unsplash.com/photo-1601572600994-9f4558f5f50b?q=80&w=1200&auto=format&fit=crop',
     coinCount: '6-8 coins',
     metalType: 'Mixed',
-    availability: 'In Stock'
+    availability: 'Limited'
   },
   {
-    id: 'rare-collector-pack',
-    name: 'Rare Collector Pack',
-    price: '$5,000',
-    description: 'Exclusive pack containing rare and collectible coins with historical significance.',
+    id: 'shack-pack-eclipse',
+    name: 'Shack Pack Eclipse',
+    price: '$399',
+    description: 'Rare and collectible coins with historical significance and premium quality.',
     image: 'https://images.unsplash.com/photo-1611078489982-4bbf9d78e07f?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '4-6 coins',
+    metalType: 'Mixed',
+    availability: 'Limited'
+  },
+  {
+    id: 'shack-pack-transcendent',
+    name: 'Shack Pack Transcendent',
+    price: '$499',
+    description: 'Ultra-premium collection featuring the finest coins available.',
+    image: 'https://images.unsplash.com/photo-1611078489935-0cb9649b008c?q=80&w=1200&auto=format&fit=crop',
     coinCount: '3-5 coins',
     metalType: 'Mixed',
     availability: 'Limited'
+  },
+  {
+    id: 'shack-pack-resurgence',
+    name: 'Shack Pack Resurgence',
+    price: '$349',
+    description: 'Revival collection featuring classic designs and modern minting techniques.',
+    image: 'https://images.unsplash.com/photo-1608472714553-9fa1a8f2c2af?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '5-7 coins',
+    metalType: 'Mixed',
+    availability: 'In Stock'
+  },
+  {
+    id: 'shack-pack-ignite',
+    name: 'Shack Pack Ignite',
+    price: '$249',
+    description: 'Ignite your collection with this dynamic selection of premium coins.',
+    image: 'https://images.unsplash.com/photo-1601572600994-9f4558f5f50b?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '4-6 coins',
+    metalType: 'Mixed',
+    availability: 'In Stock'
+  },
+  {
+    id: 'shack-pack-x-treme-unleashed',
+    name: 'Shack Pack X-Treme Unleashed',
+    price: '$599',
+    description: 'The ultimate unleashed experience with the most exclusive coin selections.',
+    image: 'https://images.unsplash.com/photo-1611078489982-4bbf9d78e07f?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '6-8 coins',
+    metalType: 'Mixed',
+    availability: 'Limited'
+  },
+  {
+    id: 'shack-pack-transcendent-reformed',
+    name: 'Shack Pack Transcendent Reformed',
+    price: '$699',
+    description: 'Reformed and refined transcendent collection with the highest quality standards.',
+    image: 'https://images.unsplash.com/photo-1611078489935-0cb9649b008c?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '4-6 coins',
+    metalType: 'Mixed',
+    availability: 'Limited'
+  },
+  {
+    id: 'shack-pack-lucid',
+    name: 'Shack Pack Lucid',
+    price: '$449',
+    description: 'Crystal clear quality with lucid selections of premium coins.',
+    image: 'https://images.unsplash.com/photo-1608472714553-9fa1a8f2c2af?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '5-7 coins',
+    metalType: 'Mixed',
+    availability: 'In Stock'
+  },
+  {
+    id: 'shack-pack-flash',
+    name: 'Shack Pack Flash',
+    price: '$149',
+    description: 'Quick and exciting collection perfect for rapid expansion of your portfolio.',
+    image: 'https://images.unsplash.com/photo-1601572600994-9f4558f5f50b?q=80&w=1200&auto=format&fit=crop',
+    coinCount: '3-5 coins',
+    metalType: 'Mixed',
+    availability: 'In Stock'
   }
 ];
 
@@ -59,7 +129,7 @@ export default function RepacksPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {repacks.map((repack) => (
           <RepackCard key={repack.id} {...repack} />
         ))}
