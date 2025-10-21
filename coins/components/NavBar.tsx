@@ -35,6 +35,7 @@ export function NavBar() {
           </Menu>
           <Link href="/checklist" className="hover:text-gold">Checklist</Link>
           <Link href="/repacks" className="hover:text-gold">Repacks</Link>
+          <Link href="/policy" className="hover:text-gold">Policy</Link>
           <Link href="/contact" className="hover:text-gold">Contact</Link>
         </nav>
 
