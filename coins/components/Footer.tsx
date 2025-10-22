@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
           <div>
             <div className="text-lg font-semibold">Shackpack</div>
-            <p className="mt-2 text-sm text-slate-400">Premium Trading Card Repacks</p>
+            <p className="mt-2 text-sm text-slate-400">Premium Coin Repacks</p>
           </div>
           <div>
             <div className="font-medium">Explore</div>

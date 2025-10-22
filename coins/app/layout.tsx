@@ -5,8 +5,8 @@ import { NavBar } from '@/components/NavBar';
 import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Shackpack — Premium Trading Card Repacks',
-  description: 'Premium trading card repacks featuring curated selections of sports cards and collectibles.',
+  title: 'Shackpack — Premium Gold & Silver Coin Repacks',
+  description: 'Premium coin repacks featuring curated selections of gold, silver, and rare collectible coins.',
   metadataBase: new URL('https://example.com')
 };
 

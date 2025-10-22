@@ -10,14 +10,14 @@ export default function PolicyPage() {
             <div className="prose prose-invert max-w-none">
               <p className="text-slate-300 mb-4">
                 We ship all orders within 1-2 business days using insured, tracked shipping. 
-                All packages are carefully packaged to ensure your trading cards arrive in perfect condition.
+                All packages are carefully packaged to ensure your coins arrive in perfect condition.
               </p>
               <ul className="list-disc list-inside text-slate-300 space-y-2">
                 <li>Standard shipping: 3-5 business days</li>
                 <li>Express shipping: 1-2 business days</li>
                 <li>All orders over $100 include free shipping</li>
                 <li>International shipping available upon request</li>
-                <li>Cards shipped in protective sleeves and top loaders</li>
+                <li>Coins shipped in protective capsules and secure packaging</li>
               </ul>
             </div>
           </section>
@@ -66,7 +66,7 @@ export default function PolicyPage() {
               <ul className="list-disc list-inside text-slate-300 space-y-2">
                 <li>All pack descriptions are accurate to the best of our knowledge</li>
                 <li>Pack contents may vary and are subject to availability</li>
-                <li>We cannot guarantee specific cards in any pack</li>
+                <li>We cannot guarantee specific coins in any pack</li>
                 <li>Prices are subject to change based on market conditions</li>
                 <li>We reserve the right to refuse service to anyone</li>
                 <li>Disputes will be resolved through arbitration</li>
@@ -78,13 +78,13 @@ export default function PolicyPage() {
             <h2 className="text-2xl font-semibold mb-4 text-gold">Authenticity Guarantee</h2>
             <div className="prose prose-invert max-w-none">
               <p className="text-slate-300 mb-4">
-                All cards in our repacks are guaranteed to be authentic and properly graded.
+                All coins in our repacks are guaranteed to be authentic and properly graded.
               </p>
               <ul className="list-disc list-inside text-slate-300 space-y-2">
-                <li>Every card is inspected before being added to a pack</li>
-                <li>We source cards from reputable distributors and breakers</li>
-                <li>Counterfeit cards will be immediately refunded</li>
-                <li>Professional grading services available upon request</li>
+                <li>Every coin is inspected before being added to a pack</li>
+                <li>We source coins from reputable distributors and dealers</li>
+                <li>Counterfeit coins will be immediately refunded</li>
+                <li>Professional grading and authentication services available upon request</li>
               </ul>
             </div>
           </section>
