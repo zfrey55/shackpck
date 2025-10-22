@@ -7,7 +7,12 @@ import { Footer } from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Shackpack — Premium Gold & Silver Coin Repacks',
   description: 'Premium coin repacks featuring curated selections of gold, silver, and rare collectible coins.',
-  metadataBase: new URL('https://example.com')
+  metadataBase: new URL('https://example.com'),
+  icons: {
+    icon: '/coin-icon.svg',
+    shortcut: '/coin-icon.svg',
+    apple: '/coin-icon.svg',
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

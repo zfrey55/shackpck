@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contact Form - Shackpack</title>
+</head>
+<body style="display:none;">
+  <!-- This form is hidden but allows Netlify to detect and register the contact form -->
+  <form name="contact" netlify>
+    <input type="text" name="name" />
+    <input type="text" name="email" />
+    <select name="subject">
+      <option value="general">General Question</option>
+      <option value="order">Order Inquiry</option>
+      <option value="coin-info">Coin Information</option>
+      <option value="shipping">Shipping Question</option>
+      <option value="other">Other</option>
+    </select>
+    <textarea name="message"></textarea>
+    <button type="submit">Send</button>
+  </form>
+</body>
+</html>
+
