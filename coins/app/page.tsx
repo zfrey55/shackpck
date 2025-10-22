@@ -2,43 +2,59 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { RepackCard } from '@/components/RepackCard';
 
-// TODO: Replace with actual pack images from /public/images/packs/
-// Change these URLs to: /images/packs/shackpack-starter.jpg (etc.) after uploading your photos
 const featuredPacks = [
   {
-    id: 'shack-pack-starter',
+    id: 'shackpack-starter',
     name: 'Shackpack Starter',
     description: 'Perfect starter pack featuring a curated selection of premium gold and silver coins.',
-    image: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&auto=format&fit=crop',
+    image: '/images/packs/shackpack-starter.jpg',
     cardCount: '15-20 coins',
     category: 'Mixed Metals',
     availability: 'Out of Stock'
   },
   {
-    id: 'shack-pack-deluxe',
+    id: 'shackpack-deluxe',
     name: 'Shackpack Deluxe',
     description: 'Premium selection with higher grade coins and rare collectible finds.',
-    image: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=800&auto=format&fit=crop',
+    image: '/images/packs/shackpack-deluxe.jpg',
     cardCount: '25-30 coins',
     category: 'Premium Grade',
     availability: 'Out of Stock'
   },
   {
-    id: 'shack-pack-xtreme',
+    id: 'shackpack-xtreme',
     name: 'Shackpack X-Treme',
     description: 'Extreme value pack with premium coins and exclusive rare selections.',
-    image: 'https://images.unsplash.com/photo-1622182726803-bae8b8c3a01a?w=800&auto=format&fit=crop',
+    image: '/images/packs/shackpack-xtreme.jpg',
     cardCount: '30-40 coins',
     category: 'High Value',
     availability: 'Out of Stock'
   },
   {
-    id: 'shack-pack-elite',
-    name: 'Shackpack Elite',
-    description: 'Elite collection featuring guaranteed rare coins and certified numismatic pieces.',
-    image: 'https://images.unsplash.com/photo-1621416894627-36c0f32e3fc3?w=800&auto=format&fit=crop',
+    id: 'shackpack-transcendent',
+    name: 'Shackpack Transcendent',
+    description: 'Transcendent collection featuring museum-quality coins and exceptional rarities.',
+    image: '/images/packs/shackpack-transcendent.jpg',
     cardCount: '20-25 coins',
     category: 'Elite Collection',
+    availability: 'Out of Stock'
+  },
+  {
+    id: 'shackpack-unleashed',
+    name: 'Shackpack Unleashed',
+    description: 'Unleashed excitement with incredible variety and guaranteed premium pieces.',
+    image: '/images/packs/shackpack-unleashed.jpg',
+    cardCount: '35-45 coins',
+    category: 'Ultimate Value',
+    availability: 'Out of Stock'
+  },
+  {
+    id: 'shackpack-resurgence',
+    name: 'Shackpack Resurgence',
+    description: 'Resurgence pack featuring classic coins with renewed collector interest.',
+    image: '/images/packs/shackpack-resurgence.jpg',
+    cardCount: '25-30 coins',
+    category: 'Classic Collection',
     availability: 'Out of Stock'
   }
 ];
@@ -49,10 +65,9 @@ export default function HomePage() {
       {/* Hero Banner Section */}
       <section className="relative">
         <div className="relative h-[50vh] min-h-[400px] w-full overflow-hidden">
-          {/* TODO: Replace with custom banner image from /public/images/hero-banner.jpg */}
           <Image
-            src="https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=2400&auto=format&fit=crop"
-            alt="Shackpack Coin Repacks Hero"
+            src="https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=2400&auto=format&fit=crop"
+            alt="Shackpack Gold and Silver Coins"
             fill
             sizes="100vw"
             className="object-cover"
@@ -101,7 +116,7 @@ export default function HomePage() {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featuredPacks.map((pack) => (
             <RepackCard 
               key={pack.id}

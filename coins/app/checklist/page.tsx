@@ -1,52 +1,63 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-// TODO: UPDATE THESE LINKS with your actual Google Sheet links or PDF links
-// Option 1: Link to Google Sheets (recommended - easier to update)
-// Option 2: Link to PDF files in /public/checklists/
-// Option 3: Create embedded lists below (I can help you format this)
+// Google Sheet link from user: https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207
+// The sheet contains sections for: Shackpack, Deluxe, and all coin details
 
 const packChecklists = [
   {
-    id: 'shack-pack-starter',
+    id: 'shackpack-starter',
     name: 'Shackpack Starter',
     description: 'Complete list of all coins that could be included in the Starter pack',
-    image: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=400&auto=format&fit=crop',
-    
-    // OPTION 1: Link to Google Sheet (RECOMMENDED)
-    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit',
-    
-    // OPTION 2: Link to PDF file
+    image: '/images/packs/shackpack-starter.jpg',
+    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207',
     pdfUrl: '/checklists/shackpack-starter.pdf',
-    
     coinCount: '15-20 coins'
   },
   {
-    id: 'shack-pack-deluxe',
+    id: 'shackpack-deluxe',
     name: 'Shackpack Deluxe',
     description: 'Complete list of all coins that could be included in the Deluxe pack',
-    image: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=400&auto=format&fit=crop',
-    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit',
+    image: '/images/packs/shackpack-deluxe.jpg',
+    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207',
     pdfUrl: '/checklists/shackpack-deluxe.pdf',
     coinCount: '25-30 coins'
   },
   {
-    id: 'shack-pack-xtreme',
+    id: 'shackpack-xtreme',
     name: 'Shackpack X-Treme',
     description: 'Complete list of all coins that could be included in the X-Treme pack',
-    image: 'https://images.unsplash.com/photo-1622182726803-bae8b8c3a01a?w=400&auto=format&fit=crop',
-    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit',
+    image: '/images/packs/shackpack-xtreme.jpg',
+    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207',
     pdfUrl: '/checklists/shackpack-xtreme.pdf',
     coinCount: '30-40 coins'
   },
   {
-    id: 'shack-pack-elite',
-    name: 'Shackpack Elite',
-    description: 'Complete list of all coins that could be included in the Elite pack',
-    image: 'https://images.unsplash.com/photo-1621416894627-36c0f32e3fc3?w=400&auto=format&fit=crop',
-    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit',
-    pdfUrl: '/checklists/shackpack-elite.pdf',
+    id: 'shackpack-transcendent',
+    name: 'Shackpack Transcendent',
+    description: 'Complete list of all coins that could be included in the Transcendent pack',
+    image: '/images/packs/shackpack-transcendent.jpg',
+    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207',
+    pdfUrl: '/checklists/shackpack-transcendent.pdf',
     coinCount: '20-25 coins'
+  },
+  {
+    id: 'shackpack-unleashed',
+    name: 'Shackpack Unleashed',
+    description: 'Complete list of all coins that could be included in the Unleashed pack',
+    image: '/images/packs/shackpack-unleashed.jpg',
+    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207',
+    pdfUrl: '/checklists/shackpack-unleashed.pdf',
+    coinCount: '35-45 coins'
+  },
+  {
+    id: 'shackpack-resurgence',
+    name: 'Shackpack Resurgence',
+    description: 'Complete list of all coins that could be included in the Resurgence pack',
+    image: '/images/packs/shackpack-resurgence.jpg',
+    googleSheetUrl: 'https://docs.google.com/spreadsheets/d/1X2Eeg_0L5lRd_md3l9bNZJQMeksoBterRnJwC1nUH3A/edit?gid=1499354207#gid=1499354207',
+    pdfUrl: '/checklists/shackpack-resurgence.pdf',
+    coinCount: '25-30 coins'
   }
 ];
 
@@ -61,7 +72,7 @@ export default function ChecklistPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {packChecklists.map((pack) => (
             <div 
               key={pack.id}
@@ -72,7 +83,7 @@ export default function ChecklistPage() {
                   src={pack.image}
                   alt={pack.name}
                   fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -124,10 +135,9 @@ export default function ChecklistPage() {
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>Coin names and denominations</li>
               <li>Year and mint mark</li>
-              <li>Metal type (Gold, Silver, etc.)</li>
-              <li>Weight and purity</li>
-              <li>Condition/Grade information</li>
-              <li>Rarity indicators</li>
+              <li>Metal type and weight</li>
+              <li>Purity specifications</li>
+              <li>Grading service and grade (PCGS, NGC, ANACS, etc.)</li>
               <li>Country of origin</li>
               <li>Special features or historical significance</li>
             </ul>
@@ -140,8 +150,8 @@ export default function ChecklistPage() {
         <div className="mt-8 rounded-lg border border-blue-700/60 bg-blue-900/20 p-6">
           <h3 className="text-lg font-semibold mb-2 text-blue-300">💡 How to Use These Lists</h3>
           <div className="text-slate-300 space-y-2 text-sm">
-            <p><strong>Google Sheet:</strong> Live, searchable, sortable list that I can update anytime</p>
-            <p><strong>PDF:</strong> Downloadable version you can print or save offline</p>
+            <p><strong>Google Sheet:</strong> Live, searchable, sortable list updated regularly with all possible coins</p>
+            <p><strong>PDF:</strong> Downloadable version you can print or save offline for reference</p>
             <p>Use these lists to track which coins you've received and which ones you're still hunting for!</p>
           </div>
         </div>
