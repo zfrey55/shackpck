@@ -59,7 +59,7 @@ export function ContactForm() {
   return (
     <>
       {/* Hidden form for Netlify detection */}
-      <form name="contact" netlify="true" hidden>
+      <form name="contact" data-netlify="true" hidden>
         <input type="text" name="name" />
         <input type="email" name="email" />
         <select name="subject">
