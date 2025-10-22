@@ -62,12 +62,13 @@ const featuredPacks = [
 export default function HomePage() {
   return (
     <main>
-      {/* Hero Banner Section */}
+      {/* Hero Banner Section - American Silver Eagles, Gold Eagles, Morgan Dollars */}
       <section className="relative">
         <div className="relative h-[50vh] min-h-[400px] w-full overflow-hidden">
+          {/* Updated to show Morgan Dollars, American Silver Eagles, and Gold Eagles */}
           <Image
-            src="https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=2400&auto=format&fit=crop"
-            alt="Shackpack Gold and Silver Coins"
+            src="https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=2400&auto=format&fit=crop"
+            alt="American Silver Eagles, Gold Eagles, and Morgan Dollars"
             fill
             sizes="100vw"
             className="object-cover"
@@ -86,7 +87,7 @@ export default function HomePage() {
                 Premium Gold & Silver Coin Repacks
               </p>
               <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
-                Expertly curated collections featuring the best gold and silver coins and collectibles
+                Featuring American Eagles, Morgan Dollars, and premium certified coins
               </p>
               <div className="mt-8 flex gap-4 justify-center">
                 <Link 

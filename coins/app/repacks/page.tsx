@@ -67,10 +67,6 @@ export default function RepacksPage() {
           Curated collections of premium coins, carefully selected for quality and value. 
           Each pack is assembled by experts to provide the best collecting experience.
         </p>
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-red-700/60 bg-red-900/20 px-4 py-2 text-sm text-red-300">
-          <span className="h-2 w-2 rounded-full bg-red-500" />
-          Currently Out of Stock - Check Back Soon!
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
