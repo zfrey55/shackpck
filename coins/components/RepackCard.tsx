@@ -3,21 +3,19 @@ import Image from 'next/image';
 type RepackCardProps = {
   id: string;
   name: string;
-  price: string;
   description: string;
   image: string;
-  coinCount: string;
-  metalType: string;
+  cardCount: string;
+  category: string;
   availability: string;
 };
 
 export function RepackCard({ 
   name, 
-  price, 
   description, 
   image, 
-  coinCount, 
-  metalType, 
+  cardCount, 
+  category,
   availability 
 }: RepackCardProps) {
   return (
@@ -32,41 +30,27 @@ export function RepackCard({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute top-4 right-4">
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-            availability === 'Limited' 
-              ? 'bg-red-500/20 text-red-300 border border-red-500/30' 
-              : 'bg-green-500/20 text-green-300 border border-green-500/30'
-          }`}>
+          <span className="rounded-full px-3 py-1 text-xs font-medium bg-red-500/20 text-red-300 border border-red-500/30">
             {availability}
           </span>
         </div>
       </div>
       
       <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="text-xl font-semibold text-slate-200">{name}</h3>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-gold">{price}</div>
-            <div className="text-sm text-slate-400">{coinCount}</div>
+        <div className="mb-3">
+          <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
+          <div className="flex items-center gap-3 text-sm text-slate-400">
+            <span>{cardCount}</span>
+            <span>•</span>
+            <span>{category}</span>
           </div>
         </div>
         
         <p className="text-slate-300 mb-4 line-clamp-3">{description}</p>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`inline-block h-3 w-3 rounded-full ${
-              metalType === 'Gold' ? 'bg-gold' : 
-              metalType === 'Silver' ? 'bg-silver' : 
-              'bg-gradient-to-r from-gold to-silver'
-            }`} />
-            <span className="text-sm font-medium text-slate-300">{metalType}</span>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-sm text-slate-400">Showcase Only</div>
-            <div className="text-xs text-slate-500">Not for sale</div>
-          </div>
+        <div className="text-center pt-3 border-t border-slate-700/50">
+          <div className="text-sm font-medium text-red-400">Currently Unavailable</div>
+          <div className="text-xs text-slate-500 mt-1">Check back for restock updates</div>
         </div>
       </div>
     </div>

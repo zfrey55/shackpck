@@ -1,0 +1,58 @@
+═══════════════════════════════════════════════════════════════
+          QUICK START GUIDE - Shackpck Coins Website
+═══════════════════════════════════════════════════════════════
+
+✅ STEP 1: RESTART YOUR TERMINAL/COMPUTER
+   └─ You installed Node.js but Windows needs to reload
+   └─ Close ALL terminal windows and open a NEW one
+   └─ OR restart your computer (recommended)
+
+✅ STEP 2: CHECK IF NODE.JS WORKS
+   Open PowerShell and type:
+   
+   node --version
+   
+   ✓ If you see a version number (like v20.x.x) → GO TO STEP 3
+   ✗ If you see "not recognized" → Reinstall Node.js from nodejs.org
+
+✅ STEP 3: NAVIGATE TO YOUR PROJECT
+   In PowerShell, type:
+   
+   cd "C:\Users\zfrey\OneDrive\Desktop\Shackpck\coins"
+
+✅ STEP 4: INSTALL DEPENDENCIES (This takes 2-5 minutes)
+   
+   npm install
+   
+   Wait for it to finish. You'll see a progress bar.
+
+✅ STEP 5: START THE WEBSITE
+   
+   npm run dev
+   
+   Wait until you see: "ready started server on..."
+
+✅ STEP 6: OPEN YOUR BROWSER
+   Go to: http://localhost:3000
+   
+   You should now see your website with navigation!
+
+═══════════════════════════════════════════════════════════════
+
+WHAT I FIXED FOR YOU:
+• ✅ Added navigation bar to all pages
+• ✅ Fixed code errors in page.tsx
+• ✅ Verified all pages exist (repacks, checklist, policy)
+
+WHAT YOU NEED TO DO:
+• ⏳ Restart terminal/computer
+• ⏳ Run: npm install
+• ⏳ Run: npm run dev
+• ⏳ Open: http://localhost:3000
+
+═══════════════════════════════════════════════════════════════
+
+NEED HELP? Read SETUP_GUIDE.md for detailed instructions!
+
+═══════════════════════════════════════════════════════════════
+
