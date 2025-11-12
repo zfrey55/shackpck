@@ -54,7 +54,7 @@ const SERIES_CONFIG = {
   // All case types available (you can modify which cases are in each series here)
   defaultCases: [
     {
-      id: 'shackpack',
+      id: 'base',
       name: 'ShackPack',
       description: '1x 1/10 oz gold + 9 silver coins',
       goldContent: '1/10 oz Gold'
@@ -202,6 +202,13 @@ export default function ChecklistPage() {
     return years.join(', ');
   };
 
+  const getAvailabilityStatus = (quantity: number) => {
+    // Audit-compliant: Don't show exact quantities
+    if (quantity === 0) return { label: 'Out of Stock', color: 'text-slate-500', available: false };
+    if (quantity <= 5) return { label: 'Limited', color: 'text-yellow-400', available: true };
+    return { label: 'Available', color: 'text-green-400', available: true };
+  };
+
   const getSeriesDateRange = (series: SeriesData) => {
     const start = new Date(series.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const end = new Date(series.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -222,10 +229,10 @@ export default function ChecklistPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gold">ShackPack Series Checklist</h1>
           <p className="mt-4 text-lg text-slate-300">
-            Select a series and case type to view available coins and quantities
+            Select a series and case type to view available coins
           </p>
           <p className="text-base text-slate-400 italic mt-2">
-            Quantities shown are total inventory - actual case contents may vary
+            Possible contents - not all items guaranteed in every pack
           </p>
         </div>
 
@@ -360,7 +367,7 @@ export default function ChecklistPage() {
                 Available Coins for {selectedCase.name}
               </h3>
               <div className="text-sm text-slate-400">
-                {data.totalTypes} coin types • {data.totalCoins} total coins in inventory
+                {data.totalTypes} coin types available
               </div>
             </div>
 
@@ -372,41 +379,92 @@ export default function ChecklistPage() {
                     <th className="text-left p-4 text-slate-200 font-semibold">Coin Name</th>
                     <th className="text-left p-4 text-slate-200 font-semibold">Years</th>
                     <th className="text-left p-4 text-slate-200 font-semibold">Grading</th>
-                    <th className="text-left p-4 text-slate-200 font-semibold">Grades</th>
-                    <th className="text-center p-4 text-slate-200 font-semibold">Quantity</th>
+                    <th className="text-left p-4 text-slate-200 font-semibold">Grades Available</th>
                     <th className="text-center p-4 text-slate-200 font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody className="bg-slate-900/40">
-                  {data.checklist.map((coin, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors"
-                    >
-                      <td className="p-4">
-                        <div className="font-semibold text-gold">{coin.name}</div>
-                      </td>
-                      <td className="p-4 text-slate-300 text-sm">
-                        {formatYears(coin.years)}
-                      </td>
-                      <td className="p-4 text-slate-300 text-sm">
-                        {coin.gradingCompanies && coin.gradingCompanies.length > 0
-                          ? coin.gradingCompanies.join(', ')
-                          : '—'}
-                      </td>
-                      <td className="p-4 text-slate-300 text-sm">
-                        {coin.gradesAvailable && coin.gradesAvailable.length > 0
-                          ? coin.gradesAvailable.join(', ')
-                          : '—'}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full font-semibold">
-                          {coin.totalQuantity}
-                        </span>
-                      </td>
-                      <td className="p-4 text-center">
-                        {coin.available ? (
-                          <span className="inline-flex items-center gap-1 text-green-400">
+                  {data.checklist.map((coin, index) => {
+                    const status = getAvailabilityStatus(coin.totalQuantity);
+                    return (
+                      <tr
+                        key={index}
+                        className="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors"
+                      >
+                        <td className="p-4">
+                          <div className="font-semibold text-gold">{coin.name}</div>
+                        </td>
+                        <td className="p-4 text-slate-300 text-sm">
+                          {formatYears(coin.years)}
+                        </td>
+                        <td className="p-4 text-slate-300 text-sm">
+                          {coin.gradingCompanies && coin.gradingCompanies.length > 0
+                            ? coin.gradingCompanies.join(', ')
+                            : '—'}
+                        </td>
+                        <td className="p-4 text-slate-300 text-sm">
+                          {coin.gradesAvailable && coin.gradesAvailable.length > 0
+                            ? coin.gradesAvailable.join(', ')
+                            : '—'}
+                        </td>
+                        <td className="p-4 text-center">
+                          <span className={`inline-flex items-center gap-1 font-semibold ${status.color}`}>
+                            {status.available && (
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                            {status.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {data.checklist.map((coin, index) => {
+                const status = getAvailabilityStatus(coin.totalQuantity);
+                return (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-slate-700 bg-slate-900/40 p-4"
+                  >
+                    <div className="mb-3">
+                      <h4 className="text-lg font-semibold text-gold mb-2">{coin.name}</h4>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Years:</span>
+                        <span className="text-slate-300">{formatYears(coin.years)}</span>
+                      </div>
+                      
+                      {coin.gradingCompanies && coin.gradingCompanies.length > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Grading:</span>
+                          <span className="text-slate-300">{coin.gradingCompanies.join(', ')}</span>
+                        </div>
+                      )}
+                      
+                      {coin.gradesAvailable && coin.gradesAvailable.length > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Grades:</span>
+                          <span className="text-slate-300">{coin.gradesAvailable.join(', ')}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between pt-2 border-t border-slate-700/50">
+                        <span className="text-slate-400">Status:</span>
+                        <span className={`inline-flex items-center gap-1 font-semibold ${status.color}`}>
+                          {status.available && (
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path
                                 fillRule="evenodd"
@@ -414,72 +472,14 @@ export default function ChecklistPage() {
                                 clipRule="evenodd"
                               />
                             </svg>
-                            In Stock
-                          </span>
-                        ) : (
-                          <span className="text-slate-500">Unavailable</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
-              {data.checklist.map((coin, index) => (
-                <div
-                  key={index}
-                  className="rounded-lg border border-slate-700 bg-slate-900/40 p-4"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-gold">{coin.name}</h4>
-                    <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full font-semibold text-sm">
-                      {coin.totalQuantity}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Years:</span>
-                      <span className="text-slate-300">{formatYears(coin.years)}</span>
-                    </div>
-                    
-                    {coin.gradingCompanies && coin.gradingCompanies.length > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Grading:</span>
-                        <span className="text-slate-300">{coin.gradingCompanies.join(', ')}</span>
-                      </div>
-                    )}
-                    
-                    {coin.gradesAvailable && coin.gradesAvailable.length > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Grades:</span>
-                        <span className="text-slate-300">{coin.gradesAvailable.join(', ')}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-between pt-2 border-t border-slate-700/50">
-                      <span className="text-slate-400">Status:</span>
-                      {coin.available ? (
-                        <span className="inline-flex items-center gap-1 text-green-400">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          In Stock
+                          )}
+                          {status.label}
                         </span>
-                      ) : (
-                        <span className="text-slate-500">Unavailable</span>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -491,26 +491,19 @@ export default function ChecklistPage() {
           </div>
         )}
 
-        {/* API Notice */}
-        {data && !data.caseType && data.checklist && data.checklist.length > 0 && (
-          <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-900/20 p-4">
-            <p className="text-yellow-300 text-sm">
-              <strong>Note:</strong> The API doesn't support case-specific filtering yet. Showing all ShackPack-eligible coins.
-              See <code className="bg-yellow-900/30 px-2 py-1 rounded">API_UPDATE_PROMPT.md</code> for instructions to enable filtering.
-            </p>
-          </div>
-        )}
-
         {/* Footer Information */}
         <div className="mt-10 space-y-4">
           <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-6">
             <h2 className="text-xl font-semibold mb-3">Important Information</h2>
             <div className="space-y-3 text-slate-300 text-sm">
               <p>
+                <strong>This checklist shows coins that MAY appear in ShackPack cases.</strong> Specific contents vary by case.
+              </p>
+              <p>
                 <strong>Series Archive:</strong> Each series remains available on this page for at least one year from its end date.
               </p>
               <p>
-                <strong>Quantities Shown:</strong> Numbers represent total inventory that MAY be used for this case type. Actual case contents vary.
+                <strong>Availability Status:</strong> "Available" indicates coins in stock, "Limited" indicates low inventory, actual case contents vary.
               </p>
               <p className="text-slate-400">
                 Checklist updated automatically from live inventory • No purchase necessary to view
