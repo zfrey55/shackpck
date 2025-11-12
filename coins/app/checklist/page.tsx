@@ -14,61 +14,118 @@ interface CoinItem {
 interface ChecklistData {
   success: boolean;
   lastUpdated: string;
+  caseType?: string;
   totalTypes: number;
   totalCoins: number;
   checklist: CoinItem[];
 }
 
-const CASE_DESCRIPTIONS = [
+interface SeriesData {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  cases: CaseType[];
+}
+
+interface CaseType {
+  id: string;
+  name: string;
+  description: string;
+  goldContent: string;
+}
+
+// ===== SERIES CONFIGURATION =====
+// To add a new series, copy the series object template below and update dates
+const SERIES: SeriesData[] = [
   {
-    name: "ShackPack",
-    description: "Contains one 1/10 oz gold coin and 9 varied silver coins"
-  },
-  {
-    name: "ShackPack Deluxe",
-    description: "Contains two 1/10 oz gold coins and 8 varied silver coins"
-  },
-  {
-    name: "ShackPack Xtreme",
-    description: "Contains one 1/4 oz gold coin and 9 varied silver coins"
-  },
-  {
-    name: "ShackPack Unleashed",
-    description: "Contains two 1/4 oz gold coins and 8 varied silver coins"
-  },
-  {
-    name: "ShackPack Resurgence",
-    description: "Contains one 1/2 oz gold coin and 9 varied silver coins"
-  },
-  {
-    name: "ShackPack Transcendent",
-    description: "Contains one 1 oz gold coin and 9 varied silver coins"
-  },
-  {
-    name: "ShackPack Ignite",
-    description: "Contains one 1/4 oz platinum coin and 9 varied silver coins"
+    id: 'series-1-nov-2024',
+    name: 'Series 1 - November 2024',
+    startDate: '2024-11-11',
+    endDate: '2024-11-17',
+    description: 'Week of November 11-17, 2024',
+    cases: [
+      {
+        id: 'shackpack',
+        name: 'ShackPack',
+        description: '1x 1/10 oz gold + 9 silver coins',
+        goldContent: '1/10 oz Gold'
+      },
+      {
+        id: 'deluxe',
+        name: 'ShackPack Deluxe',
+        description: '2x 1/10 oz gold + 8 silver coins',
+        goldContent: '2x 1/10 oz Gold'
+      },
+      {
+        id: 'xtreme',
+        name: 'ShackPack Xtreme',
+        description: '1x 1/4 oz gold + 9 silver coins',
+        goldContent: '1/4 oz Gold'
+      },
+      {
+        id: 'unleashed',
+        name: 'ShackPack Unleashed',
+        description: '2x 1/4 oz gold + 8 silver coins',
+        goldContent: '2x 1/4 oz Gold'
+      },
+      {
+        id: 'resurgence',
+        name: 'ShackPack Resurgence',
+        description: '1x 1/2 oz gold + 9 silver coins',
+        goldContent: '1/2 oz Gold'
+      },
+      {
+        id: 'transcendent',
+        name: 'ShackPack Transcendent',
+        description: '1x 1 oz gold + 9 silver coins',
+        goldContent: '1 oz Gold'
+      },
+      {
+        id: 'ignite',
+        name: 'ShackPack Ignite',
+        description: '1x 1/4 oz platinum + 9 silver coins',
+        goldContent: '1/4 oz Platinum'
+      }
+    ]
   }
+  // ADD NEW SERIES HERE - Copy the template below:
+  /*
+  {
+    id: 'series-2-nov-2024',
+    name: 'Series 2 - November 2024',
+    startDate: '2024-11-18',
+    endDate: '2024-11-24',
+    description: 'Week of November 18-24, 2024',
+    cases: [
+      // Same cases array as above, or customize which cases are in this series
+    ]
+  }
+  */
 ];
 
 export default function ChecklistPage() {
+  const [selectedSeries, setSelectedSeries] = useState<SeriesData>(SERIES[0]);
+  const [selectedCase, setSelectedCase] = useState<CaseType>(SERIES[0].cases[0]);
   const [data, setData] = useState<ChecklistData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const fetchChecklist = async () => {
+  const fetchChecklistForCase = async (caseId: string) => {
     setLoading(true);
     setError(null);
     try {
+      // Try to fetch with caseType parameter
+      // If your API doesn't support caseType yet, it will return all coins
       const response = await fetch(
-        'https://us-central1-coin-inventory-8b79d.cloudfunctions.net/getChecklist?orgId=coin-shack&filter=shackpack'
+        `https://us-central1-coin-inventory-8b79d.cloudfunctions.net/getChecklist?orgId=coin-shack&filter=shackpack&caseType=${caseId}`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch checklist data');
       }
       const jsonData = await response.json();
       setData(jsonData);
-      setLastRefresh(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -77,11 +134,8 @@ export default function ChecklistPage() {
   };
 
   useEffect(() => {
-    fetchChecklist();
-    // Auto-refresh every 24 hours
-    const interval = setInterval(fetchChecklist, 24 * 60 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchChecklistForCase(selectedCase.id);
+  }, [selectedCase]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -106,26 +160,115 @@ export default function ChecklistPage() {
     return years.join(', ');
   };
 
+  const getSeriesDateRange = (series: SeriesData) => {
+    const start = new Date(series.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const end = new Date(series.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${start} - ${end}`;
+  };
+
+  const isSeriesActive = (series: SeriesData) => {
+    const now = new Date();
+    const start = new Date(series.startDate);
+    const end = new Date(series.endDate);
+    return now >= start && now <= end;
+  };
+
   return (
     <main className="container py-10">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gold">ShackPack Series Checklist</h1>
-          <div className="mt-4 space-y-2">
-            <p className="text-lg text-slate-300">
-              {data?.lastUpdated ? `Last Updated: ${formatDate(data.lastUpdated)}` : 'Loading...'}
-            </p>
-            <p className="text-base text-slate-400 italic">
-              Possible contents - not all items guaranteed in every pack
-            </p>
+          <p className="mt-4 text-lg text-slate-300">
+            Select a series and case type to view available coins and quantities
+          </p>
+          <p className="text-base text-slate-400 italic mt-2">
+            Quantities shown are total inventory - actual case contents may vary
+          </p>
+        </div>
+
+        {/* Series Selector Tabs */}
+        <div className="mb-8">
+          <div className="border-b border-slate-700">
+            <div className="flex flex-wrap gap-2">
+              {SERIES.map((series) => (
+                <button
+                  key={series.id}
+                  onClick={() => {
+                    setSelectedSeries(series);
+                    setSelectedCase(series.cases[0]);
+                  }}
+                  className={`
+                    relative px-6 py-3 font-medium transition-all
+                    ${selectedSeries.id === series.id
+                      ? 'text-gold border-b-2 border-gold'
+                      : 'text-slate-400 hover:text-slate-200'
+                    }
+                  `}
+                >
+                  <div className="flex items-center gap-2">
+                    {series.name}
+                    {isSeriesActive(series) && (
+                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {getSeriesDateRange(series)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Case Type Tabs */}
+        <div className="mb-8">
+          <div className="bg-slate-900/40 rounded-lg border border-slate-700 p-4">
+            <h2 className="text-xl font-semibold mb-4 text-slate-200">
+              Case Types in {selectedSeries.name}
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {selectedSeries.cases.map((caseType) => (
+                <button
+                  key={caseType.id}
+                  onClick={() => setSelectedCase(caseType)}
+                  className={`
+                    p-4 rounded-lg border transition-all text-left
+                    ${selectedCase.id === caseType.id
+                      ? 'border-gold bg-gold/10 text-gold'
+                      : 'border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600'
+                    }
+                  `}
+                >
+                  <div className="font-semibold text-sm mb-1">{caseType.name.replace('ShackPack ', '')}</div>
+                  <div className="text-xs opacity-75">{caseType.goldContent}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Selected Case Info */}
+        <div className="mb-6 bg-slate-900/40 rounded-lg border border-slate-700 p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-2xl font-bold text-gold mb-2">{selectedCase.name}</h3>
+              <p className="text-slate-300 mb-2">{selectedCase.description}</p>
+              <p className="text-sm text-slate-400">10 coins total per case</p>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-slate-400">Last Updated</div>
+              <div className="text-slate-300">
+                {data?.lastUpdated ? formatDate(data.lastUpdated) : 'Loading...'}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Refresh Button */}
         <div className="flex justify-end mb-6">
           <button
-            onClick={fetchChecklist}
+            onClick={() => fetchChecklistForCase(selectedCase.id)}
             disabled={loading}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/30 text-gold rounded-lg hover:bg-gold/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -146,28 +289,12 @@ export default function ChecklistPage() {
           </button>
         </div>
 
-        {/* Case Descriptions */}
-        <div className="mb-10 rounded-lg border border-slate-700 bg-slate-900/40 p-6 shadow-lg">
-          <h2 className="text-2xl font-semibold mb-4 text-gold">ShackPack Case Types</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {CASE_DESCRIPTIONS.map((caseType) => (
-              <div
-                key={caseType.name}
-                className="border border-slate-700/50 bg-slate-800/30 rounded-lg p-4"
-              >
-                <h3 className="font-semibold text-lg mb-2">{caseType.name}</h3>
-                <p className="text-sm text-slate-300">{caseType.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Error State */}
         {error && (
           <div className="mb-8 rounded-lg border border-red-500/30 bg-red-900/20 p-6 text-center">
             <p className="text-red-400">Error loading checklist: {error}</p>
             <button
-              onClick={fetchChecklist}
+              onClick={() => fetchChecklistForCase(selectedCase.id)}
               className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
             >
               Try Again
@@ -179,87 +306,156 @@ export default function ChecklistPage() {
         {loading && !data && (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div>
-            <p className="mt-4 text-slate-400">Loading checklist data...</p>
+            <p className="mt-4 text-slate-400">Loading coin inventory...</p>
           </div>
         )}
 
-        {/* Checklist Grid */}
+        {/* Coin Inventory Table */}
         {data && data.checklist && data.checklist.length > 0 && (
           <div className="space-y-4 mb-10">
-            {data.checklist.map((coin, index) => (
-              <div
-                key={index}
-                className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 shadow-lg hover:border-gold/30 transition-colors"
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gold mb-3">{coin.name}</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-slate-200">
+                Available Coins for {selectedCase.name}
+              </h3>
+              <div className="text-sm text-slate-400">
+                {data.totalTypes} coin types • {data.totalCoins} total coins in inventory
+              </div>
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto rounded-lg border border-slate-700">
+              <table className="w-full">
+                <thead className="bg-slate-800/50 border-b border-slate-700">
+                  <tr>
+                    <th className="text-left p-4 text-slate-200 font-semibold">Coin Name</th>
+                    <th className="text-left p-4 text-slate-200 font-semibold">Years</th>
+                    <th className="text-left p-4 text-slate-200 font-semibold">Grading</th>
+                    <th className="text-left p-4 text-slate-200 font-semibold">Grades</th>
+                    <th className="text-center p-4 text-slate-200 font-semibold">Quantity</th>
+                    <th className="text-center p-4 text-slate-200 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-slate-900/40">
+                  {data.checklist.map((coin, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors"
+                    >
+                      <td className="p-4">
+                        <div className="font-semibold text-gold">{coin.name}</div>
+                      </td>
+                      <td className="p-4 text-slate-300 text-sm">
+                        {formatYears(coin.years)}
+                      </td>
+                      <td className="p-4 text-slate-300 text-sm">
+                        {coin.gradingCompanies && coin.gradingCompanies.length > 0
+                          ? coin.gradingCompanies.join(', ')
+                          : '—'}
+                      </td>
+                      <td className="p-4 text-slate-300 text-sm">
+                        {coin.gradesAvailable && coin.gradesAvailable.length > 0
+                          ? coin.gradesAvailable.join(', ')
+                          : '—'}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full font-semibold">
+                          {coin.totalQuantity}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        {coin.available ? (
+                          <span className="inline-flex items-center gap-1 text-green-400">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            In Stock
+                          </span>
+                        ) : (
+                          <span className="text-slate-500">Unavailable</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {data.checklist.map((coin, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg border border-slate-700 bg-slate-900/40 p-4"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-gold">{coin.name}</h4>
+                    <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full font-semibold text-sm">
+                      {coin.totalQuantity}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Years:</span>
+                      <span className="text-slate-300">{formatYears(coin.years)}</span>
+                    </div>
                     
-                    <div className="space-y-2 text-slate-300">
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-500">├─</span>
-                        <div>
-                          <span className="font-medium">Years:</span>{' '}
-                          <span className="text-slate-400">{formatYears(coin.years)}</span>
-                        </div>
+                    {coin.gradingCompanies && coin.gradingCompanies.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Grading:</span>
+                        <span className="text-slate-300">{coin.gradingCompanies.join(', ')}</span>
                       </div>
-                      
-                      {coin.gradingCompanies && coin.gradingCompanies.length > 0 && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-slate-500">├─</span>
-                          <div>
-                            <span className="font-medium">Grading:</span>{' '}
-                            <span className="text-slate-400">
-                              {coin.gradingCompanies.join(', ')}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {coin.gradesAvailable && coin.gradesAvailable.length > 0 && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-slate-500">├─</span>
-                          <div>
-                            <span className="font-medium">Grades:</span>{' '}
-                            <span className="text-slate-400">
-                              {coin.gradesAvailable.join(', ')}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-500">└─</span>
-                        <div>
-                          <span className="font-medium">Status:</span>{' '}
-                          {coin.available ? (
-                            <span className="inline-flex items-center gap-1 text-green-400">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              Available
-                            </span>
-                          ) : (
-                            <span className="text-slate-500">Currently Unavailable</span>
-                          )}
-                        </div>
+                    )}
+                    
+                    {coin.gradesAvailable && coin.gradesAvailable.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Grades:</span>
+                        <span className="text-slate-300">{coin.gradesAvailable.join(', ')}</span>
                       </div>
+                    )}
+                    
+                    <div className="flex justify-between pt-2 border-t border-slate-700/50">
+                      <span className="text-slate-400">Status:</span>
+                      {coin.available ? (
+                        <span className="inline-flex items-center gap-1 text-green-400">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          In Stock
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">Unavailable</span>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         {/* Empty State */}
         {data && (!data.checklist || data.checklist.length === 0) && (
           <div className="text-center py-20 rounded-lg border border-slate-700 bg-slate-900/40">
-            <p className="text-slate-400">No coins available in the checklist at this time.</p>
+            <p className="text-slate-400">No coins currently available for this case type.</p>
+          </div>
+        )}
+
+        {/* API Notice */}
+        {data && !data.caseType && data.checklist && data.checklist.length > 0 && (
+          <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-900/20 p-4">
+            <p className="text-yellow-300 text-sm">
+              <strong>Note:</strong> The API doesn't support case-specific filtering yet. Showing all ShackPack-eligible coins.
+              See <code className="bg-yellow-900/30 px-2 py-1 rounded">API_UPDATE_PROMPT.md</code> for instructions to enable filtering.
+            </p>
           </div>
         )}
 
@@ -269,19 +465,15 @@ export default function ChecklistPage() {
             <h2 className="text-xl font-semibold mb-3">Important Information</h2>
             <div className="space-y-3 text-slate-300 text-sm">
               <p>
-                <strong>This checklist shows coins that MAY appear in ShackPack cases.</strong> Specific contents vary by case.
+                <strong>Series Archive:</strong> Each series remains available on this page for at least one year from its end date.
+              </p>
+              <p>
+                <strong>Quantities Shown:</strong> Numbers represent total inventory that MAY be used for this case type. Actual case contents vary.
               </p>
               <p className="text-slate-400">
-                Checklist updated automatically from live inventory
-              </p>
-              <p className="text-slate-400">
-                No purchase necessary to view checklist
+                Checklist updated automatically from live inventory • No purchase necessary to view
               </p>
             </div>
-          </div>
-
-          <div className="text-center text-xs text-slate-500">
-            Page refreshed: {lastRefresh.toLocaleTimeString()} • Auto-refresh every 24 hours
           </div>
         </div>
       </div>
