@@ -1,22 +1,21 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 type RepackCardProps = {
   id: string;
   name: string;
   description: string;
   image: string;
-  cardCount: string;
+  coinCount: string;
   category: string;
-  availability: string;
 };
 
 export function RepackCard({ 
   name, 
   description, 
   image, 
-  cardCount, 
-  category,
-  availability 
+  coinCount, 
+  category
 }: RepackCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 shadow-sm transition-all duration-300 hover:border-slate-700 hover:shadow-glow">
@@ -29,18 +28,13 @@ export function RepackCard({
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute top-4 right-4">
-          <span className="rounded-full px-3 py-1 text-xs font-medium bg-red-500/20 text-red-300 border border-red-500/30">
-            {availability}
-          </span>
-        </div>
       </div>
       
       <div className="p-6">
         <div className="mb-3">
           <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
           <div className="flex items-center gap-3 text-sm text-slate-400">
-            <span>{cardCount}</span>
+            <span>{coinCount}</span>
             <span>•</span>
             <span>{category}</span>
           </div>
@@ -48,9 +42,13 @@ export function RepackCard({
         
         <p className="text-slate-300 mb-4 line-clamp-3">{description}</p>
         
-        <div className="text-center pt-3 border-t border-slate-700/50">
-          <div className="text-sm font-medium text-red-400">Currently Unavailable</div>
-          <div className="text-xs text-slate-500 mt-1">Check back for restock updates</div>
+        <div className="pt-3 border-t border-slate-700/50">
+          <Link
+            href="/contact"
+            className="block w-full text-center px-4 py-2 bg-gold/10 border border-gold/30 text-gold rounded-lg hover:bg-gold/20 transition-colors font-medium"
+          >
+            Contact for Price
+          </Link>
         </div>
       </div>
     </div>

@@ -3,58 +3,60 @@ import { RepackCard } from '@/components/RepackCard';
 
 const repacks = [
   {
-    id: 'shackpack-starter',
-    name: 'Shackpack Starter',
-    description: 'Perfect starter pack featuring a curated selection of premium gold and silver coins.',
+    id: 'shackpack',
+    name: 'ShackPack',
+    description: 'Contains one 1/10 oz gold coin and 9 varied silver coins. Perfect entry into premium coin collecting.',
     image: '/images/packs/shackpack-starter.jpg',
-    cardCount: '15-20 coins',
-    category: 'Mixed Metals',
-    availability: 'Out of Stock'
+    coinCount: '10 coins total',
+    category: '1/10 oz Gold'
   },
   {
     id: 'shackpack-deluxe',
-    name: 'Shackpack Deluxe',
-    description: 'Premium selection with higher grade coins and rare collectible finds.',
+    name: 'ShackPack Deluxe',
+    description: 'Contains two 1/10 oz gold coins and 8 varied silver coins. Enhanced gold content for serious collectors.',
     image: '/images/packs/shackpack-deluxe.jpg',
-    cardCount: '25-30 coins',
-    category: 'Premium Grade',
-    availability: 'Out of Stock'
+    coinCount: '10 coins total',
+    category: '2x 1/10 oz Gold'
   },
   {
     id: 'shackpack-xtreme',
-    name: 'Shackpack X-Treme',
-    description: 'Extreme value pack with premium coins and exclusive rare selections.',
+    name: 'ShackPack Xtreme',
+    description: 'Contains one 1/4 oz gold coin and 9 varied silver coins. Increased gold weight with premium selections.',
     image: '/images/packs/shackpack-xtreme.jpg',
-    cardCount: '30-40 coins',
-    category: 'High Value',
-    availability: 'Out of Stock'
-  },
-  {
-    id: 'shackpack-transcendent',
-    name: 'Shackpack Transcendent',
-    description: 'Transcendent collection featuring museum-quality coins and exceptional rarities.',
-    image: '/images/packs/shackpack-transcendent.jpg',
-    cardCount: '20-25 coins',
-    category: 'Elite Collection',
-    availability: 'Out of Stock'
+    coinCount: '10 coins total',
+    category: '1/4 oz Gold'
   },
   {
     id: 'shackpack-unleashed',
-    name: 'Shackpack Unleashed',
-    description: 'Unleashed excitement with incredible variety and guaranteed premium pieces.',
+    name: 'ShackPack Unleashed',
+    description: 'Contains two 1/4 oz gold coins and 8 varied silver coins. Double the gold for maximum impact.',
     image: '/images/packs/shackpack-unleashed.jpg',
-    cardCount: '35-45 coins',
-    category: 'Ultimate Value',
-    availability: 'Out of Stock'
+    coinCount: '10 coins total',
+    category: '2x 1/4 oz Gold'
   },
   {
     id: 'shackpack-resurgence',
-    name: 'Shackpack Resurgence',
-    description: 'Resurgence pack featuring classic coins with renewed collector interest.',
+    name: 'ShackPack Resurgence',
+    description: 'Contains one 1/2 oz gold coin and 9 varied silver coins. Substantial gold content with diverse silver pieces.',
     image: '/images/packs/shackpack-resurgence.jpg',
-    cardCount: '25-30 coins',
-    category: 'Classic Collection',
-    availability: 'Out of Stock'
+    coinCount: '10 coins total',
+    category: '1/2 oz Gold'
+  },
+  {
+    id: 'shackpack-transcendent',
+    name: 'ShackPack Transcendent',
+    description: 'Contains one 1 oz gold coin and 9 varied silver coins. Our ultimate pack featuring a full troy ounce of gold.',
+    image: '/images/packs/shackpack-transcendent.jpg',
+    coinCount: '10 coins total',
+    category: '1 oz Gold'
+  },
+  {
+    id: 'shackpack-ignite',
+    name: 'ShackPack Ignite',
+    description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins. Exclusive platinum edition for discerning collectors.',
+    image: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=800&auto=format&fit=crop',
+    coinCount: '10 coins total',
+    category: '1/4 oz Platinum'
   }
 ];
 
