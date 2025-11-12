@@ -42,8 +42,8 @@ interface CaseType {
 
 // Configuration: Adjust these settings
 const SERIES_CONFIG = {
-  // First series start date (Monday)
-  startDate: new Date('2024-11-11'),
+  // First series start date (Monday) - System went live last week
+  startDate: new Date('2024-11-04'),
   
   // How many weeks ahead to generate (default: 4 weeks into future)
   weeksAhead: 4,
@@ -154,15 +154,20 @@ export default function ChecklistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChecklistForCase = async (caseId: string) => {
+  const fetchChecklistForCase = async (caseId: string, seriesStartDate: string, seriesEndDate: string) => {
     setLoading(true);
     setError(null);
     try {
-      // Try to fetch with caseType parameter
-      // If your API doesn't support caseType yet, it will return all coins
-      const response = await fetch(
-        `https://us-central1-coin-inventory-8b79d.cloudfunctions.net/getChecklist?orgId=coin-shack&filter=shackpack&caseType=${caseId}`
-      );
+      // Fetch historical inventory for the selected series date range
+      // This shows what was available during THAT week, not current inventory
+      const url = new URL('https://us-central1-coin-inventory-8b79d.cloudfunctions.net/getChecklist');
+      url.searchParams.append('orgId', 'coin-shack');
+      url.searchParams.append('filter', 'shackpack');
+      url.searchParams.append('caseType', caseId);
+      url.searchParams.append('startDate', seriesStartDate);
+      url.searchParams.append('endDate', seriesEndDate);
+      
+      const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error('Failed to fetch checklist data');
       }
@@ -176,8 +181,8 @@ export default function ChecklistPage() {
   };
 
   useEffect(() => {
-    fetchChecklistForCase(selectedCase.id);
-  }, [selectedCase]);
+    fetchChecklistForCase(selectedCase.id, selectedSeries.startDate, selectedSeries.endDate);
+  }, [selectedCase, selectedSeries]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -300,10 +305,18 @@ export default function ChecklistPage() {
         {/* Selected Case Info */}
         <div className="mb-6 bg-slate-900/40 rounded-lg border border-slate-700 p-6">
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex-1">
               <h3 className="text-2xl font-bold text-gold mb-2">{selectedCase.name}</h3>
               <p className="text-slate-300 mb-2">{selectedCase.description}</p>
               <p className="text-sm text-slate-400">10 coins total per case</p>
+              <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm text-blue-300">
+                  Historical inventory for {getSeriesDateRange(selectedSeries)}
+                </span>
+              </div>
             </div>
             <div className="text-right">
               <div className="text-sm text-slate-400">Last Updated</div>
@@ -317,7 +330,7 @@ export default function ChecklistPage() {
         {/* Refresh Button */}
         <div className="flex justify-end mb-6">
           <button
-            onClick={() => fetchChecklistForCase(selectedCase.id)}
+            onClick={() => fetchChecklistForCase(selectedCase.id, selectedSeries.startDate, selectedSeries.endDate)}
             disabled={loading}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/30 text-gold rounded-lg hover:bg-gold/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -343,7 +356,7 @@ export default function ChecklistPage() {
           <div className="mb-8 rounded-lg border border-red-500/30 bg-red-900/20 p-6 text-center">
             <p className="text-red-400">Error loading checklist: {error}</p>
             <button
-              onClick={() => fetchChecklistForCase(selectedCase.id)}
+              onClick={() => fetchChecklistForCase(selectedCase.id, selectedSeries.startDate, selectedSeries.endDate)}
               className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
             >
               Try Again
@@ -497,13 +510,19 @@ export default function ChecklistPage() {
             <h2 className="text-xl font-semibold mb-3">Important Information</h2>
             <div className="space-y-3 text-slate-300 text-sm">
               <p>
+                <strong>Historical Series Data:</strong> Each series shows coins that were available during that specific week. This includes coins in stock at the start, added during the week, or sold during the week.
+              </p>
+              <p>
                 <strong>This checklist shows coins that MAY appear in ShackPack cases.</strong> Specific contents vary by case.
               </p>
               <p>
-                <strong>Series Archive:</strong> Each series remains available on this page for at least one year from its end date.
+                <strong>Gold Inventory Varies:</strong> Gold coin availability changes week to week based on shipments and sales. Each series reflects the actual gold coins available during that time period.
               </p>
               <p>
-                <strong>Availability Status:</strong> "Available" indicates coins in stock, "Limited" indicates low inventory, actual case contents vary.
+                <strong>Series Archive:</strong> Each series remains available on this page for at least one year from its end date for transparency and audit purposes.
+              </p>
+              <p>
+                <strong>Availability Status:</strong> "Available" indicates coins in stock, "Limited" indicates low inventory. Actual case contents vary.
               </p>
               <p className="text-slate-400">
                 Checklist updated automatically from live inventory • No purchase necessary to view
