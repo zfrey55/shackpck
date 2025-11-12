@@ -141,7 +141,10 @@ function generateSeries(): SeriesData[] {
     });
   }
   
-  return series;
+  // Sort by start date descending (newest first)
+  return series.sort((a, b) => {
+    return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+  });
 }
 
 // Generate series automatically
