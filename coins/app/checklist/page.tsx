@@ -37,73 +37,115 @@ interface CaseType {
 }
 
 // ===== SERIES CONFIGURATION =====
-// To add a new series, copy the series object template below and update dates
-const SERIES: SeriesData[] = [
-  {
-    id: 'series-1-nov-2024',
-    name: 'Series 1 - November 2024',
-    startDate: '2024-11-11',
-    endDate: '2024-11-17',
-    description: 'Week of November 11-17, 2024',
-    cases: [
-      {
-        id: 'shackpack',
-        name: 'ShackPack',
-        description: '1x 1/10 oz gold + 9 silver coins',
-        goldContent: '1/10 oz Gold'
-      },
-      {
-        id: 'deluxe',
-        name: 'ShackPack Deluxe',
-        description: '2x 1/10 oz gold + 8 silver coins',
-        goldContent: '2x 1/10 oz Gold'
-      },
-      {
-        id: 'xtreme',
-        name: 'ShackPack Xtreme',
-        description: '1x 1/4 oz gold + 9 silver coins',
-        goldContent: '1/4 oz Gold'
-      },
-      {
-        id: 'unleashed',
-        name: 'ShackPack Unleashed',
-        description: '2x 1/4 oz gold + 8 silver coins',
-        goldContent: '2x 1/4 oz Gold'
-      },
-      {
-        id: 'resurgence',
-        name: 'ShackPack Resurgence',
-        description: '1x 1/2 oz gold + 9 silver coins',
-        goldContent: '1/2 oz Gold'
-      },
-      {
-        id: 'transcendent',
-        name: 'ShackPack Transcendent',
-        description: '1x 1 oz gold + 9 silver coins',
-        goldContent: '1 oz Gold'
-      },
-      {
-        id: 'ignite',
-        name: 'ShackPack Ignite',
-        description: '1x 1/4 oz platinum + 9 silver coins',
-        goldContent: '1/4 oz Platinum'
-      }
-    ]
+// Series are now AUTO-GENERATED based on the start date and current date
+// No manual updates needed - series automatically generate weekly!
+
+// Configuration: Adjust these settings
+const SERIES_CONFIG = {
+  // First series start date (Monday)
+  startDate: new Date('2024-11-11'),
+  
+  // How many weeks ahead to generate (default: 4 weeks into future)
+  weeksAhead: 4,
+  
+  // How many weeks to keep in archive (52 weeks = 1 year)
+  archiveWeeks: 52,
+  
+  // All case types available (you can modify which cases are in each series here)
+  defaultCases: [
+    {
+      id: 'shackpack',
+      name: 'ShackPack',
+      description: '1x 1/10 oz gold + 9 silver coins',
+      goldContent: '1/10 oz Gold'
+    },
+    {
+      id: 'deluxe',
+      name: 'ShackPack Deluxe',
+      description: '2x 1/10 oz gold + 8 silver coins',
+      goldContent: '2x 1/10 oz Gold'
+    },
+    {
+      id: 'xtreme',
+      name: 'ShackPack Xtreme',
+      description: '1x 1/4 oz gold + 9 silver coins',
+      goldContent: '1/4 oz Gold'
+    },
+    {
+      id: 'unleashed',
+      name: 'ShackPack Unleashed',
+      description: '2x 1/4 oz gold + 8 silver coins',
+      goldContent: '2x 1/4 oz Gold'
+    },
+    {
+      id: 'resurgence',
+      name: 'ShackPack Resurgence',
+      description: '1x 1/2 oz gold + 9 silver coins',
+      goldContent: '1/2 oz Gold'
+    },
+    {
+      id: 'transcendent',
+      name: 'ShackPack Transcendent',
+      description: '1x 1 oz gold + 9 silver coins',
+      goldContent: '1 oz Gold'
+    },
+    {
+      id: 'ignite',
+      name: 'ShackPack Ignite',
+      description: '1x 1/4 oz platinum + 9 silver coins',
+      goldContent: '1/4 oz Platinum'
+    }
+  ]
+};
+
+// Auto-generate series based on configuration
+function generateSeries(): SeriesData[] {
+  const series: SeriesData[] = [];
+  const today = new Date();
+  const { startDate, weeksAhead, archiveWeeks, defaultCases } = SERIES_CONFIG;
+  
+  // Calculate how many weeks since the start date
+  const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const weeksSinceStart = Math.floor(daysSinceStart / 7);
+  
+  // Generate series from (current week - archive weeks) to (current week + weeks ahead)
+  const startWeek = Math.max(0, weeksSinceStart - archiveWeeks);
+  const endWeek = weeksSinceStart + weeksAhead;
+  
+  for (let weekOffset = startWeek; weekOffset <= endWeek; weekOffset++) {
+    const weekStartDate = new Date(startDate);
+    weekStartDate.setDate(startDate.getDate() + (weekOffset * 7));
+    
+    const weekEndDate = new Date(weekStartDate);
+    weekEndDate.setDate(weekStartDate.getDate() + 6);
+    
+    // Calculate series number within the month
+    const monthStart = new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), 1);
+    const weeksIntoMonth = Math.floor((weekStartDate.getDate() - 1) / 7) + 1;
+    
+    const monthName = weekStartDate.toLocaleDateString('en-US', { month: 'long' });
+    const monthAbbr = weekStartDate.toLocaleDateString('en-US', { month: 'short' }).toLowerCase();
+    const year = weekStartDate.getFullYear();
+    
+    // Format dates for display
+    const startDateStr = weekStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const endDateStr = weekEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    
+    series.push({
+      id: `series-${weeksIntoMonth}-${monthAbbr}-${year}`,
+      name: `Series ${weeksIntoMonth} - ${monthName} ${year}`,
+      startDate: weekStartDate.toISOString().split('T')[0],
+      endDate: weekEndDate.toISOString().split('T')[0],
+      description: `Week of ${startDateStr} - ${endDateStr}`,
+      cases: [...defaultCases] // Clone the default cases
+    });
   }
-  // ADD NEW SERIES HERE - Copy the template below:
-  /*
-  {
-    id: 'series-2-nov-2024',
-    name: 'Series 2 - November 2024',
-    startDate: '2024-11-18',
-    endDate: '2024-11-24',
-    description: 'Week of November 18-24, 2024',
-    cases: [
-      // Same cases array as above, or customize which cases are in this series
-    ]
-  }
-  */
-];
+  
+  return series;
+}
+
+// Generate series automatically
+const SERIES: SeriesData[] = generateSeries();
 
 export default function ChecklistPage() {
   const [selectedSeries, setSelectedSeries] = useState<SeriesData>(SERIES[0]);
