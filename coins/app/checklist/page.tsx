@@ -442,85 +442,59 @@ export default function ChecklistPage() {
               </div>
             </div>
 
-            <div className="hidden md:block overflow-x-auto rounded-lg border border-slate-700">
-              <table className="w-full">
-                <thead className="bg-slate-800/50 border-b border-slate-700 text-sm text-slate-200">
-                  <tr>
-                    <th className="p-4 text-left font-medium">Coin</th>
-                    <th className="p-4 text-left font-medium">Years</th>
-                    <th className="p-4 text-left font-medium">Grading</th>
-                    <th className="p-4 text-left font-medium">Grades</th>
-                    <th className="p-4 text-center font-medium">
-                      {isHistorical ? "Historical max" : "Quantity"}
-                    </th>
-                    <th className="p-4 text-center font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-slate-900/40 text-sm text-slate-300">
-                  {data.checklist.map((coin) => {
-                    const quantityText = quantityLabel(coin, isHistorical);
-                    const status = availabilityLabel(coin);
-                    return (
-                      <tr
-                        key={`${coin.name}-${formatYears(coin.years)}`}
-                        className="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors"
-                      >
-                        <td className="p-4 font-semibold text-gold">{coin.name}</td>
-                        <td className="p-4">{formatYears(coin.years)}</td>
-                        <td className="p-4">{formatList(coin.gradingCompanies)}</td>
-                        <td className="p-4">{formatGrades(coin.grades, coin.gradesAvailable)}</td>
-                        <td className="p-4 text-center">
-                          <span className="inline-block rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-blue-200">
-                            {quantityText}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <span className={`inline-flex items-center gap-1 font-medium ${status.className}`}>
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d={status.text === "Unavailable" ? "M6 18L18 6M6 6l12 12" : "M5 13l4 4L19 7"}
-                              />
-                            </svg>
-                            {status.text}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="md:hidden space-y-4">
+            <div className="space-y-4">
               {data.checklist.map((coin) => {
                 const quantityText = quantityLabel(coin, isHistorical);
                 const status = availabilityLabel(coin);
                 return (
                   <div
-                    key={`${coin.name}-${formatYears(coin.years)}-mobile`}
-                    className="rounded-lg border border-slate-700 bg-slate-900/40 p-4 space-y-2"
+                    key={`${coin.name}-${formatYears(coin.years)}`}
+                    className="rounded-lg border border-slate-700 bg-slate-900/40 p-5 transition hover:border-gold/40"
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div>
-                        <h4 className="text-lg font-semibold text-gold">{coin.name}</h4>
-                        <p className="text-xs text-slate-400">
-                          Years: <span className="text-slate-300">{formatYears(coin.years)}</span>
-                        </p>
+                        <h4 className="text-xl font-semibold text-gold">{coin.name}</h4>
                       </div>
-                      <span className="inline-block rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-xs text-blue-200">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-sm font-semibold text-blue-200">
                         {quantityText}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400">
-                      Grading: <span className="text-slate-300">{formatList(coin.gradingCompanies)}</span>
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      Grades: <span className="text-slate-300">{formatGrades(coin.grades, coin.gradesAvailable)}</span>
-                    </p>
-                    <p className={`text-xs font-medium ${status.className}`}>Status: {status.text}</p>
+
+                    <div className="mt-4 space-y-2 text-sm text-slate-300">
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500">├─</span>
+                        <div>
+                          <span className="font-medium">Years:</span>{" "}
+                          <span className="text-slate-400">{formatYears(coin.years)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500">├─</span>
+                        <div>
+                          <span className="font-medium">Grading:</span>{" "}
+                          <span className="text-slate-400">{formatList(coin.gradingCompanies)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500">├─</span>
+                        <div>
+                          <span className="font-medium">Grades:</span>{" "}
+                          <span className="text-slate-400">
+                            {formatGrades(coin.grades, coin.gradesAvailable)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500">└─</span>
+                        <div>
+                          <span className="font-medium">Status:</span>{" "}
+                          <span className={status.className}>{status.text}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
