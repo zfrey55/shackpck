@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type CaseTypeOption = {
+type CaseType = {
+  id: string;
+  name: string;
+  description: string;
+  goldContent: string;
+};
+
+type CaseTypeDisplay = {
   id: string;
   label: string;
   helper: string;
@@ -33,70 +40,140 @@ interface ChecklistResponse {
   checklist: CoinItem[];
 }
 
-interface FetchParams {
-  caseType?: string;
-  startDate?: string;
-  endDate?: string;
+interface SeriesData {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  cases: CaseType[];
 }
 
-const CASE_TYPES: CaseTypeOption[] = [
-  { id: "all", label: "All Cases", helper: "Show every ShackPack-eligible coin" },
-  { id: "base", label: "ShackPack", helper: "1× 1/10 oz gold + 9 silver coins" },
-  { id: "deluxe", label: "Deluxe", helper: "2× 1/10 oz gold + 8 silver coins" },
-  { id: "xtreme", label: "Xtreme", helper: "1× 1/4 oz gold + 9 silver coins" },
-  { id: "unleashed", label: "Unleashed", helper: "2× 1/4 oz gold + 8 silver coins" },
-  { id: "resurgence", label: "Resurgence", helper: "1× 1/2 oz gold + 9 silver coins" },
-  { id: "transcendent", label: "Transcendent", helper: "1× 1 oz gold + 9 silver coins" },
-  { id: "ignite", label: "Ignite", helper: "1× 1/4 oz platinum + 9 silver coins" }
-];
+const CASE_TYPE_META: Record<string, CaseTypeDisplay> = {
+  base: { id: "base", label: "ShackPack", helper: "1× 1/10 oz gold + 9 varied silver coins" },
+  deluxe: { id: "deluxe", label: "ShackPack Deluxe", helper: "2× 1/10 oz gold + 8 varied silver coins" },
+  xtreme: { id: "xtreme", label: "ShackPack Xtreme", helper: "1× 1/4 oz gold + 9 varied silver coins" },
+  unleashed: { id: "unleashed", label: "ShackPack Unleashed", helper: "2× 1/4 oz gold + 8 varied silver coins" },
+  resurgence: { id: "resurgence", label: "ShackPack Resurgence", helper: "1× 1/2 oz gold + 9 varied silver coins" },
+  transcendent: { id: "transcendent", label: "ShackPack Transcendent", helper: "1× 1 oz gold + 9 varied silver coins" },
+  ignite: { id: "ignite", label: "ShackPack Ignite", helper: "1× 1/4 oz platinum + 9 varied silver coins" }
+};
 
-const API_BASE =
-  "https://us-central1-coin-inventory-8b79d.cloudfunctions.net/getChecklist";
+const SERIES_CONFIG = {
+  startDate: new Date("2024-11-04"), // launch week
+  weeksAhead: 4,
+  archiveWeeks: 52,
+  defaultCases: [
+    {
+      id: "base",
+      name: "ShackPack",
+      description: "Contains one 1/10 oz gold coin and 9 varied silver coins",
+      goldContent: "1/10 oz Gold"
+    },
+    {
+      id: "deluxe",
+      name: "ShackPack Deluxe",
+      description: "Contains two 1/10 oz gold coins and 8 varied silver coins",
+      goldContent: "2× 1/10 oz Gold"
+    },
+    {
+      id: "xtreme",
+      name: "ShackPack Xtreme",
+      description: "Contains one 1/4 oz gold coin and 9 varied silver coins",
+      goldContent: "1/4 oz Gold"
+    },
+    {
+      id: "unleashed",
+      name: "ShackPack Unleashed",
+      description: "Contains two 1/4 oz gold coins and 8 varied silver coins",
+      goldContent: "2× 1/4 oz Gold"
+    },
+    {
+      id: "resurgence",
+      name: "ShackPack Resurgence",
+      description: "Contains one 1/2 oz gold coin and 9 varied silver coins",
+      goldContent: "1/2 oz Gold"
+    },
+    {
+      id: "transcendent",
+      name: "ShackPack Transcendent",
+      description: "Contains one 1 oz gold coin and 9 varied silver coins",
+      goldContent: "1 oz Gold"
+    },
+    {
+      id: "ignite",
+      name: "ShackPack Ignite",
+      description: "Contains one 1/4 oz platinum coin and 9 varied silver coins",
+      goldContent: "1/4 oz Platinum"
+    }
+  ] satisfies CaseType[]
+};
 
-function getPreviousMondayRange(): { startDate: string; endDate: string } {
+function formatDisplayDateRange(start: string, end: string) {
+  const startText = new Date(start).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const endText = new Date(end).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+  return `${startText} – ${endText}`;
+}
+
+function generateSeries(): SeriesData[] {
+  const series: SeriesData[] = [];
   const today = new Date();
-  const dayOfWeek = today.getUTCDay(); // Sunday = 0
-  const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const { startDate, weeksAhead, archiveWeeks, defaultCases } = SERIES_CONFIG;
 
-  const monday = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
-  );
-  monday.setUTCDate(monday.getUTCDate() - diffToMonday);
+  const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const weeksSinceStart = Math.max(0, Math.floor(daysSinceStart / 7));
 
-  const sunday = new Date(monday);
-  sunday.setUTCDate(monday.getUTCDate() + 6);
+  const startWeek = Math.max(0, weeksSinceStart - archiveWeeks);
+  const endWeek = weeksSinceStart + weeksAhead;
 
-  const format = (date: Date) => date.toISOString().split("T")[0];
+  for (let weekOffset = startWeek; weekOffset <= endWeek; weekOffset++) {
+    const weekStart = new Date(startDate);
+    weekStart.setDate(startDate.getDate() + weekOffset * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
 
-  return {
-    startDate: format(monday),
-    endDate: format(sunday)
-  };
+    const monthName = weekStart.toLocaleDateString("en-US", { month: "long" });
+    const monthAbbr = weekStart.toLocaleDateString("en-US", { month: "short" }).toLowerCase();
+    const year = weekStart.getFullYear();
+    const weekNumberInMonth = Math.floor((weekStart.getDate() - 1) / 7) + 1;
+
+    series.push({
+      id: `series-${weekNumberInMonth}-${monthAbbr}-${year}`,
+      name: `Series ${weekNumberInMonth} – ${monthName} ${year}`,
+      startDate: weekStart.toISOString().split("T")[0],
+      endDate: weekEnd.toISOString().split("T")[0],
+      description: `Week of ${formatDisplayDateRange(
+        weekStart.toISOString().split("T")[0],
+        weekEnd.toISOString().split("T")[0]
+      )}`,
+      cases: [...defaultCases]
+    });
+  }
+
+  return series.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 }
 
-async function fetchChecklist(params: FetchParams): Promise<ChecklistResponse> {
-  const url = new URL(API_BASE);
+async function fetchChecklist(params: { caseType: string; startDate: string; endDate: string }) {
+  const url = new URL("https://us-central1-coin-inventory-8b79d.cloudfunctions.net/getChecklist");
   url.searchParams.set("orgId", "coin-shack");
   url.searchParams.set("filter", "shackpack");
-
-  if (params.caseType && params.caseType !== "all") {
-    url.searchParams.set("caseType", params.caseType);
-  }
-  if (params.startDate && params.endDate) {
-    url.searchParams.set("startDate", params.startDate);
-    url.searchParams.set("endDate", params.endDate);
-  }
+  url.searchParams.set("caseType", params.caseType);
+  url.searchParams.set("startDate", params.startDate);
+  url.searchParams.set("endDate", params.endDate);
 
   const response = await fetch(url.toString());
   if (!response.ok) {
-    throw new Error(`Checklist request failed with status ${response.status}`);
+    throw new Error(`Request failed with status ${response.status}`);
   }
 
   const json = (await response.json()) as ChecklistResponse;
   if (!json.success) {
     throw new Error("Checklist API returned success: false");
   }
-
   return json;
 }
 
@@ -115,21 +192,21 @@ function formatDateTime(value?: string) {
   }
 }
 
-function formatList(items?: string[]) {
-  if (!items || items.length === 0) return "—";
-  return items.join(", ");
-}
-
 function formatYears(years?: string[]) {
   if (!years || years.length === 0) return "Various Years";
+  if (years.length > 5) return `${years.slice(0, 5).join(", ")}, Various`;
   return years.join(", ");
 }
 
+function formatList(values?: string[]) {
+  if (!values || values.length === 0) return "—";
+  return values.join(", ");
+}
+
 function formatGrades(grades?: Record<string, number>, gradesAvailable?: string[]) {
-  if (grades && Object.keys(grades).length > 0) {
-    return Object.entries(grades)
-      .map(([grade, count]) => `${grade} (${count})`)
-      .join(", ");
+  const entries = Object.entries(grades ?? {});
+  if (entries.length > 0) {
+    return entries.map(([grade, count]) => `${grade} (${count})`).join(", ");
   }
   if (gradesAvailable && gradesAvailable.length > 0) {
     return gradesAvailable.join(", ");
@@ -137,26 +214,30 @@ function formatGrades(grades?: Record<string, number>, gradesAvailable?: string[
   return "—";
 }
 
+function quantityLabel(coin: CoinItem, isHistorical: boolean) {
+  if (isHistorical) {
+    const value = coin.maxObservedQuantity ?? coin.totalQuantity ?? 0;
+    return `Historical max: ${value}`;
+  }
+  return `Quantity: ${coin.totalQuantity ?? 0}`;
+}
+
+function availabilityLabel(coin: CoinItem) {
+  if (coin.available === false) {
+    return { text: "Unavailable", className: "text-slate-400" };
+  }
+  return { text: "In Stock", className: "text-green-400" };
+}
+
 export default function ChecklistPage() {
-  const [caseType, setCaseType] = useState<string>("all");
-  const [historicalView, setHistoricalView] = useState<boolean>(false);
-  const [startDate, setStartDate] = useState<string>(() => getPreviousMondayRange().startDate);
-  const [endDate, setEndDate] = useState<string>(() => getPreviousMondayRange().endDate);
+  const seriesList = useMemo(() => generateSeries(), []);
+  const [selectedSeries, setSelectedSeries] = useState<SeriesData>(seriesList[0]);
+  const [selectedCase, setSelectedCase] = useState<CaseType>(seriesList[0].cases[0]);
   const [data, setData] = useState<ChecklistResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [refreshIndex, setRefreshIndex] = useState(0);
-
-  const params = useMemo(() => {
-    const payload: FetchParams = {};
-    payload.caseType = caseType !== "all" ? caseType : undefined;
-    if (historicalView) {
-      payload.startDate = startDate;
-      payload.endDate = endDate;
-    }
-    return payload;
-  }, [caseType, historicalView, startDate, endDate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,16 +247,21 @@ export default function ChecklistPage() {
       setError(null);
       setWarning(null);
       try {
-        const result = await fetchChecklist(params);
+        const result = await fetchChecklist({
+          caseType: selectedCase.id,
+          startDate: selectedSeries.startDate,
+          endDate: selectedSeries.endDate
+        });
         if (cancelled) return;
         setData(result);
         if (result.warning) {
           setWarning(result.warning);
         }
       } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setData(null);
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+          setData(null);
+        }
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -187,140 +273,150 @@ export default function ChecklistPage() {
     return () => {
       cancelled = true;
     };
-  }, [params, refreshIndex]);
+  }, [selectedCase, selectedSeries, refreshIndex]);
 
-  const handleRefresh = () => {
-    setRefreshIndex((index) => index + 1);
-  };
-
-  const isHistorical = historicalView || data?.isHistorical;
+  const isHistorical = Boolean(data?.isHistorical ?? true);
 
   return (
     <main className="container py-10">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header className="space-y-3 text-center">
-          <h1 className="text-4xl font-bold text-gold">ShackPack Checklist</h1>
+      <div className="max-w-7xl mx-auto space-y-8">
+        <header className="text-center space-y-3">
+          <h1 className="text-4xl font-bold text-gold">ShackPack Series Checklist</h1>
           <p className="text-lg text-slate-300">
-            Explore current and historical coin availability for every ShackPack case type.
+            Select a series and case type to review the inventory that existed during that week.
           </p>
           <p className="text-sm text-slate-400 italic">
             Possible contents only — coins are not guaranteed in any individual pack.
           </p>
         </header>
 
-        {historicalView && (!data || data.checklist.length === 0) && (
-          <div className="rounded-lg border border-yellow-500/40 bg-yellow-900/20 p-4 text-sm text-yellow-200">
-            <strong>Historical data looks empty?</strong> Run the backfill endpoint:
+        <section className="space-y-4">
+          <div className="border-b border-slate-700 overflow-x-auto">
+            <div className="flex flex-wrap gap-2">
+              {seriesList.map((series) => {
+                const active = series.id === selectedSeries.id;
+                const current =
+                  new Date(series.startDate) <= new Date() &&
+                  new Date(series.endDate) >= new Date();
+
+                return (
+                  <button
+                    key={series.id}
+                    onClick={() => {
+                      setSelectedSeries(series);
+                      setSelectedCase(series.cases[0]);
+                    }}
+                    className={`px-5 py-3 text-left transition ${
+                      active ? "border-b-2 border-gold text-gold" : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{series.name}</span>
+                      {current && <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {formatDisplayDateRange(series.startDate, series.endDate)}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-5 space-y-4">
+            <h2 className="text-xl font-semibold text-slate-100">Case Types</h2>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
+              {selectedSeries.cases.map((caseType) => {
+                const active = caseType.id === selectedCase.id;
+                const meta = CASE_TYPE_META[caseType.id];
+                return (
+                  <button
+                    key={caseType.id}
+                    onClick={() => setSelectedCase(caseType)}
+                    className={`rounded-lg border p-4 text-left transition ${
+                      active
+                        ? "border-gold bg-gold/10 text-gold"
+                        : "border-slate-700 bg-slate-800/40 text-slate-300 hover:border-slate-600"
+                    }`}
+                  >
+                    <div className="font-semibold text-sm mb-1">{meta?.label ?? caseType.name}</div>
+                    <div className="text-xs text-slate-400">
+                      {meta?.helper ?? caseType.goldContent}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-slate-700 bg-slate-900/40 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h3 className="text-2xl font-bold text-gold mb-2">
+                {CASE_TYPE_META[selectedCase.id]?.label ?? selectedCase.name}
+              </h3>
+              <p className="text-slate-300 mb-1">
+                {CASE_TYPE_META[selectedCase.id]?.helper ?? selectedCase.description}
+              </p>
+              <p className="text-sm text-slate-400">
+                Snapshot week: {formatDisplayDateRange(selectedSeries.startDate, selectedSeries.endDate)}
+              </p>
+              <p className="text-sm text-slate-400">
+                Historical view: {isHistorical ? "Yes (snapshot)" : "No (live inventory)"}
+              </p>
+              {data?.snapshotCount !== undefined && (
+                <p className="text-sm text-slate-400">Snapshots captured: {data.snapshotCount}</p>
+              )}
+            </div>
+            <div className="text-right text-sm text-slate-400">
+              <div className="font-medium text-slate-100">Last updated</div>
+              <div>{formatDateTime(data?.lastUpdated)}</div>
+              <button
+                onClick={() => setRefreshIndex((idx) => idx + 1)}
+                disabled={loading}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 px-3 py-1 text-gold transition hover:bg-gold/20 disabled:opacity-50"
+              >
+                <svg
+                  className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                {loading ? "Refreshing…" : "Refresh"}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {data?.isHistorical && (!data || data.checklist.length === 0) && (
+          <div className="rounded border border-yellow-500/40 bg-yellow-900/20 p-4 text-sm text-yellow-100">
+            Historical data looks empty? Run the backfill endpoint:
             <code className="ml-2 rounded bg-yellow-900/40 px-2 py-1">
               curl -X POST "https://us-central1-coin-inventory-8b79d.cloudfunctions.net/backfillInventorySnapshots?orgId=coin-shack"
             </code>
           </div>
         )}
 
-        <section className="space-y-6 rounded-lg border border-slate-700 bg-slate-900/40 p-6">
-          <div>
-            <h2 className="mb-4 text-xl font-semibold text-slate-100">1. Choose Case Type</h2>
-            <div className="flex flex-wrap gap-3">
-              {CASE_TYPES.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setCaseType(option.id)}
-                  className={`min-w-[120px] rounded-lg border px-4 py-2 text-left transition ${
-                    caseType === option.id
-                      ? "border-gold bg-gold/15 text-gold shadow-glow"
-                      : "border-slate-700 bg-slate-800/40 text-slate-300 hover:border-slate-600"
-                  }`}
-                >
-                  <div className="font-semibold">{option.label}</div>
-                  <div className="text-xs text-slate-400">{option.helper}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-100">2. Historical View</h2>
-              <label className="flex items-center gap-2 text-sm text-slate-300">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-gold focus:ring-gold"
-                  checked={historicalView}
-                  onChange={(e) => {
-                    const enabled = e.target.checked;
-                    setHistoricalView(enabled);
-                    if (enabled) {
-                      const { startDate: defaultStart, endDate: defaultEnd } = getPreviousMondayRange();
-                      setStartDate(defaultStart);
-                      setEndDate(defaultEnd);
-                    }
-                  }}
-                />
-                Enable historical snapshot range
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="flex flex-col text-sm text-slate-300">
-                Start date
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  disabled={!historicalView}
-                  className="mt-1 rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 disabled:opacity-50"
-                />
-              </label>
-              <label className="flex flex-col text-sm text-slate-300">
-                End date
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  disabled={!historicalView}
-                  className="mt-1 rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 disabled:opacity-50"
-                />
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleRefresh}
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 px-4 py-2 text-gold transition hover:bg-gold/20 disabled:opacity-50"
-            >
-              <svg
-                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              {loading ? "Fetching..." : "Refresh"}
-            </button>
-          </div>
-        </section>
-
         {warning && (
-          <div className="rounded border border-yellow-500/40 bg-yellow-900/20 p-4 text-sm text-yellow-100">
+          <div className="rounded border border-yellow-500/30 bg-yellow-900/20 p-4 text-sm text-yellow-100">
             <strong>Warning:</strong> {warning}
           </div>
         )}
 
         {error && (
-          <div className="rounded border border-red-500/40 bg-red-900/20 p-6 text-center text-red-200">
+          <div className="rounded border border-red-500/30 bg-red-900/20 p-6 text-center text-red-200">
             <p className="font-semibold">Unable to load checklist.</p>
             <p className="text-sm opacity-80">{error}</p>
             <button
-              onClick={handleRefresh}
+              onClick={() => setRefreshIndex((idx) => idx + 1)}
               className="mt-4 inline-flex items-center rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition hover:bg-red-700"
             >
               Try Again
@@ -335,148 +431,119 @@ export default function ChecklistPage() {
           </div>
         )}
 
-        {data && !error && (
-          <section className="space-y-6">
-            <div className="grid gap-4 rounded-lg border border-slate-700 bg-slate-900/40 p-6 md:grid-cols-2">
-              <div>
-                <h3 className="text-sm uppercase tracking-wide text-slate-400">Overview</h3>
-                <dl className="mt-2 space-y-1 text-sm text-slate-300">
-                  <div className="flex justify-between">
-                    <dt>Case type:</dt>
-                    <dd className="font-medium text-slate-100">
-                      {
-                        CASE_TYPES.find((option) => option.id === caseType)?.label ??
-                        data.caseType ??
-                        "All Cases"
-                      }
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Historical snapshot:</dt>
-                    <dd className="font-medium text-slate-100">
-                      {isHistorical ? "Yes (snapshot range)" : "No (live inventory)"}
-                    </dd>
-                  </div>
-                  {data.startDate && data.endDate && (
-                    <div className="flex justify-between">
-                      <dt>Snapshot range:</dt>
-                      <dd className="font-medium text-slate-100">
-                        {data.startDate} → {data.endDate}
-                      </dd>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <dt>Snapshot count:</dt>
-                    <dd>{data.snapshotCount ?? "—"}</dd>
-                  </div>
-                </dl>
-              </div>
-              <div>
-                <h3 className="text-sm uppercase tracking-wide text-slate-400">Inventory</h3>
-                <dl className="mt-2 space-y-1 text-sm text-slate-300">
-                  <div className="flex justify-between">
-                    <dt>Total coin types:</dt>
-                    <dd className="font-medium text-slate-100">{data.totalTypes ?? "—"}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Total coins counted:</dt>
-                    <dd className="font-medium text-slate-100">{data.totalCoins ?? "—"}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Last updated:</dt>
-                    <dd>{formatDateTime(data.lastUpdated)}</dd>
-                  </div>
-                </dl>
+        {data && data.checklist && data.checklist.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-slate-200">
+                Coins recorded for this case during the selected week
+              </h3>
+              <div className="text-sm text-slate-400">
+                {data.totalTypes ?? "--"} coin types • {data.totalCoins ?? "--"} coins logged
               </div>
             </div>
 
-            {data.checklist.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                {data.checklist.map((coin) => {
-                  const quantityLabel = isHistorical ? "Historical max observed" : "Quantity";
-                  const quantityValue =
-                    coin.maxObservedQuantity ?? coin.totalQuantity ?? 0;
+            <div className="hidden md:block overflow-x-auto rounded-lg border border-slate-700">
+              <table className="w-full">
+                <thead className="bg-slate-800/50 border-b border-slate-700 text-sm text-slate-200">
+                  <tr>
+                    <th className="p-4 text-left font-medium">Coin</th>
+                    <th className="p-4 text-left font-medium">Years</th>
+                    <th className="p-4 text-left font-medium">Grading</th>
+                    <th className="p-4 text-left font-medium">Grades</th>
+                    <th className="p-4 text-center font-medium">
+                      {isHistorical ? "Historical max" : "Quantity"}
+                    </th>
+                    <th className="p-4 text-center font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-slate-900/40 text-sm text-slate-300">
+                  {data.checklist.map((coin) => {
+                    const quantityText = quantityLabel(coin, isHistorical);
+                    const status = availabilityLabel(coin);
+                    return (
+                      <tr
+                        key={`${coin.name}-${formatYears(coin.years)}`}
+                        className="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors"
+                      >
+                        <td className="p-4 font-semibold text-gold">{coin.name}</td>
+                        <td className="p-4">{formatYears(coin.years)}</td>
+                        <td className="p-4">{formatList(coin.gradingCompanies)}</td>
+                        <td className="p-4">{formatGrades(coin.grades, coin.gradesAvailable)}</td>
+                        <td className="p-4 text-center">
+                          <span className="inline-block rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-blue-200">
+                            {quantityText}
+                          </span>
+                        </td>
+                        <td className="p-4 text-center">
+                          <span className={`inline-flex items-center gap-1 font-medium ${status.className}`}>
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d={status.text === "Unavailable" ? "M6 18L18 6M6 6l12 12" : "M5 13l4 4L19 7"}
+                              />
+                            </svg>
+                            {status.text}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                  return (
-                    <article
-                      key={`${coin.name}-${formatYears(coin.years)}`}
-                      className="rounded-lg border border-slate-700 bg-slate-900/50 p-5 shadow-sm transition hover:border-gold/40 hover:shadow-glow"
-                    >
-                      <header className="mb-4 flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gold">{coin.name}</h3>
-                          <p className="text-xs uppercase tracking-wide text-slate-500">
-                            Years: <span className="text-slate-300">{formatYears(coin.years)}</span>
-                          </p>
-                        </div>
-                        <span className="rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
-                          {quantityLabel}: {quantityValue}
-                        </span>
-                      </header>
-
-                      <dl className="space-y-2 text-sm text-slate-300">
-                        <div>
-                          <dt className="font-medium text-slate-200">Grading Companies</dt>
-                          <dd>{formatList(coin.gradingCompanies)}</dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium text-slate-200">Grades & Counts</dt>
-                          <dd>{formatGrades(coin.grades, coin.gradesAvailable)}</dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium text-slate-200">Status</dt>
-                          <dd>
-                            <span
-                              className={`inline-flex items-center gap-1 font-medium ${
-                                coin.available === false
-                                  ? "text-slate-400"
-                                  : "text-green-400"
-                              }`}
-                            >
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d={
-                                    coin.available === false
-                                      ? "M6 18L18 6M6 6l12 12"
-                                      : "M5 13l4 4L19 7"
-                                  }
-                                />
-                              </svg>
-                              {coin.available === false ? "Unavailable" : "Available"}
-                            </span>
-                          </dd>
-                        </div>
-                      </dl>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-10 text-center text-slate-400">
-                No coins were recorded for the selected filters. Adjust your case type or date range.
-              </div>
-            )}
+            <div className="md:hidden space-y-4">
+              {data.checklist.map((coin) => {
+                const quantityText = quantityLabel(coin, isHistorical);
+                const status = availabilityLabel(coin);
+                return (
+                  <div
+                    key={`${coin.name}-${formatYears(coin.years)}-mobile`}
+                    className="rounded-lg border border-slate-700 bg-slate-900/40 p-4 space-y-2"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-lg font-semibold text-gold">{coin.name}</h4>
+                        <p className="text-xs text-slate-400">
+                          Years: <span className="text-slate-300">{formatYears(coin.years)}</span>
+                        </p>
+                      </div>
+                      <span className="inline-block rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-xs text-blue-200">
+                        {quantityText}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Grading: <span className="text-slate-300">{formatList(coin.gradingCompanies)}</span>
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Grades: <span className="text-slate-300">{formatGrades(coin.grades, coin.gradesAvailable)}</span>
+                    </p>
+                    <p className={`text-xs font-medium ${status.className}`}>Status: {status.text}</p>
+                  </div>
+                );
+              })}
+            </div>
           </section>
         )}
 
-        <footer className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 text-sm text-slate-300">
+        {data && data.checklist.length === 0 && !loading && !error && (
+          <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-10 text-center text-slate-400">
+            No coins were recorded for this case during the selected series week.
+          </div>
+        )}
+
+        <footer className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 text-sm text-slate-300 space-y-2">
           <p>
-            <strong>Historical Series Data:</strong> Each series shows coins that were available during that
-            specific week, including coins in stock, added, or sold during that period.
+            Historical data reflects coins that were in ShackPack inventory during the selected series week.
+            This includes coins in stock, added, or sold during that period.
           </p>
           <p>
-            <strong>Gold Inventory Varies:</strong> Gold availability changes weekly based on shipments and
-            sales. Each snapshot reflects actual inventory for that time frame.
+            “In Stock” indicates the coin type was available in inventory during that week; actual pack
+            contents vary and specific coins are not guaranteed.
           </p>
-          <p>
+          <p className="text-xs text-slate-500">
             Checklist updated automatically from live inventory • No purchase necessary to view.
           </p>
         </footer>
