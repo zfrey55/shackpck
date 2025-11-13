@@ -198,37 +198,6 @@ function formatYears(years?: string[]) {
   return years.join(", ");
 }
 
-function formatList(values?: string[]) {
-  if (!values || values.length === 0) return "—";
-  return values.join(", ");
-}
-
-function formatGrades(grades?: Record<string, number>, gradesAvailable?: string[]) {
-  const entries = Object.entries(grades ?? {});
-  if (entries.length > 0) {
-    return entries.map(([grade, count]) => `${grade} (${count})`).join(", ");
-  }
-  if (gradesAvailable && gradesAvailable.length > 0) {
-    return gradesAvailable.join(", ");
-  }
-  return "—";
-}
-
-function quantityLabel(coin: CoinItem, isHistorical: boolean) {
-  if (isHistorical) {
-    const value = coin.maxObservedQuantity ?? coin.totalQuantity ?? 0;
-    return `Historical max: ${value}`;
-  }
-  return `Quantity: ${coin.totalQuantity ?? 0}`;
-}
-
-function availabilityLabel(coin: CoinItem) {
-  if (coin.available === false) {
-    return { text: "Unavailable", className: "text-slate-400" };
-  }
-  return { text: "In Stock", className: "text-green-400" };
-}
-
 export default function ChecklistPage() {
   const seriesList = useMemo(() => generateSeries(), []);
   const [selectedSeries, setSelectedSeries] = useState<SeriesData>(seriesList[0]);
@@ -396,7 +365,7 @@ export default function ChecklistPage() {
           </div>
         </section>
 
-        {data?.isHistorical && (!data || data.checklist.length === 0) && (
+        {data?.isHistorical && (!data || data.checklist.length === 0) && data?.snapshotCount === 0 && (
           <div className="rounded border border-yellow-500/40 bg-yellow-900/20 p-4 text-sm text-yellow-100">
             Historical data looks empty? Run the backfill endpoint:
             <code className="ml-2 rounded bg-yellow-900/40 px-2 py-1">
@@ -442,62 +411,15 @@ export default function ChecklistPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
-              {data.checklist.map((coin) => {
-                const quantityText = quantityLabel(coin, isHistorical);
-                const status = availabilityLabel(coin);
-                return (
-                  <div
-                    key={`${coin.name}-${formatYears(coin.years)}`}
-                    className="rounded-lg border border-slate-700 bg-slate-900/40 p-5 transition hover:border-gold/40"
-                  >
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div>
-                        <h4 className="text-xl font-semibold text-gold">{coin.name}</h4>
-                      </div>
-                      <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-sm font-semibold text-blue-200">
-                        {quantityText}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 space-y-2 text-sm text-slate-300">
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-500">├─</span>
-                        <div>
-                          <span className="font-medium">Years:</span>{" "}
-                          <span className="text-slate-400">{formatYears(coin.years)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-500">├─</span>
-                        <div>
-                          <span className="font-medium">Grading:</span>{" "}
-                          <span className="text-slate-400">{formatList(coin.gradingCompanies)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-500">├─</span>
-                        <div>
-                          <span className="font-medium">Grades:</span>{" "}
-                          <span className="text-slate-400">
-                            {formatGrades(coin.grades, coin.gradesAvailable)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-500">└─</span>
-                        <div>
-                          <span className="font-medium">Status:</span>{" "}
-                          <span className={status.className}>{status.text}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-5">
+              <ul className="space-y-2 text-sm text-slate-200">
+                {data.checklist.map((coin) => (
+                  <li key={`${coin.name}-${formatYears(coin.years)}`} className="flex items-center gap-2">
+                    <span className="text-gold">•</span>
+                    <span>{coin.name}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
         )}
