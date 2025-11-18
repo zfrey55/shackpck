@@ -33,6 +33,10 @@ interface ChecklistResponse {
   startDate?: string;
   endDate?: string;
   isHistorical?: boolean;
+  weeklyAggregation?: boolean;
+  casesCount?: number;
+  coinsFromCasesCount?: number;
+  premiumInventoryCount?: number;
   warning?: string;
   totalTypes?: number;
   totalCoins?: number;
@@ -48,6 +52,7 @@ interface SeriesData {
   description: string;
   cases: CaseType[];
 }
+
 
 const CASE_TYPE_META: Record<string, CaseTypeDisplay> = {
   base: { id: "base", label: "ShackPack", helper: "1× 1/10 oz gold + 9 varied silver coins" },
@@ -164,6 +169,7 @@ async function fetchChecklist(params: { caseType: string; startDate: string; end
   url.searchParams.set("caseType", params.caseType);
   url.searchParams.set("startDate", params.startDate);
   url.searchParams.set("endDate", params.endDate);
+  // API will use weekly aggregation logic: previous week's cases + current inventory for this week
 
   const response = await fetch(url.toString());
   if (!response.ok) {
@@ -190,12 +196,6 @@ function formatDateTime(value?: string) {
   } catch {
     return value;
   }
-}
-
-function formatYears(years?: string[]) {
-  if (!years || years.length === 0) return "Various Years";
-  if (years.length > 5) return `${years.slice(0, 5).join(", ")}, Various`;
-  return years.join(", ");
 }
 
 export default function ChecklistPage() {
@@ -244,15 +244,13 @@ export default function ChecklistPage() {
     };
   }, [selectedCase, selectedSeries, refreshIndex]);
 
-  const isHistorical = Boolean(data?.isHistorical ?? true);
-
   return (
     <main className="container py-10">
       <div className="max-w-7xl mx-auto space-y-8">
         <header className="text-center space-y-3">
           <h1 className="text-4xl font-bold text-gold">ShackPack Series Checklist</h1>
           <p className="text-lg text-slate-300">
-            Select a series and case type to review the inventory that existed during that week.
+            Select a series and case type to review the coins that may appear in that case.
           </p>
           <p className="text-sm text-slate-400 italic">
             Possible contents only — coins are not guaranteed in any individual pack.
@@ -329,14 +327,8 @@ export default function ChecklistPage() {
                 {CASE_TYPE_META[selectedCase.id]?.helper ?? selectedCase.description}
               </p>
               <p className="text-sm text-slate-400">
-                Snapshot week: {formatDisplayDateRange(selectedSeries.startDate, selectedSeries.endDate)}
+                Series week: {formatDisplayDateRange(selectedSeries.startDate, selectedSeries.endDate)}
               </p>
-              <p className="text-sm text-slate-400">
-                Historical view: {isHistorical ? "Yes (snapshot)" : "No (live inventory)"}
-              </p>
-              {data?.snapshotCount !== undefined && (
-                <p className="text-sm text-slate-400">Snapshots captured: {data.snapshotCount}</p>
-              )}
             </div>
             <div className="text-right text-sm text-slate-400">
               <div className="font-medium text-slate-100">Last updated</div>
@@ -365,14 +357,6 @@ export default function ChecklistPage() {
           </div>
         </section>
 
-        {data?.isHistorical && (!data || data.checklist.length === 0) && data?.snapshotCount === 0 && (
-          <div className="rounded border border-yellow-500/40 bg-yellow-900/20 p-4 text-sm text-yellow-100">
-            Historical data looks empty? Run the backfill endpoint:
-            <code className="ml-2 rounded bg-yellow-900/40 px-2 py-1">
-              curl -X POST "https://us-central1-coin-inventory-8b79d.cloudfunctions.net/backfillInventorySnapshots?orgId=coin-shack"
-            </code>
-          </div>
-        )}
 
         {warning && (
           <div className="rounded border border-yellow-500/30 bg-yellow-900/20 p-4 text-sm text-yellow-100">
@@ -404,17 +388,19 @@ export default function ChecklistPage() {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold text-slate-200">
-                Coins recorded for this case during the selected week
+                Coins in {CASE_TYPE_META[selectedCase.id]?.label ?? selectedCase.name}
               </h3>
-              <div className="text-sm text-slate-400">
-                {data.totalTypes ?? "--"} coin types • {data.totalCoins ?? "--"} coins logged
-              </div>
+              {data.totalTypes !== undefined && (
+                <div className="text-sm text-slate-400">
+                  {data.totalTypes} coin {data.totalTypes === 1 ? "type" : "types"}
+                </div>
+              )}
             </div>
 
             <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-5">
               <ul className="space-y-2 text-sm text-slate-200">
-                {data.checklist.map((coin) => (
-                  <li key={`${coin.name}-${formatYears(coin.years)}`} className="flex items-center gap-2">
+                {data.checklist.map((coin, index) => (
+                  <li key={`${coin.name}-${index}`} className="flex items-center gap-2">
                     <span className="text-gold">•</span>
                     <span>{coin.name}</span>
                   </li>
@@ -432,12 +418,8 @@ export default function ChecklistPage() {
 
         <footer className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 text-sm text-slate-300 space-y-2">
           <p>
-            Historical data reflects coins that were in ShackPack inventory during the selected series week.
-            This includes coins in stock, added, or sold during that period.
-          </p>
-          <p>
-            “In Stock” indicates the coin type was available in inventory during that week; actual pack
-            contents vary and specific coins are not guaranteed.
+            This checklist shows coins that may appear in ShackPack cases for the selected series week.
+            Actual pack contents vary and specific coins are not guaranteed.
           </p>
           <p className="text-xs text-slate-500">
             Checklist updated automatically from live inventory • No purchase necessary to view.
