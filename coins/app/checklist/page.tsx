@@ -66,9 +66,8 @@ const CASE_TYPE_META: Record<string, CaseTypeDisplay> = {
 };
 
 const SERIES_CONFIG = {
-  startDate: new Date("2024-11-04"), // launch week
-  weeksAhead: 4,
-  archiveWeeks: 52,
+  weeksAhead: 4, // Number of future weeks to show
+  archiveWeeks: 52, // Number of historical weeks to show
   defaultCases: [
     {
       id: "base",
@@ -131,22 +130,36 @@ function formatDisplayDateRange(start: string, end: string) {
   return `${startText} – ${endText}`;
 }
 
+function getCurrentWeekMonday(): Date {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  // Calculate days to subtract to get to Monday (if Sunday, subtract 6; otherwise subtract dayOfWeek - 1)
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - daysToMonday);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
 function generateSeries(): SeriesData[] {
   const series: SeriesData[] = [];
-  const today = new Date();
-  const { startDate, weeksAhead, archiveWeeks, defaultCases } = SERIES_CONFIG;
-
-  const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const weeksSinceStart = Math.max(0, Math.floor(daysSinceStart / 7));
-
-  const startWeek = Math.max(0, weeksSinceStart - archiveWeeks);
-  const endWeek = weeksSinceStart + weeksAhead;
+  const { weeksAhead, archiveWeeks, defaultCases } = SERIES_CONFIG;
+  
+  // Get the current week's Monday (most recent series)
+  const currentWeekMonday = getCurrentWeekMonday();
+  
+  // Generate series from current week going backwards (historical) and forwards (future)
+  // Start from current week (weekOffset = 0) and go backwards for archiveWeeks
+  // Then go forwards for weeksAhead
+  const startWeek = -archiveWeeks; // Go back archiveWeeks from current
+  const endWeek = weeksAhead; // Go forward weeksAhead from current
 
   for (let weekOffset = startWeek; weekOffset <= endWeek; weekOffset++) {
-    const weekStart = new Date(startDate);
-    weekStart.setDate(startDate.getDate() + weekOffset * 7);
+    const weekStart = new Date(currentWeekMonday);
+    weekStart.setDate(currentWeekMonday.getDate() + weekOffset * 7);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
 
     const monthName = weekStart.toLocaleDateString("en-US", { month: "long" });
     const monthAbbr = weekStart.toLocaleDateString("en-US", { month: "short" }).toLowerCase();
@@ -166,6 +179,7 @@ function generateSeries(): SeriesData[] {
     });
   }
 
+  // Sort by date descending (most recent first)
   return series.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 }
 
