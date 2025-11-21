@@ -8,6 +8,8 @@ export function generateSeries(): SeriesData[] {
   
   // Get the current week's Monday (most recent series)
   const currentWeekMonday = getCurrentWeekMonday();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
   // Generate series from current week going backwards (historical) and forwards (future)
   // Start from current week (weekOffset = 0) and go backwards for archiveWeeks
@@ -18,6 +20,7 @@ export function generateSeries(): SeriesData[] {
   for (let weekOffset = startWeek; weekOffset <= endWeek; weekOffset++) {
     const weekStart = new Date(currentWeekMonday);
     weekStart.setDate(currentWeekMonday.getDate() + weekOffset * 7);
+    weekStart.setHours(0, 0, 0, 0);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
@@ -26,10 +29,18 @@ export function generateSeries(): SeriesData[] {
     const monthAbbr = weekStart.toLocaleDateString("en-US", { month: "short" }).toLowerCase();
     const year = weekStart.getFullYear();
     const weekNumberInMonth = Math.floor((weekStart.getDate() - 1) / 7) + 1;
+    
+    // Determine if this is the current week
+    const isCurrentWeek = weekStart <= today && weekEnd >= today;
+    
+    // Create series name - label current week clearly
+    const seriesName = isCurrentWeek 
+      ? `Current Week – ${monthName} ${year}`
+      : `Series ${weekNumberInMonth} – ${monthName} ${year}`;
 
     series.push({
-      id: `series-${weekNumberInMonth}-${monthAbbr}-${year}`,
-      name: `Series ${weekNumberInMonth} – ${monthName} ${year}`,
+      id: `series-${weekStart.toISOString().split("T")[0]}`,
+      name: seriesName,
       startDate: weekStart.toISOString().split("T")[0],
       endDate: weekEnd.toISOString().split("T")[0],
       description: `Week of ${formatDisplayDateRange(
@@ -40,7 +51,24 @@ export function generateSeries(): SeriesData[] {
     });
   }
 
-  // Sort by date descending (most recent first)
-  return series.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  // Sort by date descending (most recent first) - current week should be first
+  const sorted = series.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  
+  // Ensure current week is first by finding it and moving it to the front
+  const currentWeekIndex = sorted.findIndex(s => {
+    const start = new Date(s.startDate);
+    const end = new Date(s.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return start <= today && end >= today;
+  });
+  
+  if (currentWeekIndex > 0) {
+    // Move current week to the front
+    const currentWeek = sorted.splice(currentWeekIndex, 1)[0];
+    sorted.unshift(currentWeek);
+  }
+  
+  return sorted;
 }
 
