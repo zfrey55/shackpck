@@ -50,6 +50,22 @@ const featuredPacks = [
     image: '/images/packs/shackpack-resurgence.jpg',
     coinCount: '10 coins total',
     category: '1/2 oz Gold'
+  },
+  {
+    id: 'shackpack-ignite',
+    name: 'ShackPack Ignite',
+    description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins. Exclusive platinum edition for discerning collectors.',
+    image: '/images/packs/shackpack-ignite.PNG',
+    coinCount: '10 coins total',
+    category: '1/4 oz Platinum'
+  },
+  {
+    id: 'shackpack-eclipse',
+    name: 'ShackPack Eclipse',
+    description: 'Contains one 1 oz platinum coin and 9 varied silver coins. Ultimate platinum pack featuring a full troy ounce of platinum.',
+    image: '/images/packs/shackpack-eclipse.PNG',
+    coinCount: '10 coins total',
+    category: '1 oz Platinum'
   }
 ];
 

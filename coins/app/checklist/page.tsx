@@ -61,7 +61,8 @@ const CASE_TYPE_META: Record<string, CaseTypeDisplay> = {
   unleashed: { id: "unleashed", label: "ShackPack Unleashed", helper: "2× 1/4 oz gold + 8 varied silver coins" },
   resurgence: { id: "resurgence", label: "ShackPack Resurgence", helper: "1× 1/2 oz gold + 9 varied silver coins" },
   transcendent: { id: "transcendent", label: "ShackPack Transcendent", helper: "1× 1 oz gold + 9 varied silver coins" },
-  ignite: { id: "ignite", label: "ShackPack Ignite", helper: "1× 1/4 oz platinum + 9 varied silver coins" }
+  ignite: { id: "ignite", label: "ShackPack Ignite", helper: "1× 1/4 oz platinum + 9 varied silver coins" },
+  eclipse: { id: "eclipse", label: "ShackPack Eclipse", helper: "1× 1 oz platinum + 9 varied silver coins" }
 };
 
 const SERIES_CONFIG = {
@@ -110,6 +111,12 @@ const SERIES_CONFIG = {
       name: "ShackPack Ignite",
       description: "Contains one 1/4 oz platinum coin and 9 varied silver coins",
       goldContent: "1/4 oz Platinum"
+    },
+    {
+      id: "eclipse",
+      name: "ShackPack Eclipse",
+      description: "Contains one 1 oz platinum coin and 9 varied silver coins",
+      goldContent: "1 oz Platinum"
     }
   ] satisfies CaseType[]
 };
@@ -292,7 +299,7 @@ export default function ChecklistPage() {
 
           <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-5 space-y-4">
             <h2 className="text-xl font-semibold text-slate-100">Case Types</h2>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-4">
               {selectedSeries.cases.map((caseType) => {
                 const active = caseType.id === selectedCase.id;
                 const meta = CASE_TYPE_META[caseType.id];
