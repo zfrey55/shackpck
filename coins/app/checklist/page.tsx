@@ -176,7 +176,8 @@ async function fetchChecklist(params: { caseType: string; startDate: string; end
   url.searchParams.set("caseType", params.caseType);
   url.searchParams.set("startDate", params.startDate);
   url.searchParams.set("endDate", params.endDate);
-  // API will use weekly aggregation logic: previous week's cases + current inventory for this week
+  // API uses weekly aggregation: coins from cases created in previous week + current premium inventory
+  // Weeks are Monday→Sunday (Eastern Time), regenerated every Monday at 1:00 AM Eastern
 
   const response = await fetch(url.toString());
   if (!response.ok) {
@@ -333,9 +334,23 @@ export default function ChecklistPage() {
               <p className="text-slate-300 mb-1">
                 {CASE_TYPE_META[selectedCase.id]?.helper ?? selectedCase.description}
               </p>
-              <p className="text-sm text-slate-400">
-                Series week: {formatDisplayDateRange(selectedSeries.startDate, selectedSeries.endDate)}
-              </p>
+              {data?.startDate && data?.endDate ? (
+                <p className="text-sm text-slate-400">
+                  Week: {formatDisplayDateRange(data.startDate, data.endDate)}
+                </p>
+              ) : (
+                <p className="text-sm text-slate-400">
+                  Series week: {formatDisplayDateRange(selectedSeries.startDate, selectedSeries.endDate)}
+                </p>
+              )}
+              {data?.weeklyAggregation && data.casesCount !== undefined && (
+                <p className="text-xs text-slate-500 mt-1">
+                  Based on {data.casesCount} case{data.casesCount !== 1 ? "s" : ""} from previous week
+                  {data.premiumInventoryCount !== undefined && (
+                    <span> + {data.premiumInventoryCount} premium coins in current inventory</span>
+                  )}
+                </p>
+              )}
             </div>
             <div className="text-right text-sm text-slate-400">
               <div className="font-medium text-slate-100">Last updated</div>
@@ -426,10 +441,11 @@ export default function ChecklistPage() {
         <footer className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 text-sm text-slate-300 space-y-2">
           <p>
             This checklist shows coins that may appear in ShackPack cases for the selected series week.
+            It includes coins from cases created the previous week plus currently available premium coins.
             Actual pack contents vary and specific coins are not guaranteed.
           </p>
           <p className="text-xs text-slate-500">
-            Checklist updated automatically from live inventory • No purchase necessary to view.
+            Checklist regenerated weekly (every Monday at 1:00 AM Eastern) • No purchase necessary to view.
           </p>
         </footer>
       </div>
