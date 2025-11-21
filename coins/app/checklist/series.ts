@@ -4,18 +4,18 @@ import { getCurrentWeekMonday, formatDisplayDateRange } from "./utils";
 
 export function generateSeries(): SeriesData[] {
   const series: SeriesData[] = [];
-  const { weeksAhead, archiveWeeks, defaultCases } = SERIES_CONFIG;
+  const { archiveWeeks, defaultCases } = SERIES_CONFIG;
   
   // Get the current week's Monday (most recent series)
   const currentWeekMonday = getCurrentWeekMonday();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Generate series from current week going backwards (historical) and forwards (future)
+  // Generate series from current week going backwards (historical only - no future weeks)
   // Start from current week (weekOffset = 0) and go backwards for archiveWeeks
-  // Then go forwards for weeksAhead
+  // Do NOT generate future weeks
   const startWeek = -archiveWeeks; // Go back archiveWeeks from current
-  const endWeek = weeksAhead; // Go forward weeksAhead from current
+  const endWeek = 0; // Only up to current week, no future weeks
 
   for (let weekOffset = startWeek; weekOffset <= endWeek; weekOffset++) {
     const weekStart = new Date(currentWeekMonday);
@@ -24,6 +24,11 @@ export function generateSeries(): SeriesData[] {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
+
+    // Skip any future weeks (weeks that start after today)
+    if (weekStart > today) {
+      continue;
+    }
 
     const monthName = weekStart.toLocaleDateString("en-US", { month: "long" });
     const monthAbbr = weekStart.toLocaleDateString("en-US", { month: "short" }).toLowerCase();

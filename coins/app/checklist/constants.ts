@@ -12,8 +12,7 @@ export const CASE_TYPE_META: Record<string, CaseTypeDisplay> = {
 };
 
 export const SERIES_CONFIG = {
-  weeksAhead: 4, // Number of future weeks to show
-  archiveWeeks: 52, // Number of historical weeks to show
+  archiveWeeks: 52, // Number of historical weeks to show (current week + 52 past weeks)
   defaultCases: [
     {
       id: "base",
