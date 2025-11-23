@@ -8,7 +8,8 @@ export const CASE_TYPE_META: Record<string, CaseTypeDisplay> = {
   resurgence: { id: "resurgence", label: "ShackPack Resurgence", helper: "1× 1/2 oz gold + 9 varied silver coins" },
   transcendent: { id: "transcendent", label: "ShackPack Transcendent", helper: "1× 1 oz gold + 9 varied silver coins" },
   ignite: { id: "ignite", label: "ShackPack Ignite", helper: "1× 1/4 oz platinum + 9 varied silver coins" },
-  eclipse: { id: "eclipse", label: "ShackPack Eclipse", helper: "1× 1 oz platinum + 9 varied silver coins" }
+  eclipse: { id: "eclipse", label: "ShackPack Eclipse", helper: "1× 1 oz platinum + 9 varied silver coins" },
+  radiant: { id: "radiant", label: "ShackPack Radiant", helper: "1× 1/2 oz platinum + 9 varied silver coins" }
 };
 
 export const SERIES_CONFIG = {
@@ -61,6 +62,12 @@ export const SERIES_CONFIG = {
       name: "ShackPack Eclipse",
       description: "Contains one 1 oz platinum coin and 9 varied silver coins",
       goldContent: "1 oz Platinum"
+    },
+    {
+      id: "radiant",
+      name: "ShackPack Radiant",
+      description: "Contains one 1/2 oz platinum coin and 9 varied silver coins",
+      goldContent: "1/2 oz Platinum"
     }
   ] satisfies CaseType[]
 };
