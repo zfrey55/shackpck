@@ -19,7 +19,7 @@ export default function ChecklistPage() {
         <section className="rounded-lg border border-slate-700 bg-slate-900/40 overflow-hidden">
           <div className="w-full" style={{ height: "800px" }}>
             <iframe
-              src="YOUR_GOOGLE_SHEET_PUBLISH_URL_HERE"
+              src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSWqzRuGL06uwNasHPxwvCLZCrWh6PJ55NhIkMuCTzjI0oiTr3r9us4hkQ6Fmah-mZgpb7Q7gAYPF2o/pubhtml?widget=true&amp;headers=false"
               className="w-full h-full"
               frameBorder="0"
               title="ShackPack Checklist"
@@ -27,17 +27,6 @@ export default function ChecklistPage() {
           </div>
         </section>
 
-        {/* Instructions */}
-        <div className="rounded-lg border border-blue-700/50 bg-blue-900/20 p-4 text-sm text-blue-200">
-          <p className="font-semibold mb-2">📝 How to set up your Google Sheet:</p>
-          <ol className="list-decimal list-inside space-y-1 ml-2">
-            <li>Open your Google Sheet</li>
-            <li>Click <strong>File → Share → Publish to web</strong></li>
-            <li>Choose "Embed" and click "Publish"</li>
-            <li>Copy the iframe URL (the part inside src="...")</li>
-            <li>Replace <code className="bg-slate-800 px-2 py-1 rounded">YOUR_GOOGLE_SHEET_PUBLISH_URL_HERE</code> above with your URL</li>
-          </ol>
-        </div>
 
         {/* Footer */}
         <footer className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 text-sm text-slate-300 space-y-2">
