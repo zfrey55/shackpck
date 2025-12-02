@@ -1,92 +1,52 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { SeriesData, CaseType } from "./types";
-import { generateSeries } from "./series";
-import { useChecklist } from "./hooks/useChecklist";
-import {
-  SeriesTabs,
-  CaseTypeSelector,
-  ChecklistHeader,
-  CoinList,
-  LoadingState,
-  ErrorState,
-  WarningBanner
-} from "./components";
-
 export default function ChecklistPage() {
-  const seriesList = useMemo(() => generateSeries(), []);
-  
-  // Safety check: ensure we have at least one series with cases
-  if (seriesList.length === 0 || seriesList[0].cases.length === 0) {
-    return (
-      <main className="container py-10">
-        <div className="max-w-7xl mx-auto text-center text-slate-400">
-          <p>Unable to generate series data. Please refresh the page.</p>
-        </div>
-      </main>
-    );
-  }
-
-  const [selectedSeries, setSelectedSeries] = useState<SeriesData>(seriesList[0]);
-  const [selectedCase, setSelectedCase] = useState<CaseType>(seriesList[0].cases[0]);
-  
-  const { data, loading, error, warning, refresh } = useChecklist(selectedCase, selectedSeries);
-
-  const handleSeriesSelect = (series: SeriesData) => {
-    setSelectedSeries(series);
-    setSelectedCase(series.cases[0]);
-  };
-
   return (
     <main className="container py-10">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
         <header className="text-center space-y-3">
           <h1 className="text-4xl font-bold text-gold">ShackPack Series Checklist</h1>
           <p className="text-lg text-slate-300">
-            Select a series and case type to review the coins that may appear in that case.
+            View all coins that may appear in ShackPack cases
           </p>
           <p className="text-sm text-slate-400 italic">
-            Possible contents only — coins are not guaranteed in any individual pack.
+            Possible contents only — specific coins not guaranteed in every pack
           </p>
         </header>
 
-        <section className="space-y-4">
-          <SeriesTabs
-            seriesList={seriesList}
-            selectedSeries={selectedSeries}
-            onSelectSeries={handleSeriesSelect}
-          />
-          <CaseTypeSelector
-            cases={selectedSeries.cases}
-            selectedCase={selectedCase}
-            onSelectCase={setSelectedCase}
-          />
+        {/* Embedded Google Sheet */}
+        <section className="rounded-lg border border-slate-700 bg-slate-900/40 overflow-hidden">
+          <div className="w-full" style={{ height: "800px" }}>
+            <iframe
+              src="YOUR_GOOGLE_SHEET_PUBLISH_URL_HERE"
+              className="w-full h-full"
+              frameBorder="0"
+              title="ShackPack Checklist"
+            />
+          </div>
         </section>
 
-        <ChecklistHeader
-          selectedCase={selectedCase}
-          selectedSeries={selectedSeries}
-          data={data}
-          loading={loading}
-          onRefresh={refresh}
-        />
+        {/* Instructions */}
+        <div className="rounded-lg border border-blue-700/50 bg-blue-900/20 p-4 text-sm text-blue-200">
+          <p className="font-semibold mb-2">📝 How to set up your Google Sheet:</p>
+          <ol className="list-decimal list-inside space-y-1 ml-2">
+            <li>Open your Google Sheet</li>
+            <li>Click <strong>File → Share → Publish to web</strong></li>
+            <li>Choose "Embed" and click "Publish"</li>
+            <li>Copy the iframe URL (the part inside src="...")</li>
+            <li>Replace <code className="bg-slate-800 px-2 py-1 rounded">YOUR_GOOGLE_SHEET_PUBLISH_URL_HERE</code> above with your URL</li>
+          </ol>
+        </div>
 
-        {warning && <WarningBanner warning={warning} />}
-        {error && <ErrorState error={error} onRetry={refresh} />}
-        {loading && !data && <LoadingState />}
-        {data && !loading && !error && (
-          <CoinList data={data} selectedCase={selectedCase} />
-        )}
-
+        {/* Footer */}
         <footer className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 text-sm text-slate-300 space-y-2">
           <p>
-            This checklist shows coins that may appear in ShackPack cases for the selected series week.
-            It includes coins from cases created the previous week plus currently available premium coins.
-            Actual pack contents vary and specific coins are not guaranteed.
+            This checklist shows coins that MAY appear in ShackPack cases. 
+            Specific contents vary by case and are not guaranteed.
           </p>
           <p className="text-xs text-slate-500">
-            Checklist regenerated weekly (every Monday at 1:00 AM Eastern) • No purchase necessary to view.
+            Checklist updated manually via Google Sheets • No purchase necessary to view
           </p>
         </footer>
       </div>
