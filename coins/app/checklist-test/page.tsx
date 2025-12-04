@@ -104,12 +104,6 @@ export default function DailyChecklistTestPage() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-6">
-            <div className="inline-block px-4 py-2 rounded-lg bg-blue-900/40 border border-blue-500/30">
-              <span className="text-blue-300 font-semibold">🧪 TEST VERSION</span>
-              <span className="text-blue-400 text-sm ml-2">- Daily Checklist API</span>
-            </div>
-          </div>
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
@@ -124,13 +118,6 @@ export default function DailyChecklistTestPage() {
   return (
     <main className="container py-10">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Test Banner */}
-        <div className="text-center mb-6">
-          <div className="inline-block px-4 py-2 rounded-lg bg-blue-900/40 border border-blue-500/30">
-            <span className="text-blue-300 font-semibold">🧪 TEST VERSION</span>
-            <span className="text-blue-400 text-sm ml-2">- Daily Checklist API</span>
-          </div>
-        </div>
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -148,8 +135,7 @@ export default function DailyChecklistTestPage() {
                 })}
               </p>
               <p className="text-lg mt-2 text-slate-400">
-                <span className="font-semibold text-gold">{checklist.totalCases}</span> Case
-                {checklist.totalCases !== 1 ? 's' : ''} Available
+                <span className="font-semibold text-gold">{checklist.totalCases}</span> Series Available
               </p>
             </>
           )}
@@ -189,14 +175,6 @@ export default function DailyChecklistTestPage() {
           </>
         )}
 
-        {/* Footer */}
-        <div className="mt-12 text-center text-sm text-slate-400 space-y-2">
-          <p>✅ Checklist updated automatically from live inventory (real-time)</p>
-          <p>📦 Cases created today appear on tomorrow's checklist</p>
-          <p className="text-xs text-slate-500">
-            Checklists retained for 1 year • No purchase necessary to view
-          </p>
-        </div>
       </div>
     </main>
   );

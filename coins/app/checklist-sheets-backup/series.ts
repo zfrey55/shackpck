@@ -60,17 +60,11 @@ export function generateSeries(): SeriesData[] {
   const sorted = series.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   
   // Ensure current week is first by finding it and moving it to the front
-  // Fix: Parse dates consistently in local timezone to avoid UTC/local mismatch
   const currentWeekIndex = sorted.findIndex(s => {
-    // Parse ISO date strings as local dates (not UTC)
-    const startParts = s.startDate.split('-').map(Number);
-    const endParts = s.endDate.split('-').map(Number);
-    const start = new Date(startParts[0], startParts[1] - 1, startParts[2]); // Year, Month (0-indexed), Day
-    const end = new Date(endParts[0], endParts[1] - 1, endParts[2]);
-    
+    const start = new Date(s.startDate);
+    const end = new Date(s.endDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     return start <= today && end >= today;
   });
   
