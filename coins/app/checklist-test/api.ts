@@ -47,4 +47,3 @@ export async function fetchAvailableDates(
   
   return json;
 }
-
