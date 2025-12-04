@@ -24,7 +24,11 @@ export const DateButtons = memo(function DateButtons({
         {dates.map((dateItem) => {
           const isSelected = dateItem.displayDate === selectedDate;
           const isLatest = dateItem.displayDate === dates[0].displayDate;
-          const displayText = new Date(dateItem.displayDate).toLocaleDateString('en-US', {
+          
+          // Parse date as local time to avoid timezone issues
+          const [year, month, day] = dateItem.displayDate.split('-').map(Number);
+          const localDate = new Date(year, month - 1, day);
+          const displayText = localDate.toLocaleDateString('en-US', {
             month: 'long',
             day: 'numeric',
             year: 'numeric'

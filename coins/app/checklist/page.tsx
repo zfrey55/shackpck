@@ -127,12 +127,16 @@ export default function ChecklistPage() {
           {checklist && (
             <>
               <p className="text-xl text-slate-300">
-                {new Date(checklist.displayDate).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+                {(() => {
+                  const [year, month, day] = checklist.displayDate.split('-').map(Number);
+                  const localDate = new Date(year, month - 1, day);
+                  return localDate.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  });
+                })()}
               </p>
               <p className="text-lg mt-2 text-slate-400">
                 <span className="font-semibold text-gold">{checklist.totalCases}</span> Series Available
