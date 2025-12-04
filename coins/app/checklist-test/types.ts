@@ -37,3 +37,4 @@ export interface AvailableDatesResponse {
     caseTypes: string[];
   }[];
 }
+
