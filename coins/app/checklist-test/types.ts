@@ -1,51 +1,39 @@
-export type CaseType = {
-  id: string;
-  name: string;
-  description: string;
-  goldContent: string;
-};
-
-export type CaseTypeDisplay = {
-  id: string;
-  label: string;
-  helper: string;
-};
-
-export interface CoinItem {
-  name: string;
-  years: string[];
-  gradingCompanies: string[];
-  grades: Record<string, number>;
-  gradesAvailable: string[];
-  totalQuantity: number;
-  maxObservedQuantity?: number;
-  available?: boolean;
+export interface CaseData {
+  caseId: string;
+  caseSKU?: string;
+  displayName: string;
+  caseType: string;
+  caseTypeName: string;
+  seriesNumber: number;
+  createdDate: string;
+  displayDate: string;
+  status: string;
+  totalCoins: number;
+  coins: CoinData[];
 }
 
-export interface ChecklistResponse {
+export interface CoinData {
+  position: number;
+  coinType: string;
+  year: string;
+  grade: string;
+  gradingCompany: string;
+}
+
+export interface DailyChecklistResponse {
   success: boolean;
-  lastUpdated: string;
-  caseType?: string;
-  startDate?: string;
-  endDate?: string;
-  isHistorical?: boolean;
-  weeklyAggregation?: boolean;
-  casesCount?: number;
-  coinsFromCasesCount?: number;
-  premiumInventoryCount?: number;
-  warning?: string;
-  totalTypes?: number;
-  totalCoins?: number;
-  snapshotCount?: number;
-  checklist: CoinItem[];
+  displayDate: string;
+  totalCases: number;
+  casesByType: Record<string, number>;
+  cases: CaseData[];
 }
 
-export interface SeriesData {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-  cases: CaseType[];
+export interface AvailableDatesResponse {
+  success: boolean;
+  totalDates: number;
+  dates: {
+    displayDate: string;
+    totalCases: number;
+    caseTypes: string[];
+  }[];
 }
-
