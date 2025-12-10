@@ -92,6 +92,14 @@ const featuredPacks = [
     category: '1 oz Platinum'
   },
   {
+    id: 'shackpack-radiant',
+    name: 'ShackPack Radiant',
+    description: 'Contains one 1/2 oz platinum coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-radiant.PNG',
+    coinCount: '10 coins total',
+    category: '1/2 oz Platinum'
+  },
+  {
     id: 'currencyclash',
     name: 'Currency Clash by Shackpack',
     description: 'A dynamic series featuring variable coin combinations that change frequently.',
