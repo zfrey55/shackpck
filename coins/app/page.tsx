@@ -4,6 +4,30 @@ import { RepackCard } from '@/components/RepackCard';
 
 const featuredPacks = [
   {
+    id: 'reign',
+    name: 'Reign by Shackpack',
+    description: 'Contains one 1/10 oz gold coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-reign.png',
+    coinCount: '10 coins total',
+    category: '1/10 oz Gold'
+  },
+  {
+    id: 'prominence',
+    name: 'Prominence by Shackpack',
+    description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-prominence.png',
+    coinCount: '10 coins total',
+    category: '1/4 oz Platinum'
+  },
+  {
+    id: 'apex',
+    name: 'Apex by Shackpack',
+    description: 'Contains one 1/4 oz gold coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-apex.png',
+    coinCount: '10 coins total',
+    category: '1/4 oz Gold'
+  },
+  {
     id: 'shackpack',
     name: 'ShackPack',
     description: 'Contains one 1/10 oz gold coin and 9 varied silver coins. Perfect entry into premium coin collecting.',
@@ -28,14 +52,6 @@ const featuredPacks = [
     category: '1/4 oz Gold'
   },
   {
-    id: 'shackpack-transcendent',
-    name: 'ShackPack Transcendent',
-    description: 'Contains one 1 oz gold coin and 9 varied silver coins. Our ultimate pack featuring a full troy ounce of gold.',
-    image: '/images/packs/shackpack-transcendent.jpg',
-    coinCount: '10 coins total',
-    category: '1 oz Gold'
-  },
-  {
     id: 'shackpack-unleashed',
     name: 'ShackPack Unleashed',
     description: 'Contains two 1/4 oz gold coins and 8 varied silver coins. Double the gold for maximum impact.',
@@ -52,6 +68,14 @@ const featuredPacks = [
     category: '1/2 oz Gold'
   },
   {
+    id: 'shackpack-transcendent',
+    name: 'ShackPack Transcendent',
+    description: 'Contains one 1 oz gold coin and 9 varied silver coins. Our ultimate pack featuring a full troy ounce of gold.',
+    image: '/images/packs/shackpack-transcendent.jpg',
+    coinCount: '10 coins total',
+    category: '1 oz Gold'
+  },
+  {
     id: 'shackpack-ignite',
     name: 'ShackPack Ignite',
     description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins. Exclusive platinum edition for discerning collectors.',
@@ -66,6 +90,14 @@ const featuredPacks = [
     image: '/images/packs/shackpack-eclipse.PNG',
     coinCount: '10 coins total',
     category: '1 oz Platinum'
+  },
+  {
+    id: 'currencyclash',
+    name: 'Currency Clash by Shackpack',
+    description: 'A dynamic series featuring variable coin combinations that change frequently.',
+    image: '/images/packs/shackpack-currencyclash.png',
+    coinCount: 'Variable coins',
+    category: 'Variable'
   }
 ];
 

@@ -12,6 +12,9 @@ import {
 } from "./components";
 
 const CASE_DESCRIPTIONS: Record<string, string> = {
+  'reign': 'Reign by Shackpack (1× 1/10 oz gold + 9 varied silver)',
+  'prominence': 'Prominence by Shackpack (1× 1/4 oz platinum + 9 varied silver)',
+  'apex': 'Apex by Shackpack (1× 1/4 oz gold + 9 varied silver)',
   'base': 'ShackPack Base (1× 1/10 oz gold + 9 varied silver)',
   'deluxe': 'ShackPack Deluxe (2× 1/10 oz gold + 8 varied silver)',
   'xtreme': 'ShackPack Xtreme (1× 1/4 oz gold + 9 varied silver)',
@@ -21,6 +24,7 @@ const CASE_DESCRIPTIONS: Record<string, string> = {
   'ignite': 'ShackPack Ignite (1× 1/4 oz platinum + 9 varied silver)',
   'eclipse': 'ShackPack Eclipse (1× 1 oz platinum + 9 varied silver)',
   'radiant': 'ShackPack Radiant (1× 1/2 oz platinum + 9 varied silver)',
+  'currencyclash': 'Currency Clash by Shackpack',
   'mystery': 'ShackPack Mystery (custom configuration)'
 };
 

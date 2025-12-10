@@ -3,6 +3,30 @@ import { RepackCard } from '@/components/RepackCard';
 
 const repacks = [
   {
+    id: 'reign',
+    name: 'Reign by Shackpack',
+    description: 'Contains one 1/10 oz gold coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-reign.png',
+    coinCount: '10 coins total',
+    category: '1/10 oz Gold'
+  },
+  {
+    id: 'prominence',
+    name: 'Prominence by Shackpack',
+    description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-prominence.png',
+    coinCount: '10 coins total',
+    category: '1/4 oz Platinum'
+  },
+  {
+    id: 'apex',
+    name: 'Apex by Shackpack',
+    description: 'Contains one 1/4 oz gold coin and 9 varied silver coins.',
+    image: '/images/packs/shackpack-apex.png',
+    coinCount: '10 coins total',
+    category: '1/4 oz Gold'
+  },
+  {
     id: 'shackpack',
     name: 'ShackPack',
     description: 'Contains one 1/10 oz gold coin and 9 varied silver coins. Perfect entry into premium coin collecting.',
@@ -65,6 +89,14 @@ const repacks = [
     image: '/images/packs/shackpack-eclipse.PNG',
     coinCount: '10 coins total',
     category: '1 oz Platinum'
+  },
+  {
+    id: 'currencyclash',
+    name: 'Currency Clash by Shackpack',
+    description: 'A dynamic series featuring variable coin combinations that change frequently.',
+    image: '/images/packs/shackpack-currencyclash.png',
+    coinCount: 'Variable coins',
+    category: 'Variable'
   }
 ];
 
