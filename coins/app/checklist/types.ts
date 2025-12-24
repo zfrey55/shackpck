@@ -38,3 +38,10 @@ export interface AvailableDatesResponse {
   }[];
 }
 
+export interface CaseTypeInfo {
+  caseType: string;
+  displayName: string;
+  totalDates: number;
+  totalCases: number;
+}
+

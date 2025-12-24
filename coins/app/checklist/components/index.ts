@@ -1,5 +1,6 @@
 export { CaseCard } from "./CaseCard";
-export { DateButtons } from "./DateButtons";
+export { CaseTypeSelector } from "./CaseTypeSelector";
+export { DateButtonsForCaseType } from "./DateButtonsForCaseType";
 export { EmptyState } from "./EmptyState";
 export { LoadingState } from "./LoadingState";
 export { ErrorState } from "./ErrorState";
