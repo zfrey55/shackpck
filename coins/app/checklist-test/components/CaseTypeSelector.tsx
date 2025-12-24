@@ -17,7 +17,7 @@ export const CaseTypeSelector = memo(function CaseTypeSelector({
   if (caseTypes.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-slate-400">No case types available</p>
+        <p className="text-slate-400">No series types available</p>
       </div>
     );
   }

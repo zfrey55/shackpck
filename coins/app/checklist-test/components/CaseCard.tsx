@@ -9,7 +9,7 @@ interface CaseCardProps {
 export const CaseCard = memo(function CaseCard({ caseData, caseDescriptions }: CaseCardProps) {
   return (
     <div className="bg-slate-900/40 rounded-lg shadow-lg border border-slate-700 p-6">
-      {/* Case Header */}
+      {/* Series Header */}
       <div className="mb-4 pb-4 border-b border-slate-700">
         <h2 className="text-2xl font-bold text-gold mb-1">
           📦 {caseData.displayName}

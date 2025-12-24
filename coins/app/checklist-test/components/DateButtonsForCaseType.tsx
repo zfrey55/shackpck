@@ -54,7 +54,7 @@ export const DateButtonsForCaseType = memo(function DateButtonsForCaseType({
             >
               <div className="text-sm">{displayText}</div>
               <div className="text-xs opacity-75 mt-1">
-                {dateItem.totalCases} case{dateItem.totalCases !== 1 ? 's' : ''}
+                {dateItem.totalCases} series
               </div>
               {isLatest && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
