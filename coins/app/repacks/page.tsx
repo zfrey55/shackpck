@@ -21,7 +21,7 @@ const repacks = [
   {
     id: 'apex',
     name: 'Apex by Shackpack',
-    description: 'Contains one 1/4 oz gold coin and 9 varied silver coins.',
+    description: 'Contents may vary by date. Please refer to the checklist for the most up-to-date information on coin contents.',
     image: '/images/packs/shackpack-apex.png',
     coinCount: '10 coins total',
     category: '1/4 oz Gold'
