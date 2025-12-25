@@ -15,7 +15,7 @@ import {
 const CASE_DESCRIPTIONS: Record<string, string> = {
   'reign': 'Reign by Shackpack (1× 1/10 oz gold + 9 varied silver)',
   'prominence': 'Prominence by Shackpack (1× 1/4 oz platinum + 9 varied silver)',
-  'apex': 'Apex by Shackpack (1× 1/4 oz gold + 9 varied silver)',
+  'apex': 'Apex by Shackpack',
   'base': 'ShackPack (1× 1/10 oz gold + 9 varied silver)',
   'deluxe': 'ShackPack Deluxe (2× 1/10 oz gold + 8 varied silver)',
   'xtreme': 'ShackPack Xtreme (1× 1/4 oz gold + 9 varied silver)',
@@ -276,6 +276,14 @@ export default function ChecklistPage() {
           </p>
           <p className="text-sm text-slate-500 mt-2">
             A series includes a case of 10 coins in most cases
+          </p>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+          <p className="text-sm text-amber-200 text-center">
+            <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date. 
+            Please refer to the checklist for the most up-to-date information on each series.
           </p>
         </div>
 
