@@ -75,6 +75,14 @@ const repacks = [
     category: '1 oz Gold'
   },
   {
+    id: 'shackpack-transcendent-transformed',
+    name: 'ShackPack Transcendent Transformed',
+    description: 'Contains one 1 oz gold coin and 9 varied silver coins. Our ultimate transformed pack featuring a full troy ounce of gold.',
+    image: '/images/packs/shackpack-transcendent.jpg',
+    coinCount: '10 coins total',
+    category: '1 oz Gold'
+  },
+  {
     id: 'shackpack-ignite',
     name: 'ShackPack Ignite',
     description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins. Exclusive platinum edition for discerning collectors.',
