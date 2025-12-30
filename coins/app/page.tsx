@@ -78,10 +78,10 @@ const featuredPacks = [
   {
     id: 'shackpack-transcendent-transformed',
     name: 'ShackPack Transcendent Transformed',
-    description: 'Contains one 1 oz gold coin and 9 varied silver coins. Our ultimate transformed pack featuring a full troy ounce of gold.',
-    image: '/images/packs/shackpack-transcendent.jpg',
+    description: 'Contains two 1 oz gold coins and 8 varied silver coins. Our ultimate transformed pack featuring two full troy ounces of gold.',
+    image: '/images/packs/shackpack-transcscendenttransformed.jpeg',
     coinCount: '10 coins total',
-    category: '1 oz Gold'
+    category: '2x 1 oz Gold'
   },
   {
     id: 'shackpack-ignite',
