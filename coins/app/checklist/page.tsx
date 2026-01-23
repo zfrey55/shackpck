@@ -27,7 +27,8 @@ const CASE_DESCRIPTIONS: Record<string, string> = {
   'eclipse': 'ShackPack Eclipse (1× 1 oz platinum + 9 varied silver)',
   'radiant': 'ShackPack Radiant (1× 1/2 oz platinum + 9 varied silver)',
   'currencyclash': 'Currency Clash by Shackpack',
-  'mystery': 'ShackPack Mystery (custom configuration)'
+  'mystery': 'ShackPack Mystery (custom configuration)',
+  'aura': 'Aura by Shackpack'
 };
 
 const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
@@ -45,7 +46,8 @@ const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
   'eclipse': 'ShackPack Eclipse',
   'radiant': 'ShackPack Radiant',
   'currencyclash': 'Currency Clash by Shackpack',
-  'mystery': 'ShackPack Mystery'
+  'mystery': 'ShackPack Mystery',
+  'aura': 'Aura by Shackpack'
 };
 
 export default function ChecklistPage() {

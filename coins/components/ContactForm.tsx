@@ -1,12 +1,33 @@
 "use client";
 import { useState } from 'react';
 
+const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
+  'reign': 'Reign by Shackpack',
+  'prominence': 'Prominence by Shackpack',
+  'apex': 'Apex by Shackpack',
+  'base': 'ShackPack',
+  'deluxe': 'ShackPack Deluxe',
+  'xtreme': 'ShackPack Xtreme',
+  'unleashed': 'ShackPack Unleashed',
+  'resurgence': 'ShackPack Resurgence',
+  'transcendent': 'ShackPack Transcendent',
+  'transcendent-transformed': 'ShackPack Transcendent Transformed',
+  'ignite': 'ShackPack Ignite',
+  'eclipse': 'ShackPack Eclipse',
+  'radiant': 'ShackPack Radiant',
+  'currencyclash': 'Currency Clash by Shackpack',
+  'mystery': 'ShackPack Mystery',
+  'aura': 'Aura by Shackpack'
+};
+
 export function ContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: '',
-    message: ''
+    message: '',
+    caseTypes: [] as string[]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -24,7 +45,12 @@ export function ContactForm() {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           'form-name': 'contact',
-          ...formData
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          subject: formData.subject,
+          message: formData.message,
+          caseTypes: formData.caseTypes.join(', ')
         }).toString()
       });
 
@@ -47,6 +73,14 @@ export function ContactForm() {
     }));
   };
 
+  const handleCaseTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+    setFormData(prev => ({
+      ...prev,
+      caseTypes: selectedOptions
+    }));
+  };
+
   if (isSubmitted) {
     return (
       <div className="mt-8 rounded-lg border border-green-500/20 bg-green-500/10 p-6 text-center">
@@ -62,12 +96,18 @@ export function ContactForm() {
       <form name="contact" data-netlify="true" hidden>
         <input type="text" name="name" />
         <input type="text" name="email" />
+        <input type="text" name="phone" />
         <select name="subject">
           <option value="general">General Question</option>
           <option value="order">Order Inquiry</option>
           <option value="coin-info">Coin Information</option>
           <option value="shipping">Shipping Question</option>
           <option value="other">Other</option>
+        </select>
+        <select name="caseTypes" multiple>
+          {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
         </select>
         <textarea name="message"></textarea>
       </form>
@@ -108,6 +148,22 @@ export function ContactForm() {
         </div>
         
         <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-slate-200">
+            Phone Number *
+          </label>
+          <input
+            type="text"
+            name="phone"
+            id="phone"
+            required
+            value={formData.phone}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 placeholder-slate-400 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+            placeholder="Your phone number"
+          />
+        </div>
+        
+        <div>
           <label htmlFor="subject" className="block text-sm font-medium text-slate-200">
             Subject *
           </label>
@@ -126,6 +182,26 @@ export function ContactForm() {
             <option value="shipping">Shipping Question</option>
             <option value="other">Other</option>
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="caseTypes" className="block text-sm font-medium text-slate-200">
+            Case Types Interested In
+          </label>
+          <select
+            name="caseTypes"
+            id="caseTypes"
+            multiple
+            value={formData.caseTypes}
+            onChange={handleCaseTypeChange}
+            className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold min-h-[120px]"
+            size={5}
+          >
+            {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-slate-400">Hold Ctrl (or Cmd on Mac) to select multiple options</p>
         </div>
 
         <div>

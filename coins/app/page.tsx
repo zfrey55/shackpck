@@ -6,7 +6,7 @@ const featuredPacks = [
   {
     id: 'reign',
     name: 'Reign by Shackpack',
-    description: 'Contains one 1/10 oz gold coin and 9 varied silver coins.',
+    description: 'Contents may vary by date. Please refer to the checklist for the most up-to-date information on coin contents.',
     image: '/images/packs/shackpack-reign.png',
     coinCount: '10 coins total',
     category: '1/10 oz Gold'
@@ -14,7 +14,7 @@ const featuredPacks = [
   {
     id: 'prominence',
     name: 'Prominence by Shackpack',
-    description: 'Contains one 1/4 oz platinum coin and 9 varied silver coins.',
+    description: 'Contents may vary by date. Please refer to the checklist for the most up-to-date information on coin contents.',
     image: '/images/packs/shackpack-prominence.png',
     coinCount: '10 coins total',
     category: '1/4 oz Platinum'
