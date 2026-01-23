@@ -22,7 +22,8 @@ const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     subject: '',
@@ -45,7 +46,8 @@ export function ContactForm() {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           'form-name': 'contact',
-          name: formData.name,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           phone: formData.phone,
           subject: formData.subject,
@@ -73,11 +75,12 @@ export function ContactForm() {
     }));
   };
 
-  const handleCaseTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+  const handleCaseTypeCheckboxChange = (caseType: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      caseTypes: selectedOptions
+      caseTypes: checked
+        ? [...prev.caseTypes, caseType]
+        : prev.caseTypes.filter(ct => ct !== caseType)
     }));
   };
 
@@ -94,7 +97,8 @@ export function ContactForm() {
     <>
       {/* Hidden form for Netlify detection */}
       <form name="contact" data-netlify="true" hidden>
-        <input type="text" name="name" />
+        <input type="text" name="firstName" />
+        <input type="text" name="lastName" />
         <input type="text" name="email" />
         <input type="text" name="phone" />
         <select name="subject">
@@ -104,11 +108,11 @@ export function ContactForm() {
           <option value="shipping">Shipping Question</option>
           <option value="other">Other</option>
         </select>
-        <select name="caseTypes" multiple>
-          {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+        {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value]) => (
+          <label key={value}>
+            <input type="checkbox" name="caseTypes" value={value} /> {value}
+          </label>
+        ))}
         <textarea name="message"></textarea>
       </form>
 
@@ -116,20 +120,38 @@ export function ContactForm() {
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-200">
-              Name *
+            <label htmlFor="firstName" className="block text-sm font-medium text-slate-200">
+              First Name *
             </label>
             <input
               type="text"
-              name="name"
-              id="name"
+              name="firstName"
+              id="firstName"
               required
-              value={formData.name}
+              value={formData.firstName}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 placeholder-slate-400 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-              placeholder="Your name"
+              placeholder="First name"
             />
           </div>
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium text-slate-200">
+              Last Name *
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              id="lastName"
+              required
+              value={formData.lastName}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 placeholder-slate-400 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+              placeholder="Last name"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-200">
               Email *
@@ -142,25 +164,24 @@ export function ContactForm() {
               value={formData.email}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 placeholder-slate-400 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-              placeholder="your@email.com"
+              placeholder="you@example.com"
             />
           </div>
-        </div>
-        
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-slate-200">
-            Phone Number *
-          </label>
-          <input
-            type="text"
-            name="phone"
-            id="phone"
-            required
-            value={formData.phone}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 placeholder-slate-400 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-            placeholder="Your phone number"
-          />
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-slate-200">
+              Phone Number *
+            </label>
+            <input
+              type="text"
+              name="phone"
+              id="phone"
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 placeholder-slate-400 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+              placeholder="Your phone number"
+            />
+          </div>
         </div>
         
         <div>
@@ -185,23 +206,27 @@ export function ContactForm() {
         </div>
 
         <div>
-          <label htmlFor="caseTypes" className="block text-sm font-medium text-slate-200">
+          <p className="block text-sm font-medium text-slate-200">
             Case Types Interested In
-          </label>
-          <select
-            name="caseTypes"
-            id="caseTypes"
-            multiple
-            value={formData.caseTypes}
-            onChange={handleCaseTypeChange}
-            className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-slate-200 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold min-h-[120px]"
-            size={5}
-          >
-            {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-slate-400">Hold Ctrl (or Cmd on Mac) to select multiple options</p>
+          </p>
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value, label]) => {
+              const checked = formData.caseTypes.includes(value);
+              return (
+                <label key={value} className="flex items-center gap-2 text-sm text-slate-200">
+                  <input
+                    type="checkbox"
+                    name="caseTypes"
+                    value={value}
+                    checked={checked}
+                    onChange={(e) => handleCaseTypeCheckboxChange(value, e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-gold focus:ring-gold"
+                  />
+                  <span>{label}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
 
         <div>

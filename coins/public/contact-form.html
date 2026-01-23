@@ -6,7 +6,8 @@
 <body style="display:none;">
   <!-- This form is hidden but allows Netlify to detect and register the contact form -->
   <form name="contact" netlify>
-    <input type="text" name="name" />
+    <input type="text" name="firstName" />
+    <input type="text" name="lastName" />
     <input type="text" name="email" />
     <input type="text" name="phone" />
     <select name="subject">
@@ -16,23 +17,21 @@
       <option value="shipping">Shipping Question</option>
       <option value="other">Other</option>
     </select>
-    <select name="caseTypes" multiple>
-      <option value="reign">Reign by Shackpack</option>
-      <option value="prominence">Prominence by Shackpack</option>
-      <option value="apex">Apex by Shackpack</option>
-      <option value="base">ShackPack</option>
-      <option value="deluxe">ShackPack Deluxe</option>
-      <option value="xtreme">ShackPack Xtreme</option>
-      <option value="unleashed">ShackPack Unleashed</option>
-      <option value="resurgence">ShackPack Resurgence</option>
-      <option value="transcendent">ShackPack Transcendent</option>
-      <option value="transcendent-transformed">ShackPack Transcendent Transformed</option>
-      <option value="ignite">ShackPack Ignite</option>
-      <option value="eclipse">ShackPack Eclipse</option>
-      <option value="radiant">ShackPack Radiant</option>
-      <option value="currencyclash">Currency Clash by Shackpack</option>
-      <option value="mystery">ShackPack Mystery</option>
-    </select>
+    <label><input type="checkbox" name="caseTypes" value="reign" /> Reign by Shackpack</label>
+    <label><input type="checkbox" name="caseTypes" value="prominence" /> Prominence by Shackpack</label>
+    <label><input type="checkbox" name="caseTypes" value="apex" /> Apex by Shackpack</label>
+    <label><input type="checkbox" name="caseTypes" value="base" /> ShackPack</label>
+    <label><input type="checkbox" name="caseTypes" value="deluxe" /> ShackPack Deluxe</label>
+    <label><input type="checkbox" name="caseTypes" value="xtreme" /> ShackPack Xtreme</label>
+    <label><input type="checkbox" name="caseTypes" value="unleashed" /> ShackPack Unleashed</label>
+    <label><input type="checkbox" name="caseTypes" value="resurgence" /> ShackPack Resurgence</label>
+    <label><input type="checkbox" name="caseTypes" value="transcendent" /> ShackPack Transcendent</label>
+    <label><input type="checkbox" name="caseTypes" value="transcendent-transformed" /> ShackPack Transcendent Transformed</label>
+    <label><input type="checkbox" name="caseTypes" value="ignite" /> ShackPack Ignite</label>
+    <label><input type="checkbox" name="caseTypes" value="eclipse" /> ShackPack Eclipse</label>
+    <label><input type="checkbox" name="caseTypes" value="radiant" /> ShackPack Radiant</label>
+    <label><input type="checkbox" name="caseTypes" value="currencyclash" /> Currency Clash by Shackpack</label>
+    <label><input type="checkbox" name="caseTypes" value="mystery" /> ShackPack Mystery</label>
     <textarea name="message"></textarea>
     <button type="submit">Send</button>
   </form>
