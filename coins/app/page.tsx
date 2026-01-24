@@ -114,6 +114,14 @@ const featuredPacks = [
     image: '/images/packs/shackpack-currencyclash.png',
     coinCount: 'Variable coins',
     category: 'Variable'
+  },
+  {
+    id: 'aura',
+    name: 'Aura by Shackpack',
+    description: 'Contents may vary by date. Please refer to the checklist for the most up-to-date information on coin contents.',
+    image: '/images/packs/shackpack-aura.png',
+    coinCount: '10 coins total',
+    category: 'Variable'
   }
 ];
 
