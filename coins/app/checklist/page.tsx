@@ -93,7 +93,9 @@ export default function ChecklistPage() {
     setLoading(true);
     setError(null);
     try {
-      const dates = await fetchAvailableDates(365); // Get up to 1 year of dates
+      // Fetch a large date range to include all backfilled cases
+      // 1095 days = ~3 years to ensure all historical cases are visible
+      const dates = await fetchAvailableDates(1095);
       setAvailableDates(dates);
       setLoading(false);
     } catch (err) {
