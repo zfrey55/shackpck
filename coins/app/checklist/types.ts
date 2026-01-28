@@ -43,5 +43,6 @@ export interface CaseTypeInfo {
   displayName: string;
   totalDates: number;
   totalCases: number;
+  isLoading?: boolean;
 }
 

@@ -51,7 +51,9 @@ export const CaseTypeSelector = memo(function CaseTypeSelector({
                 {caseTypeInfo.totalDates} date{caseTypeInfo.totalDates !== 1 ? 's' : ''} available
               </div>
               <div className="text-xs opacity-60 mt-1">
-                {caseTypeInfo.totalCases} total Series
+                {caseTypeInfo.isLoading 
+                  ? 'Loading...' 
+                  : `${caseTypeInfo.totalCases} total Series`}
               </div>
             </button>
           );

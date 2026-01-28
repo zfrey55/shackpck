@@ -13,8 +13,8 @@ import {
 } from "./components";
 
 const CASE_DESCRIPTIONS: Record<string, string> = {
-  'reign': 'Reign by Shackpack (1× 1/10 oz gold + 9 varied silver)',
-  'prominence': 'Prominence by Shackpack (1× 1/4 oz platinum + 9 varied silver)',
+  'reign': 'Reign by Shackpack',
+  'prominence': 'Prominence by Shackpack',
   'apex': 'Apex by Shackpack',
   'base': 'ShackPack (1× 1/10 oz gold + 9 varied silver)',
   'deluxe': 'ShackPack Deluxe (2× 1/10 oz gold + 8 varied silver)',
@@ -173,6 +173,9 @@ export default function ChecklistPage() {
     fetchAllCasesByType();
   }, [availableDates]);
 
+  // Check if we have any data loaded yet
+  const hasLoadedData = Object.keys(casesByTypeByDate).length > 0;
+
   // Compute case types from available dates using accurate casesByType data
   const caseTypes = useMemo<CaseTypeInfo[]>(() => {
     if (!availableDates) return [];
@@ -188,7 +191,7 @@ export default function ChecklistPage() {
         const info = caseTypeMap.get(caseType)!;
         info.dates.add(dateInfo.displayDate);
         
-        // Use accurate count from casesByType if available, otherwise fall back to 0
+        // Use accurate count from casesByType if available
         const casesByTypeForDate = casesByTypeByDate[dateInfo.displayDate];
         if (casesByTypeForDate && casesByTypeForDate[caseType]) {
           info.totalCases += casesByTypeForDate[caseType];
@@ -202,13 +205,14 @@ export default function ChecklistPage() {
         caseType,
         displayName: CASE_TYPE_DISPLAY_NAMES[caseType] || caseType,
         totalDates: info.dates.size,
-        totalCases: info.totalCases
+        totalCases: info.totalCases,
+        isLoading: !hasLoadedData
       }))
       .sort((a, b) => {
         // Sort by display name alphabetically
         return a.displayName.localeCompare(b.displayName);
       });
-  }, [availableDates, casesByTypeByDate]);
+  }, [availableDates, casesByTypeByDate, hasLoadedData]);
 
   // Get dates for selected case type with accurate series counts
   const datesForCaseType = useMemo(() => {
