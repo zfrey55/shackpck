@@ -8,10 +8,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' }
     ]
   },
-  // Enable experimental features if needed
-  experimental: {
-    serverActions: true,
-  }
+  // Server Actions are enabled by default in Next.js 14
 };
 
 module.exports = nextConfig;
