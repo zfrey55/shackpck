@@ -137,6 +137,29 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
     labelError = error.message || 'Failed to generate label';
   }
 
+  // Try to fetch order from database to get items
+  const order = await prisma.order.findFirst({
+    where: { stripePaymentIntentId: paymentIntent.id },
+    include: {
+      items: {
+        include: {
+          series: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Prepare items for email
+  const emailItems = order?.items.map(item => ({
+    seriesName: item.series.name,
+    quantity: item.quantity,
+    pricePerPack: item.pricePerPack,
+  })) || [];
+
   // Send emails
   const customerEmail = userId
     ? (await prisma.user.findUnique({ where: { id: userId } }))?.email
@@ -144,17 +167,20 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
 
   if (customerEmail) {
     await sendOrderConfirmationEmail(customerEmail, {
-      orderId: paymentIntent.id,
+      orderId: order?.id || paymentIntent.id,
       total: paymentIntent.amount / 100,
       loyaltyPointsEarned,
+      items: emailItems,
+      trackingNumber: fedexTrackingNumber,
     });
   }
 
   await sendAdminOrderNotification({
-    orderId: paymentIntent.id,
+    orderId: order?.id || paymentIntent.id,
     customerEmail: customerEmail || '',
     total: paymentIntent.amount / 100,
     shippingAddress,
+    items: emailItems,
     fedexTrackingNumber,
     fedexLabelUrl,
     labelStatus,
