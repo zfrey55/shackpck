@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fetchFeaturedSeries, fetchSeriesSales, fetchAllSeries } from '@/lib/coin-inventory-api';
+import { Prisma } from '@prisma/client';
 
 // GET /api/sync/series - Sync series data from coin inventory app
 // This will be called periodically or manually to keep data in sync
