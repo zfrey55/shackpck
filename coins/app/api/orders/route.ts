@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
-import { pushPackSaleToInventory } from '@/lib/inventory-api-push';
+import { pushPackSaleToInventory, pushUserToInventory } from '@/lib/inventory-api-push';
 import { generateFedExLabel } from '@/lib/fedex';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email';
 import { fetchAllSeries } from '@/lib/coin-inventory-api';
