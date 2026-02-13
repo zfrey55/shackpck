@@ -11,6 +11,8 @@ import {
   LoadingState,
   ErrorState
 } from "./components";
+import { CoinInventorySeries } from "@/lib/coin-inventory-api";
+import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 
 const CASE_DESCRIPTIONS: Record<string, string> = {
   'reign': 'Reign by Shackpack',
@@ -60,11 +62,35 @@ export default function ChecklistPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCaseType, setSelectedCaseType] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [specializedSeries, setSpecializedSeries] = useState<CoinInventorySeries[]>([]);
+  const [showSpecializedSeries, setShowSpecializedSeries] = useState(false);
+  const [loadingSpecialized, setLoadingSpecialized] = useState(false);
 
   // Load available dates on mount to get all case types
   useEffect(() => {
     loadAvailableDates();
+    loadSpecializedSeries();
   }, []);
+
+  // Load featured series from inventory app
+  const loadSpecializedSeries = async () => {
+    setLoadingSpecialized(true);
+    try {
+      const response = await fetch('/api/series?featured=true');
+      if (response.ok) {
+        const data = await response.json();
+        // Filter for featured series (isFeatured=true)
+        const featured = Array.isArray(data) 
+          ? data.filter((s: any) => s.isFeatured === true)
+          : [];
+        setSpecializedSeries(featured);
+      }
+    } catch (err) {
+      console.error('Error loading featured series:', err);
+    } finally {
+      setLoadingSpecialized(false);
+    }
+  };
 
   // Auto-select most recent date when case type is selected
   useEffect(() => {
@@ -287,9 +313,6 @@ export default function ChecklistPage() {
           <p className="text-lg text-slate-400">
             Select a series to view available dates
           </p>
-          <p className="text-sm text-slate-500 mt-2">
-            A series includes a case of 10 coins in most cases
-          </p>
         </div>
 
         {/* Disclaimer */}
@@ -300,8 +323,97 @@ export default function ChecklistPage() {
           </p>
         </div>
 
+        {/* Featured Series Section */}
+        {!selectedCaseType && !showSpecializedSeries && (
+          <div className="mb-8">
+            <button
+              onClick={() => setShowSpecializedSeries(true)}
+              className="w-full p-6 bg-gradient-to-r from-gold/10 to-slate-900/40 rounded-lg border border-gold/30 hover:border-gold/50 transition-colors text-left"
+            >
+              <h2 className="text-2xl font-bold mb-2 text-gold">
+                🎯 Featured Series
+              </h2>
+              <p className="text-slate-400">
+                View checklists for active featured series
+              </p>
+            </button>
+          </div>
+        )}
+
+        {showSpecializedSeries && !selectedCaseType && (
+          <div className="mb-8">
+            <button
+              onClick={() => setShowSpecializedSeries(false)}
+              className="text-gold hover:text-gold/80 transition-colors flex items-center gap-2 mb-6"
+            >
+              ← Back to Series Selection
+            </button>
+            
+            {loadingSpecialized ? (
+              <LoadingState />
+            ) : specializedSeries.length > 0 ? (
+              <div className="space-y-6">
+                {specializedSeries.map((series) => (
+                  <div
+                    key={series.id}
+                    className="bg-slate-900/40 rounded-lg shadow-lg border border-slate-700 p-6"
+                  >
+                    <div className="mb-4 pb-4 border-b border-slate-700">
+                      <h2 className="text-2xl font-bold text-gold mb-1">
+                        📦 {series.name}
+                      </h2>
+                      {series.description && (
+                        <p className="text-slate-300 mt-2">{series.description}</p>
+                      )}
+                    </div>
+
+                    {series.checklist && series.checklist.length > 0 ? (
+                      <div>
+                        <h3 className="font-semibold text-lg mb-3 text-slate-200">
+                          Contents ({series.checklist.length} coins):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {series.checklist.map((coin, index) => (
+                            <div
+                              key={index}
+                              className="flex items-start p-3 bg-slate-800/50 rounded border border-slate-700"
+                            >
+                              <span className="font-bold text-gold mr-2 min-w-[24px]">
+                                {index + 1}.
+                              </span>
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-200">{coin.coinType}</div>
+                                <div className="text-sm text-slate-400">
+                                  {coin.year}
+                                  {coin.grade && ` • ${coin.grade}`}
+                                  {coin.gradingCompany && ` • ${coin.gradingCompany}`}
+                                </div>
+                                {coin.weight && (
+                                  <div className="text-xs text-gold mt-1">
+                                    {coin.weight}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-400">No checklist available for this series.</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
+                <p className="text-slate-400">No active featured series available.</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Series Type Selector */}
-        {!selectedCaseType && (
+        {!selectedCaseType && !showSpecializedSeries && (
           <CaseTypeSelector
             caseTypes={caseTypes}
             selectedCaseType={selectedCaseType}

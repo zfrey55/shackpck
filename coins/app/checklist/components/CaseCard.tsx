@@ -38,6 +38,11 @@ export const CaseCard = memo(function CaseCard({ caseData, caseDescriptions }: C
                 <div className="text-sm text-slate-400">
                   {coin.year} • {coin.grade} • {coin.gradingCompany}
                 </div>
+                {coin.weight && (
+                  <div className="text-xs text-gold mt-1">
+                    {coin.weight}
+                  </div>
+                )}
               </div>
             </div>
           ))}

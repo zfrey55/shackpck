@@ -17,7 +17,6 @@ const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
   'eclipse': 'ShackPack Eclipse',
   'radiant': 'ShackPack Radiant',
   'currencyclash': 'Currency Clash by Shackpack',
-  'mystery': 'ShackPack Mystery',
   'custom': 'ShackPack Custom',
   'aura': 'Aura by Shackpack'
 };

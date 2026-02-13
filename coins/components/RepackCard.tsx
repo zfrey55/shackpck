@@ -11,6 +11,7 @@ type RepackCardProps = {
 };
 
 export function RepackCard({ 
+  id,
   name, 
   description, 
   image, 
@@ -19,13 +20,20 @@ export function RepackCard({
 }: RepackCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 shadow-sm transition-all duration-300 hover:border-slate-700 hover:shadow-glow">
-      <div className="relative aspect-[4/3] w-full bg-slate-950">
+      <div className="relative aspect-[4/3] w-full bg-slate-950 overflow-hidden">
         <Image
           src={image}
           alt={name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-contain transition-transform duration-500 group-hover:scale-105"
+          className={`transition-transform duration-500 group-hover:scale-105 ${
+            id === 'shackpack-xtreme' 
+              ? 'object-cover scale-110' 
+              : id === 'shackpack-deluxe'
+              ? 'object-cover'
+              : 'object-cover'
+          }`}
+          style={id === 'shackpack-deluxe' ? { objectPosition: 'center 70%' } : undefined}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
       </div>

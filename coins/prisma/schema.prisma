@@ -1,0 +1,203 @@
+// Prisma schema for Shackpack e-commerce platform
+// Database: PostgreSQL (recommended for production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - supports both registered users and shadow users for guest checkout
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String?   // null for shadow users
+  name              String?
+  role              UserRole  @default(CUSTOMER)
+  isShadowUser      Boolean   @default(false) // true for guest checkout users
+  loyaltyPoints     Int       @default(0)
+  earlyAccessEligible Boolean @default(false)
+  
+  // Stripe customer ID for saved payment methods
+  stripeCustomerId  String?   @unique
+  
+  // Shipping addresses
+  addresses         Address[]
+  
+  // Orders
+  orders            Order[]
+  
+  // Track pack purchases per series for limit enforcement
+  seriesPurchases   SeriesPurchase[]
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([email])
+  @@index([stripeCustomerId])
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+// Shipping address model
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Address fields
+  fullName    String
+  line1       String
+  line2       String?
+  city        String
+  state       String
+  postalCode  String
+  country     String   @default("US")
+  phone       String?
+  
+  isDefault   Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Series model - represents a run of packs (e.g., ~500 packs)
+model Series {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  images          String[] // Array of image URLs
+  
+  // Inventory
+  totalPacks      Int
+  packsSold       Int      @default(0)
+  packsRemaining  Int      @default(0) // Computed: totalPacks - packsSold (updated via triggers or app logic)
+  
+  pricePerPack    Int      // Price in cents
+  
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false) // Featured series shown on home page
+  earlyAccessStart DateTime? // Optional early access start time
+  
+  // Link to coin inventory app
+  coinInventorySeriesId String? // ID from coin inventory app
+  caseType        String?  // For linking to checklist API
+  displayDate     String?  // For linking to checklist API
+  
+  // Top hits (1-5 coins, stored as JSON for flexibility)
+  topHits         Json?    // Array of 1-5 top hit coins (also supports legacy top5Coins)
+  
+  // Orders containing this series
+  orderItems      OrderItem[]
+  
+  // Track user purchases for limit enforcement
+  purchases       SeriesPurchase[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// Track user purchases per series for limit enforcement
+model SeriesPurchase {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seriesId  String
+  series    Series   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  quantity  Int      // Total packs purchased by this user for this series
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, seriesId])
+  @@index([userId])
+  @@index([seriesId])
+}
+
+// Order model
+model Order {
+  id                String      @id @default(cuid())
+  userId            String?
+  user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Guest checkout info
+  guestEmail        String?
+  guestName         String?
+  
+  // Order items
+  items             OrderItem[]
+  
+  // Pricing
+  subtotal          Int         // In cents
+  shippingCost      Int         // In cents (0 for account holders)
+  total             Int         // In cents
+  
+  // Payment
+  paymentStatus     PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?  @unique
+  stripeCustomerId  String?
+  
+  // Shipping
+  shippingAddress   Json        // Store full address as JSON
+  
+  // FedEx
+  fedexTrackingNumber String?
+  fedexLabelUrl      String?
+  labelStatus        LabelStatus @default(PENDING)
+  labelError         String?     @db.Text
+  
+  // Loyalty points earned
+  loyaltyPointsEarned Int        @default(0)
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([stripePaymentIntentId])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum LabelStatus {
+  PENDING
+  GENERATED
+  FAILED
+}
+
+// Order items - links orders to series
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  seriesId  String
+  series    Series   @relation(fields: [seriesId], references: [id], onDelete: Restrict)
+  
+  quantity  Int
+  pricePerPack Int   // Price at time of purchase (in cents)
+  total     Int      // quantity * pricePerPack (in cents)
+  
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([seriesId])
+}

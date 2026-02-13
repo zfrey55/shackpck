@@ -1,6 +1,12 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { RepackCard } from '@/components/RepackCard';
+import { SeriesCard } from '@/components/SeriesCard';
+import { FeaturedSeriesSection } from '@/components/FeaturedSeriesSection';
+import { Series } from '@/lib/types';
 
 const featuredPacks = [
   {
@@ -31,7 +37,7 @@ const featuredPacks = [
     id: 'shackpack',
     name: 'ShackPack',
     description: 'Contains one 1/10 oz gold coin and 9 varied silver coins. Perfect entry into premium coin collecting.',
-    image: '/images/packs/shackpack-starter.jpg',
+    image: '/images/packs/Shackpack-starter.png',
     coinCount: '10 coins total',
     category: '1/10 oz Gold'
   },
@@ -39,7 +45,7 @@ const featuredPacks = [
     id: 'shackpack-deluxe',
     name: 'ShackPack Deluxe',
     description: 'Contains two 1/10 oz gold coins and 8 varied silver coins. Enhanced gold content for serious collectors.',
-    image: '/images/packs/shackpack-deluxe.jpg',
+    image: '/images/packs/shackpack-deluxe.png',
     coinCount: '10 coins total',
     category: '2x 1/10 oz Gold'
   },
@@ -47,7 +53,7 @@ const featuredPacks = [
     id: 'shackpack-xtreme',
     name: 'ShackPack Xtreme',
     description: 'Contains one 1/4 oz gold coin and 9 varied silver coins. Increased gold weight with premium selections.',
-    image: '/images/packs/shackpack-xtreme.jpg',
+    image: '/images/packs/shackpack-xtreme.png',
     coinCount: '10 coins total',
     category: '1/4 oz Gold'
   },
@@ -55,7 +61,7 @@ const featuredPacks = [
     id: 'shackpack-unleashed',
     name: 'ShackPack Unleashed',
     description: 'Contains two 1/4 oz gold coins and 8 varied silver coins. Double the gold for maximum impact.',
-    image: '/images/packs/shackpack-unleashed.jpg',
+    image: '/images/packs/shackpack-unleashed.png',
     coinCount: '10 coins total',
     category: '2x 1/4 oz Gold'
   },
@@ -63,7 +69,7 @@ const featuredPacks = [
     id: 'shackpack-resurgence',
     name: 'ShackPack Resurgence',
     description: 'Contains one 1/2 oz gold coin and 9 varied silver coins. Substantial gold content with diverse silver pieces.',
-    image: '/images/packs/shackpack-resurgence.jpg',
+    image: '/images/packs/shackpack-resurgence.png',
     coinCount: '10 coins total',
     category: '1/2 oz Gold'
   },
@@ -71,7 +77,7 @@ const featuredPacks = [
     id: 'shackpack-transcendent',
     name: 'ShackPack Transcendent',
     description: 'Contains one 1 oz gold coin and 9 varied silver coins. Our ultimate pack featuring a full troy ounce of gold.',
-    image: '/images/packs/shackpack-transcendent.jpg',
+    image: '/images/packs/shackpack-transcendent.png',
     coinCount: '10 coins total',
     category: '1 oz Gold'
   },
@@ -79,7 +85,7 @@ const featuredPacks = [
     id: 'shackpack-transcendent-transformed',
     name: 'ShackPack Transcendent Transformed',
     description: 'Contains two 1 oz gold coins and 8 varied silver coins. Our ultimate transformed pack featuring two full troy ounces of gold.',
-    image: '/images/packs/shackpack-transcscendenttransformed.jpeg',
+    image: '/images/packs/shackpack-transcscendenttransformed.png',
     coinCount: '10 coins total',
     category: '2x 1 oz Gold'
   },
@@ -124,6 +130,8 @@ const featuredPacks = [
     category: 'Variable'
   }
 ];
+
+// ActiveSeriesSection removed - replaced with FeaturedSeriesSection
 
 export default function HomePage() {
   return (
@@ -173,6 +181,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured Series Section */}
+      <FeaturedSeriesSection />
 
       {/* Featured Packs Section */}
       <section className="container py-16">

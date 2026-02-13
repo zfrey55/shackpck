@@ -18,6 +18,7 @@ export interface CoinData {
   year: string;
   grade: string;
   gradingCompany: string;
+  weight?: string | null; // Weight field (e.g., "1 oz", "1/10 oz") or null if not available
 }
 
 export interface DailyChecklistResponse {

@@ -1,6 +1,12 @@
 [build]
-  publish = "coins/out"
-  command = "npm install --prefix coins && npm run build --prefix coins"
+  # Updated for Next.js with API routes (no static export)
+  # Note: For Netlify, you may need to install @netlify/plugin-nextjs
+  # or configure Netlify to use Next.js runtime
+  publish = "coins/.next"
+  command = "cd coins && npm install && npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
 
 [build.environment]
   NODE_VERSION = "20"
