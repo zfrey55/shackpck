@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fetchFeaturedSeries, fetchAllSeries } from '@/lib/coin-inventory-api';
 
+// Force dynamic rendering (uses no-store fetch and Prisma)
+export const dynamic = 'force-dynamic';
+
 // GET /api/series - Get all active series
 // If featured=true, fetches from inventory app API directly
 export async function GET(request: NextRequest) {

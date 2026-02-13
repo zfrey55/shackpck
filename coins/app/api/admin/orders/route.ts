@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+// Force dynamic rendering (uses headers via getServerSession)
+export const dynamic = 'force-dynamic';
+
 // GET /api/admin/orders - Get all orders (admin only)
 export async function GET(request: NextRequest) {
   try {

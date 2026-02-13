@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
-export default function CheckoutSuccessPage() {
+// Prevent static generation
+export const dynamic = 'force-dynamic';
+
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const paymentIntentId = searchParams.get('payment_intent');
@@ -100,5 +103,23 @@ export default function CheckoutSuccessPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <main className="container py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="mb-8">
+            <div className="text-6xl mb-4">✅</div>
+            <h1 className="text-4xl font-bold mb-4">Order Confirmed!</h1>
+            <p className="text-lg text-slate-400">Loading order details...</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }

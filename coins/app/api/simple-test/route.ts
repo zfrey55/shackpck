@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering (uses no-store fetch)
+export const dynamic = 'force-dynamic';
+
 // GET /api/simple-test - Simple test of inventory app API
 export async function GET(request: NextRequest) {
   try {

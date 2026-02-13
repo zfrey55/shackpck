@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db';
 import { fetchFeaturedSeries, fetchSeriesSales, fetchAllSeries } from '@/lib/coin-inventory-api';
 import { Prisma } from '@prisma/client';
 
+// Force dynamic rendering (uses Prisma and external API calls)
+export const dynamic = 'force-dynamic';
+
 // GET /api/sync/series - Sync series data from coin inventory app
 // This will be called periodically or manually to keep data in sync
 export async function GET(request: NextRequest) {
