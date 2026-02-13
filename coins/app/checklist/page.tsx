@@ -12,7 +12,6 @@ import {
   ErrorState
 } from "./components";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
-import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 
 const CASE_DESCRIPTIONS: Record<string, string> = {
   'reign': 'Reign by Shackpack',
