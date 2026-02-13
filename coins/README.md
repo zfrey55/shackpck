@@ -247,20 +247,15 @@ The `netlify.toml` is configured for Next.js. The build command will:
 
 ## 📚 Documentation
 
-**Main Guide**: See `COMPLETE_GUIDE.md` for all documentation consolidated in one place.
+**Main Guides**:
+- `PRODUCTION_SETUP_GUIDE.md` - Complete production setup (FedEx, Stripe, SendGrid, Database, Deployment)
+- `COMPLETE_TESTING_GUIDE.md` - Full testing scenarios (Account creation, Checkout, Payments, FedEx, Emails)
+- `TROUBLESHOOTING.md` - Common issues and fixes (Order errors, Build errors, Server logs, Email issues)
 
-**Specific Guides**:
-- `DEPLOY_TO_LIVE.md` - Quick deployment steps
-- `DEPLOYMENT_SUMMARY.md` - What's deploying vs waiting
-- `PRODUCTION_SETUP_GUIDE.md` - Complete production setup
-- `PRODUCTION_READINESS_CHECKLIST.md` - Quick checklist
-- `COMPLETE_TESTING_GUIDE.md` - Full testing scenarios
-- `TROUBLESHOOTING.md` - Common issues and fixes
-- `HOW_TO_FIND_SERVER_LOGS.md` - Finding error logs
-- `FEDEX_SETUP_GUIDE.md` - FedEx configuration
-- `STRIPE_PAYMENT_FLOW_EXPLAINED.md` - Payment flow details
-- `USER_SYNC_TO_INVENTORY.md` - User sync API
-- `DEBUG_ORDER_CREATION.md` - Order error debugging
+**Quick Reference**:
+- See `PRODUCTION_SETUP_GUIDE.md` for step-by-step production setup
+- See `COMPLETE_TESTING_GUIDE.md` for end-to-end testing procedures
+- See `TROUBLESHOOTING.md` for debugging common issues
 
 ## 🆘 Troubleshooting
 

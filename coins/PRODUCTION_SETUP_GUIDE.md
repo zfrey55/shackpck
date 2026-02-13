@@ -99,6 +99,21 @@ FEDEX_DEFAULT_HEIGHT=2
 
 ## Part 2: Stripe Production Setup
 
+### Understanding Stripe Payment Flow
+
+**Current Implementation:**
+1. User completes checkout → Payment Intent created
+2. Payment succeeds → Frontend calls `/api/orders` immediately
+3. Order created → Emails sent, FedEx label generated
+
+**With Webhooks (Production):**
+1. Payment succeeds → Stripe sends webhook to server
+2. Webhook handler creates order (backup/reliability)
+3. Frontend also creates order (primary method)
+4. Both methods ensure order is created even if one fails
+
+**Note:** For testing, webhooks are optional. For production, webhooks are **critical** for reliability.
+
 ### Step 1: Get Production Stripe Keys
 
 1. **Log into Stripe Dashboard**: https://dashboard.stripe.com/
@@ -109,7 +124,7 @@ FEDEX_DEFAULT_HEIGHT=2
    - Copy **Secret key** (starts with `sk_live_...`)
    - **Never share your secret key!**
 
-### Step 2: Set Up Stripe Webhooks (Production)
+### Step 2: Set Up Stripe Webhooks (Production - CRITICAL)
 
 **Why Webhooks are Critical for Production:**
 - **Reliability**: Automatic retry if order creation fails
@@ -134,6 +149,11 @@ FEDEX_DEFAULT_HEIGHT=2
    - Use Stripe CLI or test payment
    - Verify webhook is received
    - Check order is created
+
+**Testing Without Webhooks:**
+- For local testing, webhooks are optional
+- Orders are created client-side after payment succeeds
+- This works fine for testing but not recommended for production
 
 ### Step 3: Update Production Environment Variables
 
@@ -290,33 +310,47 @@ openssl rand -base64 32
 
 ## Part 6: Deployment (Netlify) Production Setup
 
-### Step 1: Configure Netlify
+### Step 1: Configure Netlify Build Settings
 
 1. **Connect Repository**:
-   - Link GitHub/GitLab repository
-   - Configure build settings
+   - Link GitHub/GitLab repository to Netlify
+   - Netlify will auto-detect Next.js
 
-2. **Build Settings**:
-   - Build command: `npm run build`
-   - Publish directory: `.next`
-   - Node version: `20.x`
+2. **Build Configuration** (in `netlify.toml`):
+   ```toml
+   [build]
+     base = "coins"
+     command = "npm install && npm run build"
+     publish = ".next"
+   
+   [build.environment]
+     NODE_VERSION = "20"
+   
+   [[plugins]]
+     package = "@netlify/plugin-nextjs"
+   ```
 
-3. **Environment Variables**:
-   - Add ALL production environment variables
-   - Use Netlify's environment variable interface
-   - **Never commit secrets to git!**
+3. **Verify Build Settings in Dashboard**:
+   - Go to: Site Settings → Build & Deploy
+   - Base directory: `coins` (or leave empty if set in netlify.toml)
+   - Build command: `npm install && npm run build`
+   - Publish directory: Leave empty (plugin handles it)
 
 ### Step 2: Add All Production Environment Variables
 
 **In Netlify Dashboard → Site Settings → Environment Variables:**
 
-Add all variables from this guide:
+Add ALL variables from Parts 1-5 of this guide. See "Production Environment Variables Summary" section below.
+
+**Critical Variables:**
 - Database URL
-- Stripe keys
+- Stripe keys (including webhook secret)
 - SendGrid API key
-- FedEx credentials
+- FedEx credentials (including meter number)
 - NextAuth configuration
-- All other required variables
+- Feature flags (if using partial deployment)
+
+**Never commit secrets to git!**
 
 ### Step 3: Configure Custom Domain
 
@@ -330,21 +364,161 @@ Add all variables from this guide:
    - Automatically configured
    - Verify HTTPS works
 
-### Step 4: Test Production Build
+### Step 4: Deploy to Production
 
-1. **Deploy to Production**:
-   - Push to main branch
-   - Netlify will build and deploy
-   - Check build logs for errors
+**Option A: Git Push (Recommended)**
+```bash
+cd coins
+git add .
+git commit -m "Deploy to production"
+git push origin main
+```
+Netlify will automatically build and deploy.
 
-2. **Verify Deployment**:
+**Option B: Manual Deploy**
+```bash
+cd coins
+npm run build
+netlify deploy --prod
+```
+
+### Step 5: Verify Deployment
+
+1. **Check Build Logs**:
+   - Monitor Netlify dashboard during build
+   - Verify no errors
+
+2. **Test Production Site**:
    - Visit production URL
    - Test all functionality
-   - Check server logs
+   - Check server logs in Netlify dashboard
+
+3. **Verify Environment Variables**:
+   - All variables are set correctly
+   - No missing variables
+   - Test endpoints work
 
 ---
 
-## Part 7: Final Production Checklist
+## Part 7: User Sync to Inventory App (CRM)
+
+### Overview
+
+All user accounts (registered users and shadow users from guest checkout) are automatically synced to the inventory app for CRM tracking.
+
+### How It Works
+
+**When Users Are Synced:**
+1. **User Registration** → User synced immediately
+2. **Guest Checkout** → Shadow user created and synced
+3. **User Updates** → Future: Sync on profile updates
+
+**Data Synced:**
+- Email
+- Name (if available)
+- User ID (from e-commerce site)
+- Created date
+- Is shadow user (guest checkout)
+- Total orders count
+- Total spent
+- Loyalty points
+
+### Implementation
+
+The sync happens automatically in:
+- `/api/auth/register` - Registered users
+- `/api/orders` - Shadow users (guest checkout)
+
+**Error Handling:**
+- Sync failures don't block user registration or checkout
+- Errors are logged but don't affect user experience
+- Retry logic is built-in
+
+### Inventory App Endpoint
+
+**Endpoint**: `POST /syncUser` (must exist in inventory app)
+
+**Request Format:**
+```json
+{
+  "orgId": "coin-shack",
+  "userId": "user_123",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "isShadowUser": false,
+  "createdAt": "2024-01-15T10:30:00Z",
+  "totalOrders": 3,
+  "totalSpent": 37497,
+  "loyaltyPoints": 125
+}
+```
+
+**No Configuration Needed:**
+- Sync happens automatically
+- Uses same inventory app API base URL
+- Same error handling as pack sales sync
+
+---
+
+## Part 8: Production Environment Variables Summary
+
+**Copy this list and fill in all values for Netlify:**
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@host:port/database?schema=public
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# SendGrid
+SENDGRID_API_KEY=SG.your_production_key
+FROM_EMAIL=noreply@yourdomain.com
+ADMIN_EMAIL=your_admin@yourdomain.com
+
+# FedEx
+FEDEX_KEY=your_production_api_key
+FEDEX_PASSWORD=your_production_secret
+FEDEX_ACCOUNT_NUMBER=204375301
+FEDEX_METER_NUMBER=your_meter_number
+FEDEX_ENVIRONMENT=production
+FEDEX_SHIPPER_NAME=Shackpack
+FEDEX_SHIPPER_PHONE=5618704222
+FEDEX_SHIPPER_ADDRESS_LINE1=345 W Palmetto Park Rd
+FEDEX_SHIPPER_CITY=Boca Raton
+FEDEX_SHIPPER_STATE=FL
+FEDEX_SHIPPER_POSTAL_CODE=33432
+FEDEX_SHIPPER_COUNTRY=US
+FEDEX_DEFAULT_WEIGHT=1
+FEDEX_DEFAULT_LENGTH=6
+FEDEX_DEFAULT_WIDTH=4
+FEDEX_DEFAULT_HEIGHT=2
+
+# NextAuth
+NEXTAUTH_URL=https://yourdomain.com
+NEXTAUTH_SECRET=your_generated_secret
+
+# Feature Flags (if using partial deployment)
+NEXT_PUBLIC_ENABLE_CHECKOUT=true
+NEXT_PUBLIC_ENABLE_ACCOUNTS=true
+NEXT_PUBLIC_ENABLE_DIRECT_PURCHASE=true
+
+# Contact Information
+NEXT_PUBLIC_CONTACT_EMAIL=your_email@yourdomain.com
+NEXT_PUBLIC_CONTACT_PHONE=(561) 870-4222
+
+# Inventory App API
+COIN_INVENTORY_API_BASE_URL=https://us-central1-coin-inventory-8b79d.cloudfunctions.net
+
+# Other
+NODE_ENV=production
+```
+
+---
+
+## Part 9: Final Production Checklist
 
 ### Environment Variables
 

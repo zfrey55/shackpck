@@ -19,10 +19,25 @@ Before starting, verify:
 
 - [ ] Server is running: `npm run dev`
 - [ ] Database is connected (check server logs)
-- [ ] Stripe test keys are in `.env.local`
-- [ ] SendGrid API key is in `.env.local`
-- [ ] FedEx credentials are in `.env.local`
+- [ ] Stripe test keys are in `.env.local`:
+  - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...`
+  - `STRIPE_SECRET_KEY=sk_test_...`
+- [ ] SendGrid API key is in `.env.local`:
+  - `SENDGRID_API_KEY=SG....`
+  - `FROM_EMAIL=gjpacking123@gmail.com` (or your test email)
+  - `ADMIN_EMAIL=your_admin_email@example.com`
+- [ ] FedEx credentials are in `.env.local`:
+  - `FEDEX_API_KEY=...`
+  - `FEDEX_API_SECRET=...`
+  - `FEDEX_ACCOUNT_NUMBER=740561073` (test account)
+  - `FEDEX_METER_NUMBER=...` (if available)
+  - `FEDEX_ENVIRONMENT=test`
+  - All shipper information (address, phone: `5618704222`)
 - [ ] Test series exists in database or inventory app
+- [ ] Feature flags enabled in `.env.local`:
+  - `NEXT_PUBLIC_ENABLE_CHECKOUT=true`
+  - `NEXT_PUBLIC_ENABLE_ACCOUNTS=true`
+  - `NEXT_PUBLIC_ENABLE_DIRECT_PURCHASE=true`
 
 ---
 
