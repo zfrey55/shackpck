@@ -9,6 +9,9 @@
 # Netlify Next.js plugin - handles all Next.js routing automatically
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    # Specify the base directory where Next.js app is located
+    base = "coins"
 
 # Enable form detection
 # Forms are detected from: coins/public/contact-form.html
