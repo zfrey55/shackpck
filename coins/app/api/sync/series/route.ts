@@ -6,10 +6,10 @@ import { fetchFeaturedSeries, fetchSeriesSales, fetchAllSeries } from '@/lib/coi
 // This will be called periodically or manually to keep data in sync
 export async function GET(request: NextRequest) {
   try {
-    // Fetch featured series from coin inventory app
-    const featuredSeries = await fetchFeaturedSeries();
+    // Fetch featured series from coin inventory app (returns array)
+    const featuredSeriesArray = await fetchFeaturedSeries();
     
-    if (!featuredSeries) {
+    if (!featuredSeriesArray || featuredSeriesArray.length === 0) {
       return NextResponse.json(
         { error: 'No featured series found in coin inventory app' },
         { status: 404 }
@@ -20,41 +20,53 @@ export async function GET(request: NextRequest) {
     const salesData = await fetchSeriesSales();
     const salesMap = new Map(salesData.map(s => [s.seriesId, s.packsSold]));
 
-    // Update or create series in database
-    const updatedSeries = await prisma.series.upsert({
-      where: { slug: featuredSeries.slug },
-      update: {
-        name: featuredSeries.name,
-        description: featuredSeries.description || null,
-        images: featuredSeries.images,
-        totalPacks: featuredSeries.totalPacks,
-        packsSold: salesMap.get(featuredSeries.id) || featuredSeries.packsSold,
-        packsRemaining: featuredSeries.totalPacks - (salesMap.get(featuredSeries.id) || featuredSeries.packsSold),
-        pricePerPack: featuredSeries.pricePerPack,
-        isActive: featuredSeries.isActive,
-      },
-      create: {
-        name: featuredSeries.name,
-        slug: featuredSeries.slug,
-        description: featuredSeries.description || null,
-        images: featuredSeries.images,
-        totalPacks: featuredSeries.totalPacks,
-        packsSold: salesMap.get(featuredSeries.id) || featuredSeries.packsSold,
-        packsRemaining: featuredSeries.totalPacks - (salesMap.get(featuredSeries.id) || featuredSeries.packsSold),
-        pricePerPack: featuredSeries.pricePerPack,
-        isActive: featuredSeries.isActive,
-      },
-    });
+    // Process all featured series (or just the first one if you only want one)
+    const updatedSeriesList = await Promise.all(
+      featuredSeriesArray.map(async (featuredSeries) => {
+        // Update or create series in database
+        const updatedSeries = await prisma.series.upsert({
+          where: { slug: featuredSeries.slug },
+          update: {
+            name: featuredSeries.name,
+            description: featuredSeries.description || null,
+            images: featuredSeries.images,
+            totalPacks: featuredSeries.totalPacks,
+            packsSold: salesMap.get(featuredSeries.id) || featuredSeries.packsSold,
+            pricePerPack: featuredSeries.pricePerPack,
+            isActive: featuredSeries.isActive,
+            isFeatured: featuredSeries.isFeatured,
+            coinInventorySeriesId: featuredSeries.id,
+            topHits: featuredSeries.topHits ? JSON.stringify(featuredSeries.topHits) : null,
+            caseType: featuredSeries.caseType || null,
+            displayDate: featuredSeries.displayDate || null,
+          },
+          create: {
+            name: featuredSeries.name,
+            slug: featuredSeries.slug,
+            description: featuredSeries.description || null,
+            images: featuredSeries.images,
+            totalPacks: featuredSeries.totalPacks,
+            packsSold: salesMap.get(featuredSeries.id) || featuredSeries.packsSold,
+            pricePerPack: featuredSeries.pricePerPack,
+            isActive: featuredSeries.isActive,
+            isFeatured: featuredSeries.isFeatured,
+            coinInventorySeriesId: featuredSeries.id,
+            topHits: featuredSeries.topHits ? JSON.stringify(featuredSeries.topHits) : null,
+            caseType: featuredSeries.caseType || null,
+            displayDate: featuredSeries.displayDate || null,
+          },
+        });
 
-    // Store top 5 coins data (we'll create a separate table for this)
-    // For now, we'll store it in a JSON field or separate table
+        return {
+          ...updatedSeries,
+          packsRemaining: updatedSeries.totalPacks - updatedSeries.packsSold,
+        };
+      })
+    );
     
     return NextResponse.json({
       success: true,
-      series: {
-        ...updatedSeries,
-        packsRemaining: updatedSeries.totalPacks - updatedSeries.packsSold,
-      },
+      series: updatedSeriesList,
     });
   } catch (error: any) {
     console.error('Error syncing series:', error);
