@@ -43,9 +43,10 @@ export async function GET(
     let topHits = null;
     if (series.topHits) {
       topHits = typeof series.topHits === 'string' ? JSON.parse(series.topHits) : series.topHits;
-    } else if (series.top5Coins) {
-      // Legacy support for top5Coins
-      topHits = typeof series.top5Coins === 'string' ? JSON.parse(series.top5Coins) : series.top5Coins;
+    } else if ('top5Coins' in series && (series as any).top5Coins) {
+      // Legacy support for top5Coins — use a safe cast since the TS type does not declare it
+      const legacy = (series as any).top5Coins;
+      topHits = typeof legacy === 'string' ? JSON.parse(legacy) : legacy;
     }
 
     return NextResponse.json({
