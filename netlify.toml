@@ -1,12 +1,14 @@
 [build]
-  # Updated for Next.js with API routes (no static export)
-  # Note: For Netlify, you may need to install @netlify/plugin-nextjs
-  # or configure Netlify to use Next.js runtime
-  publish = "coins/.next"
+  # Next.js on Netlify - using @netlify/plugin-nextjs
+  # The plugin handles routing and publish directory automatically
   command = "cd coins && npm install && npm run build"
 
 [build.environment]
   NODE_VERSION = "20"
+
+# Netlify Next.js plugin - handles all Next.js routing automatically
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 # Enable form detection
 # Forms are detected from: coins/public/contact-form.html

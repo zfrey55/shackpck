@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removed static export to support API routes and dynamic features
-  // For Netlify deployment, we'll use Netlify Functions for API routes
+  // Configured for Netlify deployment with @netlify/plugin-nextjs
+  // The plugin handles all routing and serverless functions automatically
   images: {
     unoptimized: true,
     remotePatterns: [
