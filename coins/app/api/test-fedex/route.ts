@@ -15,10 +15,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate test label
-    const result = await generateFedExLabel({
-      shippingAddress,
-      weight: parseFloat(weight),
-    });
+    // Note: weight parameter is not currently supported - uses FEDEX_DEFAULT_WEIGHT env var
+    const result = await generateFedExLabel(shippingAddress);
 
     return NextResponse.json({
       success: true,
