@@ -1,11 +1,10 @@
 [build]
   # Next.js on Netlify - using @netlify/plugin-nextjs
-  # The plugin handles routing automatically
-  # Since Next.js app is in 'coins' subdirectory, we need to set base directory
+  # The plugin handles routing and publish directory automatically
+  # Since Next.js app is in 'coins' subdirectory, set base directory
   base = "coins"
   command = "npm install && npm run build"
-  # Publish directory will be set automatically by the plugin
-  # Do NOT set publish here - the plugin handles it
+  # IMPORTANT: Do NOT set 'publish' - the plugin sets it automatically to coins/.next
 
 [build.environment]
   NODE_VERSION = "20"
