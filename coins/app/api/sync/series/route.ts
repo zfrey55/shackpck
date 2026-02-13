@@ -37,7 +37,9 @@ export async function GET(request: NextRequest) {
             isActive: featuredSeries.isActive,
             isFeatured: featuredSeries.isFeatured,
             coinInventorySeriesId: featuredSeries.id,
-            topHits: featuredSeries.topHits ? JSON.stringify(featuredSeries.topHits) : null,
+            topHits: featuredSeries.topHits 
+              ? (featuredSeries.topHits as unknown as Prisma.InputJsonValue)
+              : undefined,
             caseType: featuredSeries.caseType || null,
             displayDate: featuredSeries.displayDate || null,
           },
@@ -52,7 +54,9 @@ export async function GET(request: NextRequest) {
             isActive: featuredSeries.isActive,
             isFeatured: featuredSeries.isFeatured,
             coinInventorySeriesId: featuredSeries.id,
-            topHits: featuredSeries.topHits ? JSON.stringify(featuredSeries.topHits) : null,
+            topHits: featuredSeries.topHits 
+              ? (featuredSeries.topHits as unknown as Prisma.InputJsonValue)
+              : undefined,
             caseType: featuredSeries.caseType || null,
             displayDate: featuredSeries.displayDate || null,
           },
