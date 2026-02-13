@@ -1,17 +1,19 @@
 [build]
   # Next.js on Netlify - using @netlify/plugin-nextjs
-  # The plugin handles routing and publish directory automatically
-  command = "cd coins && npm install && npm run build"
+  # The plugin handles routing automatically
+  # Since Next.js app is in 'coins' subdirectory, we need to set base directory
+  base = "coins"
+  command = "npm install && npm run build"
+  # Publish directory will be set automatically by the plugin
+  # Do NOT set publish here - the plugin handles it
 
 [build.environment]
   NODE_VERSION = "20"
 
 # Netlify Next.js plugin - handles all Next.js routing automatically
+# Note: The plugin does NOT accept inputs, it uses the build.base setting
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    # Specify the base directory where Next.js app is located
-    base = "coins"
 
 # Enable form detection
 # Forms are detected from: coins/public/contact-form.html
