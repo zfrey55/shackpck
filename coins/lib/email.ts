@@ -42,6 +42,7 @@ export async function sendOrderConfirmationEmail(
   data: OrderConfirmationData
 ): Promise<void> {
   const fromEmail = process.env.FROM_EMAIL || 'noreply@shackpck.com';
+  const fromName = process.env.FROM_NAME || 'Shackpack';
   
   if (!process.env.SENDGRID_API_KEY) {
     console.log('SENDGRID_API_KEY not configured. Would send order confirmation:', {
