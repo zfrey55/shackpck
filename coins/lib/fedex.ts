@@ -104,7 +104,7 @@ export async function generateFedExLabel(
         {
           contact: {
             personName: shippingAddress.fullName,
-            phoneNumber: shippingAddress.phone || '',
+            phoneNumber: shippingAddress.phone || '5551234567', // Default test phone if not provided
           },
           address: {
             streetLines: [

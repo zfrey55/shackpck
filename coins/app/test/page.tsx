@@ -74,6 +74,7 @@ export default function TestPage() {
             state: 'FL',
             postalCode: '12345',
             country: 'US',
+            phone: '5551234567', // Required by FedEx
           },
         }),
       });
