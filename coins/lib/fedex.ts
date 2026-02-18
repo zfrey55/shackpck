@@ -52,7 +52,32 @@ export async function generateFedExLabel(
   });
 
   if (!tokenResponse.ok) {
-    throw new Error('Failed to authenticate with FedEx API');
+    const errorText = await tokenResponse.text();
+    let errorDetails;
+    try {
+      errorDetails = JSON.parse(errorText);
+    } catch {
+      errorDetails = { raw: errorText };
+    }
+    
+    const errorInfo = {
+      status: tokenResponse.status,
+      statusText: tokenResponse.statusText,
+      error: errorDetails,
+      baseUrl,
+      hasKey: !!apiKey,
+      hasSecret: !!apiSecret,
+      keyLength: apiKey?.length,
+      keyPrefix: apiKey?.substring(0, 5) || 'N/A',
+    };
+    
+    console.error('FedEx OAuth Error:', errorInfo);
+    
+    // Create a more detailed error message
+    const errorMessage = `Failed to authenticate with FedEx API: ${tokenResponse.status} ${tokenResponse.statusText}. ${JSON.stringify(errorInfo)}`;
+    const error = new Error(errorMessage) as any;
+    error.fedexErrorDetails = errorInfo;
+    throw error;
   }
 
   const { access_token } = await tokenResponse.json();

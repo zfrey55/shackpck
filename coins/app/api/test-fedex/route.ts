@@ -26,14 +26,39 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('FedEx test error:', error);
+    
+    // Extract detailed error information
+    let errorDetails: any = {
+      message: error.message || 'Failed to generate FedEx label',
+    };
+    
+    // Include FedEx-specific error details if available
+    if (error.fedexErrorDetails) {
+      errorDetails.fedex = error.fedexErrorDetails;
+    }
+    
+    // If error message contains JSON, try to parse it
+    if (error.message && error.message.includes('{')) {
+      try {
+        const jsonMatch = error.message.match(/\{.*\}/);
+        if (jsonMatch) {
+          errorDetails.parsed = JSON.parse(jsonMatch[0]);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    
+    // Include stack trace in development
+    if (process.env.NODE_ENV === 'development') {
+      errorDetails.stack = error.stack;
+    }
+    
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Failed to generate FedEx label',
-        details: process.env.NODE_ENV === 'development' ? {
-          message: error.message,
-          stack: error.stack,
-        } : undefined,
+        details: errorDetails,
       },
       { status: 500 }
     );
