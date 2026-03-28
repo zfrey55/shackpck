@@ -127,6 +127,7 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
   let labelError: string | null = null;
 
   try {
+    // Generate PDF label - always 4x6 inches (automatically set by FedEx API)
     const fedexResult = await generateFedExLabel(shippingAddress);
     fedexTrackingNumber = fedexResult.trackingNumber;
     fedexLabelUrl = fedexResult.labelUrl;

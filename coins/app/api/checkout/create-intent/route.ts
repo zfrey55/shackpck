@@ -122,15 +122,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment intent
+    // Note: We don't attach customer ID here to prevent showing saved payment methods
+    // Payment methods are only saved if user explicitly opts in during checkout
     const paymentIntent = await stripe.paymentIntents.create({
       amount: total,
       currency: 'usd',
-      customer: stripeCustomerId || undefined,
-      setup_future_usage: session?.user?.id ? 'off_session' : undefined, // Allow saving payment methods for logged-in users
+      // Don't attach customer to prevent auto-loading saved cards
+      // Customer will be attached after payment if user opts to save
       metadata: {
         userId: session?.user?.id || '',
         guestEmail: email || '',
         itemCount: validatedItems.length.toString(),
+        stripeCustomerId: stripeCustomerId || '', // Store for later use if needed
       },
       shipping: {
         address: {

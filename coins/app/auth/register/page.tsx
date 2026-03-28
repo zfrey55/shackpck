@@ -39,18 +39,21 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto sign in after registration
-      const signInResponse = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      // Auto sign in after registration using NextAuth
+      const { signIn } = await import('next-auth/react');
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
 
-      if (signInResponse.ok) {
+      if (result?.error) {
+        // Registration succeeded but sign-in failed - redirect to login
+        router.push('/auth/signin?registered=true');
+      } else {
+        // Successfully signed in
         router.push('/account');
         router.refresh();
-      } else {
-        router.push('/auth/signin');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');

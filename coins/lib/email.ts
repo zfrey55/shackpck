@@ -267,7 +267,13 @@ export async function sendAdminOrderNotification(
                   <h3 style="margin-top: 0;">Shipping Label Generated</h3>
                   <p><strong>Tracking Number:</strong> ${data.fedexTrackingNumber}</p>
                   ${data.fedexLabelUrl ? `
-                    <a href="${data.fedexLabelUrl}" class="label" target="_blank">Download Shipping Label</a>
+                    <p>
+                      <a href="${data.fedexLabelUrl}" class="label" target="_blank">Download Shipping Label</a>
+                      <br>
+                      <small style="color: #666; font-size: 0.9em;">
+                        Note: Label URLs may expire. If the link doesn't work, contact support with your tracking number.
+                      </small>
+                    </p>
                   ` : ''}
                 </div>
               ` : ''}

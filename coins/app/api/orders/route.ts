@@ -107,6 +107,9 @@ export async function POST(request: NextRequest) {
 
     // Create order with transaction to ensure atomicity
     const order = await prisma.$transaction(async (tx: any) => {
+      // Map to track item.seriesId -> local series.id for order items
+      const seriesIdMap = new Map<string, string>();
+      
       // Check inventory and update series
       for (const item of items) {
         // Check if this is an inventory app series ID
@@ -222,6 +225,9 @@ export async function POST(request: NextRequest) {
             quantity: item.quantity,
           },
         });
+        
+        // Map item.seriesId to local series.id for order item creation
+        seriesIdMap.set(item.seriesId, series.id);
       }
 
       // Create order
@@ -243,19 +249,23 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Create order items
+      // Create order items - use local series.id from the map
       const orderItems = await Promise.all(
-        items.map((item: any) =>
-          tx.orderItem.create({
+        items.map((item: any) => {
+          const localSeriesId = seriesIdMap.get(item.seriesId);
+          if (!localSeriesId) {
+            throw new Error(`Series ID mapping not found for ${item.seriesId}`);
+          }
+          return tx.orderItem.create({
             data: {
               orderId: newOrder.id,
-              seriesId: item.seriesId,
+              seriesId: localSeriesId, // Use local database series.id
               quantity: item.quantity,
               pricePerPack: item.pricePerPack,
               total: item.pricePerPack * item.quantity,
             },
-          })
-        )
+          });
+        })
       );
 
       // Update user loyalty points
@@ -319,9 +329,22 @@ export async function POST(request: NextRequest) {
     const seriesSales = new Map<string, { quantity: number; pricePerPack: number; seriesName: string; coinInventorySeriesId?: string }>();
     
     for (const item of items) {
-      const series = await prisma.series.findUnique({
-        where: { id: item.seriesId },
-      });
+      // Check if this is an inventory series ID
+      const isInventorySeriesId = item.seriesId.startsWith('specialized_') || item.seriesId.includes('_');
+      
+      let series: any = null;
+      
+      if (isInventorySeriesId) {
+        // Look up by coinInventorySeriesId
+        series = await prisma.series.findFirst({
+          where: { coinInventorySeriesId: item.seriesId },
+        });
+      } else {
+        // Regular series - look up by local DB ID
+        series = await prisma.series.findUnique({
+          where: { id: item.seriesId },
+        });
+      }
       
       if (series) {
         const coinInventorySeriesId = (series as any).coinInventorySeriesId;
@@ -364,6 +387,7 @@ export async function POST(request: NextRequest) {
     let labelStatus: 'GENERATED' | 'FAILED' | 'PENDING' = 'PENDING';
 
     try {
+      // Generate PDF label - always 4x6 inches (automatically set by FedEx API)
       const fedexResult = await generateFedExLabel(shippingAddress);
       fedexTrackingNumber = fedexResult.trackingNumber;
       fedexLabelUrl = fedexResult.labelUrl;
@@ -460,20 +484,54 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: error.message || 'Failed to create order',
-        details: process.env.NODE_ENV === 'development' ? {
+        details: {
           message: error.message,
           stack: error.stack,
           code: error.code,
-        } : undefined,
+          name: error.name,
+        },
       },
       { status: 500 }
     );
   }
 }
 
-// GET /api/orders - Get user's orders
+// GET /api/orders - Get user's orders or order by payment intent ID
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const paymentIntentId = searchParams.get('paymentIntentId');
+
+    // If paymentIntentId is provided, return that specific order (for success page)
+    if (paymentIntentId) {
+      const order = await prisma.order.findFirst({
+        where: { stripePaymentIntentId: paymentIntentId },
+        include: {
+          items: {
+            include: {
+              series: {
+                select: {
+                  name: true,
+                  slug: true,
+                  images: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        return NextResponse.json(
+          { error: 'Order not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ order });
+    }
+
+    // Otherwise, return user's orders (requires authentication)
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {

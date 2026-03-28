@@ -53,6 +53,7 @@ function CheckoutForm({
   const [name, setName] = useState(session?.user?.name || initialName || '');
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
 
   // Fetch saved addresses for logged-in users
   useEffect(() => {
@@ -82,6 +83,76 @@ function CheckoutForm({
         .catch(err => console.error('Error fetching addresses:', err));
     }
   }, [session]);
+  
+  // Auto-update saved address when user changes it (for logged-in users)
+  useEffect(() => {
+    if (session?.user?.id && selectedAddressId && !isUpdatingAddress) {
+      const address = savedAddresses.find(addr => addr.id === selectedAddressId);
+      if (address) {
+        // Check if address has changed
+        const hasChanged = 
+          address.fullName !== shippingAddress.fullName ||
+          address.line1 !== shippingAddress.line1 ||
+          address.line2 !== (shippingAddress.line2 || '') ||
+          address.city !== shippingAddress.city ||
+          address.state !== shippingAddress.state ||
+          address.postalCode !== shippingAddress.postalCode ||
+          address.phone !== (shippingAddress.phone || '');
+        
+        if (hasChanged && shippingAddress.line1 && shippingAddress.city) {
+          // Debounce the update
+          const timeoutId = setTimeout(async () => {
+            try {
+              await fetch(`/api/user/addresses/${selectedAddressId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  fullName: shippingAddress.fullName,
+                  line1: shippingAddress.line1,
+                  line2: shippingAddress.line2 || '',
+                  city: shippingAddress.city,
+                  state: shippingAddress.state,
+                  postalCode: shippingAddress.postalCode,
+                  country: shippingAddress.country || 'US',
+                  phone: shippingAddress.phone || '',
+                  isDefault: address.isDefault,
+                }),
+              });
+              // Refresh saved addresses
+              const res = await fetch('/api/user/addresses');
+              const data = await res.json();
+              if (Array.isArray(data)) {
+                setSavedAddresses(data);
+              }
+            } catch (err) {
+              console.error('Error updating address:', err);
+            }
+          }, 1000); // 1 second debounce
+          
+          return () => clearTimeout(timeoutId);
+        }
+      }
+    }
+  }, [shippingAddress, selectedAddressId, session, savedAddresses, isUpdatingAddress]);
+  
+  const handleAddressSelect = (addressId: string) => {
+    const address = savedAddresses.find(addr => addr.id === addressId);
+    if (address) {
+      setIsUpdatingAddress(true);
+      setSelectedAddressId(addressId);
+      setShippingAddress({
+        fullName: address.fullName,
+        line1: address.line1,
+        line2: address.line2 || '',
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country || 'US',
+        phone: address.phone || '',
+      });
+      setTimeout(() => setIsUpdatingAddress(false), 100);
+    }
+  };
 
   useEffect(() => {
     if (items.length === 0) {
@@ -193,10 +264,15 @@ function CheckoutForm({
 
       if (orderResponse.ok) {
         clearCart();
-        router.push(`/checkout/success?payment_intent=${paymentIntent.id}`);
+        // Use window.location for reliable redirect
+        window.location.href = `/checkout/success?payment_intent=${paymentIntent.id}`;
       } else {
-        setError('Payment succeeded but order creation failed. Please contact support.');
+        const errorData = await orderResponse.json();
+        setError(errorData.error || 'Payment succeeded but order creation failed. Please contact support.');
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
   };
 
@@ -212,6 +288,29 @@ function CheckoutForm({
       {/* Shipping Address */}
       <div className="bg-slate-900/40 p-6 rounded-lg border border-slate-700">
         <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
+        {session?.user?.id && savedAddresses.length > 0 && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Use Saved Address</label>
+            <select
+              value={selectedAddressId || ''}
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleAddressSelect(e.target.value);
+                } else {
+                  setSelectedAddressId(null);
+                }
+              }}
+              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold"
+            >
+              <option value="">Enter new address</option>
+              {savedAddresses.map((addr) => (
+                <option key={addr.id} value={addr.id}>
+                  {addr.fullName} - {addr.line1}, {addr.city}, {addr.state} {addr.isDefault ? '(Default)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-2">Full Name *</label>
@@ -329,6 +428,12 @@ function CheckoutForm({
                   phone: shippingAddress.phone || undefined,
                   name: session?.user?.name || name || undefined,
                 },
+              },
+              // Disable Stripe Link and saved payment methods for security
+              // Users must enter card details each time
+              wallets: {
+                applePay: 'never',
+                googlePay: 'never',
               },
             }}
           />
@@ -502,7 +607,39 @@ function CheckoutFormWrapper({
     phone: '',
   });
   const [email, setEmail] = useState(session?.user?.email || '');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(session?.user?.name || '');
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
+  
+  // Fetch saved addresses for logged-in users
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch('/api/user/addresses')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSavedAddresses(data);
+            // Auto-select default address if available
+            const defaultAddress = data.find((addr: any) => addr.isDefault);
+            if (defaultAddress) {
+              setSelectedAddressId(defaultAddress.id);
+              setShippingAddress({
+                fullName: defaultAddress.fullName,
+                line1: defaultAddress.line1,
+                line2: defaultAddress.line2 || '',
+                city: defaultAddress.city,
+                state: defaultAddress.state,
+                postalCode: defaultAddress.postalCode,
+                country: defaultAddress.country || 'US',
+                phone: defaultAddress.phone || '',
+              });
+            }
+          }
+        })
+        .catch(err => console.error('Error fetching addresses:', err));
+    }
+  }, [session]);
   
   // Update parent state when local state changes
   useEffect(() => {
@@ -510,6 +647,76 @@ function CheckoutFormWrapper({
       onShippingAddressChange(shippingAddress);
     }
   }, [shippingAddress, onShippingAddressChange]);
+  
+  // Auto-update saved address when user changes it (for logged-in users)
+  useEffect(() => {
+    if (session?.user?.id && selectedAddressId && !isUpdatingAddress) {
+      const address = savedAddresses.find(addr => addr.id === selectedAddressId);
+      if (address) {
+        // Check if address has changed
+        const hasChanged = 
+          address.fullName !== shippingAddress.fullName ||
+          address.line1 !== shippingAddress.line1 ||
+          address.line2 !== (shippingAddress.line2 || '') ||
+          address.city !== shippingAddress.city ||
+          address.state !== shippingAddress.state ||
+          address.postalCode !== shippingAddress.postalCode ||
+          address.phone !== (shippingAddress.phone || '');
+        
+        if (hasChanged && shippingAddress.line1 && shippingAddress.city) {
+          // Debounce the update
+          const timeoutId = setTimeout(async () => {
+            try {
+              await fetch(`/api/user/addresses/${selectedAddressId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  fullName: shippingAddress.fullName,
+                  line1: shippingAddress.line1,
+                  line2: shippingAddress.line2 || '',
+                  city: shippingAddress.city,
+                  state: shippingAddress.state,
+                  postalCode: shippingAddress.postalCode,
+                  country: shippingAddress.country || 'US',
+                  phone: shippingAddress.phone || '',
+                  isDefault: address.isDefault,
+                }),
+              });
+              // Refresh saved addresses
+              const res = await fetch('/api/user/addresses');
+              const data = await res.json();
+              if (Array.isArray(data)) {
+                setSavedAddresses(data);
+              }
+            } catch (err) {
+              console.error('Error updating address:', err);
+            }
+          }, 1000); // 1 second debounce
+          
+          return () => clearTimeout(timeoutId);
+        }
+      }
+    }
+  }, [shippingAddress, selectedAddressId, session, savedAddresses, isUpdatingAddress]);
+  
+  const handleAddressSelect = (addressId: string) => {
+    const address = savedAddresses.find(addr => addr.id === addressId);
+    if (address) {
+      setIsUpdatingAddress(true);
+      setSelectedAddressId(addressId);
+      setShippingAddress({
+        fullName: address.fullName,
+        line1: address.line1,
+        line2: address.line2 || '',
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country || 'US',
+        phone: address.phone || '',
+      });
+      setTimeout(() => setIsUpdatingAddress(false), 100);
+    }
+  };
   
   useEffect(() => {
     if (onEmailChange) {
