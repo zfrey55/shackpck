@@ -4,6 +4,10 @@ import { prisma } from './db';
 import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
+  // Netlify / reverse proxies: required so /api/auth/* resolves the public URL (avoids 500 + CLIENT_FETCH_ERROR)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- trustHost exists at runtime in next-auth v4; types omit it in this version
+  // @ts-expect-error NextAuth AuthOptions types omit trustHost; it is supported at runtime
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: 'Credentials',

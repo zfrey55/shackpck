@@ -12,8 +12,26 @@ const contactSchema = z.object({
   caseTypes: z.array(z.string().trim().max(64)).optional().default([]),
 });
 
+/** Non-empty env required for contact form (Netlify: set for Production + same scope as other server secrets). */
+function contactFormEnvGap(): 'SENDGRID_API_KEY' | 'ADMIN_EMAIL' | null {
+  if (!process.env.SENDGRID_API_KEY?.trim()) return 'SENDGRID_API_KEY';
+  if (!process.env.ADMIN_EMAIL?.trim()) return 'ADMIN_EMAIL';
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const missingEnv = contactFormEnvGap();
+    if (missingEnv) {
+      console.error(
+        `[api/contact] Contact form disabled: ${missingEnv} is missing or empty. Add it in Netlify → Site configuration → Environment variables (runtime).`
+      );
+      return NextResponse.json(
+        { error: 'Contact form is temporarily unavailable.' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const validated = contactSchema.parse(body);
 
@@ -44,10 +62,10 @@ export async function POST(request: NextRequest) {
     const message =
       error instanceof Error ? error.message : 'Failed to send message';
 
+    // Only map our explicit config throws to 503 — not arbitrary SendGrid API error text
     if (
-      message.includes('not configured') ||
-      message.includes('SENDGRID') ||
-      message.includes('ADMIN_EMAIL')
+      message === 'ADMIN_EMAIL is not configured' ||
+      message === 'SENDGRID_API_KEY is not configured'
     ) {
       return NextResponse.json(
         { error: 'Contact form is temporarily unavailable.' },

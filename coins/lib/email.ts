@@ -354,10 +354,10 @@ export async function sendContactInquiryEmail(data: ContactInquiryData): Promise
   const fromEmail = process.env.FROM_EMAIL || 'noreply@shackpck.com';
   const fromName = process.env.FROM_NAME || 'Shackpack';
 
-  if (!adminEmail) {
+  if (!adminEmail?.trim()) {
     throw new Error('ADMIN_EMAIL is not configured');
   }
-  if (!process.env.SENDGRID_API_KEY) {
+  if (!process.env.SENDGRID_API_KEY?.trim()) {
     throw new Error('SENDGRID_API_KEY is not configured');
   }
 
