@@ -390,7 +390,7 @@ export async function POST(request: NextRequest) {
       // Generate PDF label - always 4x6 inches (automatically set by FedEx API)
       const fedexResult = await generateFedExLabel(shippingAddress);
       fedexTrackingNumber = fedexResult.trackingNumber;
-      fedexLabelUrl = fedexResult.labelUrl;
+      fedexLabelUrl = fedexResult.labelUrl ?? null;
       labelStatus = 'GENERATED';
 
       // Update order with FedEx info

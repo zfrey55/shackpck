@@ -41,30 +41,35 @@ export function ContactForm() {
     setError('');
     
     try {
-      // Submit to Netlify Forms
-      const response = await fetch('/', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          'form-name': 'contact',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           phone: formData.phone,
           subject: formData.subject,
           message: formData.message,
-          caseTypes: formData.caseTypes.join(', ')
-        }).toString()
+          caseTypes: formData.caseTypes,
+        }),
       });
+
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
         setIsSubmitted(true);
-        setIsSubmitting(false);
-      } else {
-        throw new Error('Form submission failed');
+        return;
       }
-    } catch (err) {
+
+      setError(
+        typeof data.error === 'string'
+          ? data.error
+          : 'Something went wrong. Please try again or email us directly.'
+      );
+    } catch {
       setError('Something went wrong. Please try again or email us directly.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -95,30 +100,7 @@ export function ContactForm() {
   }
 
   return (
-    <>
-      {/* Hidden form for Netlify detection */}
-      <form name="contact" data-netlify="true" hidden>
-        <input type="text" name="firstName" />
-        <input type="text" name="lastName" />
-        <input type="text" name="email" />
-        <input type="text" name="phone" />
-        <select name="subject">
-          <option value="general">General Question</option>
-          <option value="order">Order Inquiry</option>
-          <option value="coin-info">Coin Information</option>
-          <option value="shipping">Shipping Question</option>
-          <option value="other">Other</option>
-        </select>
-        {Object.entries(CASE_TYPE_DISPLAY_NAMES).map(([value]) => (
-          <label key={value}>
-            <input type="checkbox" name="caseTypes" value={value} /> {value}
-          </label>
-        ))}
-        <textarea name="message"></textarea>
-      </form>
-
-      {/* Actual form */}
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-slate-200">
@@ -260,6 +242,5 @@ export function ContactForm() {
           {isSubmitting ? 'Sending...' : 'Send Message'}
         </button>
       </form>
-    </>
   );
 }

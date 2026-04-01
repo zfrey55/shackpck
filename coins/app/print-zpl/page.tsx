@@ -1,11 +1,9 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-export const dynamic = 'force-dynamic';
-
-export default function PrintZPLPage() {
+function PrintZPLContent() {
   const searchParams = useSearchParams();
   const zplData = searchParams.get('data');
   const [status, setStatus] = useState<'loading' | 'ready' | 'printing' | 'error'>('loading');
@@ -274,5 +272,19 @@ export default function PrintZPLPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PrintZPLPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-900">
+          <div className="text-white">Loading ZPL data...</div>
+        </div>
+      }
+    >
+      <PrintZPLContent />
+    </Suspense>
   );
 }

@@ -15,8 +15,8 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Enable form detection
-# Forms are detected from: coins/public/contact-form.html
+# Contact form submissions: POST /api/contact (SendGrid → ADMIN_EMAIL).
+# Legacy static form (unused at runtime): coins/public/contact-form.html
 
 [[headers]]
   for = "/*"

@@ -327,6 +327,90 @@ ${data.labelStatus === 'FAILED' ? '⚠️ Label Generation Failed' : ''}
   }
 }
 
+const CONTACT_SUBJECT_LABELS: Record<string, string> = {
+  general: 'General Question',
+  order: 'Order Inquiry',
+  'coin-info': 'Coin Information',
+  shipping: 'Shipping Question',
+  other: 'Other',
+};
+
+export interface ContactInquiryData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  caseTypes: string;
+}
+
+/**
+ * Send website contact form inquiry to the admin inbox (SendGrid).
+ * Throws if email cannot be sent — callers should handle errors.
+ */
+export async function sendContactInquiryEmail(data: ContactInquiryData): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const fromEmail = process.env.FROM_EMAIL || 'noreply@shackpck.com';
+  const fromName = process.env.FROM_NAME || 'Shackpack';
+
+  if (!adminEmail) {
+    throw new Error('ADMIN_EMAIL is not configured');
+  }
+  if (!process.env.SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY is not configured');
+  }
+
+  const escapeHtml = (s: string) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const subjectLabel = CONTACT_SUBJECT_LABELS[data.subject] || data.subject;
+  const caseTypesDisplay = data.caseTypes.trim() || '(none selected)';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head><meta charset="utf-8" /></head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #b8860b;">New contact form message</h2>
+        <p><strong>Subject:</strong> ${escapeHtml(subjectLabel)}</p>
+        <p><strong>Name:</strong> ${escapeHtml(`${data.firstName} ${data.lastName}`)}<br/>
+        <strong>Email:</strong> <a href="mailto:${data.email.replace(/"/g, '')}">${escapeHtml(data.email)}</a><br/>
+        <strong>Phone:</strong> ${escapeHtml(data.phone)}</p>
+        <p><strong>Case types:</strong> ${escapeHtml(caseTypesDisplay)}</p>
+        <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-top: 16px;">
+          <strong>Message</strong>
+          <p style="white-space: pre-wrap; margin: 8px 0 0 0;">${escapeHtml(data.message)}</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const text = [
+    'New contact form message',
+    `Subject: ${subjectLabel}`,
+    `Name: ${data.firstName} ${data.lastName}`,
+    `Email: ${data.email}`,
+    `Phone: ${data.phone}`,
+    `Case types: ${caseTypesDisplay}`,
+    '',
+    data.message,
+  ].join('\n');
+
+  await sgMail.send({
+    from: { email: fromEmail, name: fromName },
+    to: adminEmail,
+    replyTo: { email: data.email, name: `${data.firstName} ${data.lastName}`.trim() },
+    subject: `[Shackpack Contact] ${subjectLabel} — ${data.lastName}, ${data.firstName}`,
+    html,
+    text,
+  });
+}
+
 /**
  * Add contact to SendGrid for marketing emails
  * Use this when users register or subscribe

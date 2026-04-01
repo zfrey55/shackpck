@@ -16,7 +16,8 @@ interface ShippingAddress {
 
 interface FedExLabelResult {
   trackingNumber: string;
-  labelUrl: string;
+  /** Present for PDF flow; ZPLII may only set labelData */
+  labelUrl?: string;
   labelData?: string; // Base64 encoded label (PDF or ZPLII)
   labelFormat: 'PDF' | 'ZPLII'; // PDF or ZPLII format
 }
@@ -168,8 +169,8 @@ export async function generateFedExLabel(
   }, null, 2));
 
   // Retry logic for internal server errors (often transient)
-  let shipmentResponse;
-  let lastError;
+  let shipmentResponse: Response | undefined;
+  let lastError: unknown;
   const maxRetries = 2;
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -220,9 +221,11 @@ export async function generateFedExLabel(
     );
   }
 
-  if (!shipmentResponse.ok) {
+  if (!shipmentResponse || !shipmentResponse.ok) {
     throw new Error(
-      `FedEx API error after ${maxRetries + 1} attempts: ${JSON.stringify(lastError)}`
+      `FedEx API error after ${maxRetries + 1} attempts: ${JSON.stringify(
+        lastError ?? { reason: 'No successful response from FedEx ship API' }
+      )}`
     );
   }
 
@@ -373,26 +376,25 @@ export async function generateFedExLabel(
               
               // Create a new PDF with correct 4x6 inch size
               const newPdfDoc = await PDFDocument.create();
-              
-              // Copy the page from original PDF
-              const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [0]);
-              
+
+              // embedPage produces a PDFEmbeddedPage; drawPage requires that type (not copyPages' PDFPage)
+              const embeddedPage = await newPdfDoc.embedPage(firstPage);
+
               // Calculate scale to fit content within 4x6 while maintaining aspect ratio
               const scaleX = targetWidth / currentWidth;
               const scaleY = targetHeight / currentHeight;
               const scale = Math.min(scaleX, scaleY); // Use smaller scale to ensure content fits
-              
+
               // Add a new page with correct 4x6 inch size
               const newPage = newPdfDoc.addPage([targetWidth, targetHeight]);
-              
+
               // Calculate scaled dimensions and centered position
               const scaledWidth = currentWidth * scale;
               const scaledHeight = currentHeight * scale;
               const xOffset = (targetWidth - scaledWidth) / 2;
               const yOffset = (targetHeight - scaledHeight) / 2;
-              
-              // Draw the copied page scaled and centered on the new 4x6 page
-              newPage.drawPage(copiedPage, {
+
+              newPage.drawPage(embeddedPage, {
                 x: xOffset,
                 y: yOffset,
                 xScale: scale,
