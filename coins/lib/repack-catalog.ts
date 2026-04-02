@@ -230,9 +230,11 @@ export const HOME_FEATURED_REPACK_IDS: string[] = [
   'prominence',
   'apex',
   'shackpack',
-  'shackpack-deluxe',
-  'shackpack-xtreme',
   'currencyclash',
+  'shackpack-flex',
+  'shackpack-ascension',
+  'aura',
+  'shackpack-ignite',
 ];
 
 export function getHomeFeaturedPacks(): RepackCatalogItem[] {

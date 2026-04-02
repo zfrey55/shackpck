@@ -26,8 +26,8 @@ export function RepackCard({
   let imageClass =
     'object-cover transition-transform duration-500 will-change-transform ';
   if (isCoinwave) {
-    // Wider artwork (e.g. 16:9): zoom so the card crops like a square hero
-    imageClass += 'scale-[1.32] group-hover:scale-[1.4] ';
+    // Wide artwork: slight zoom-out; anchor to top so the upper portion of the art is visible
+    imageClass += 'origin-top scale-[0.92] group-hover:scale-[0.97] ';
   } else if (isXtreme) {
     imageClass += 'scale-[1.45] group-hover:scale-[1.52] ';
   } else {
@@ -36,9 +36,11 @@ export function RepackCard({
 
   const imageStyle: CSSProperties | undefined = isDeluxe
     ? { objectPosition: 'center 70%' }
-    : isCoinwave || isXtreme
+    : isXtreme
       ? { objectPosition: 'center center' }
-      : undefined;
+      : isCoinwave
+        ? { objectPosition: 'center top' }
+        : undefined;
 
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 shadow-sm transition-all duration-300 hover:border-slate-700 hover:shadow-glow">
