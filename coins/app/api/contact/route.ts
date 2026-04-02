@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendContactInquiryEmail } from '@/lib/email';
 
+/** SendGrid + @sendgrid/mail require Node; avoids Edge/runtime surprises on Netlify */
+export const runtime = 'nodejs';
+
 const contactSchema = z.object({
   firstName: z.string().trim().min(1).max(120),
   lastName: z.string().trim().min(1).max(120),
@@ -12,10 +15,15 @@ const contactSchema = z.object({
   caseTypes: z.array(z.string().trim().max(64)).optional().default([]),
 });
 
-/** Non-empty env required for contact form (Netlify: set for Production + same scope as other server secrets). */
-function contactFormEnvGap(): 'SENDGRID_API_KEY' | 'ADMIN_EMAIL' | null {
+/** Non-empty env required for contact form (FROM_EMAIL must be a SendGrid-verified sender). */
+function contactFormEnvGap():
+  | 'SENDGRID_API_KEY'
+  | 'ADMIN_EMAIL'
+  | 'FROM_EMAIL'
+  | null {
   if (!process.env.SENDGRID_API_KEY?.trim()) return 'SENDGRID_API_KEY';
   if (!process.env.ADMIN_EMAIL?.trim()) return 'ADMIN_EMAIL';
+  if (!process.env.FROM_EMAIL?.trim()) return 'FROM_EMAIL';
   return null;
 }
 
@@ -58,6 +66,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const sgBody =
+      error &&
+      typeof error === 'object' &&
+      'response' in error &&
+      error.response &&
+      typeof error.response === 'object' &&
+      'body' in error.response
+        ? String((error.response as { body?: string }).body)
+        : null;
+    if (sgBody) {
+      console.error('[api/contact] SendGrid API response body:', sgBody);
+    }
     console.error('Contact form error:', error);
     const message =
       error instanceof Error ? error.message : 'Failed to send message';
@@ -65,7 +85,8 @@ export async function POST(request: NextRequest) {
     // Only map our explicit config throws to 503 — not arbitrary SendGrid API error text
     if (
       message === 'ADMIN_EMAIL is not configured' ||
-      message === 'SENDGRID_API_KEY is not configured'
+      message === 'SENDGRID_API_KEY is not configured' ||
+      message === 'FROM_EMAIL is not configured'
     ) {
       return NextResponse.json(
         { error: 'Contact form is temporarily unavailable.' },

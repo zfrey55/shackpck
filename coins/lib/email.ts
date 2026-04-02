@@ -351,7 +351,7 @@ export interface ContactInquiryData {
  */
 export async function sendContactInquiryEmail(data: ContactInquiryData): Promise<void> {
   const adminEmail = process.env.ADMIN_EMAIL;
-  const fromEmail = process.env.FROM_EMAIL || 'noreply@shackpck.com';
+  const fromEmailRaw = process.env.FROM_EMAIL;
   const fromName = process.env.FROM_NAME || 'Shackpack';
 
   if (!adminEmail?.trim()) {
@@ -360,6 +360,13 @@ export async function sendContactInquiryEmail(data: ContactInquiryData): Promise
   if (!process.env.SENDGRID_API_KEY?.trim()) {
     throw new Error('SENDGRID_API_KEY is not configured');
   }
+  if (!fromEmailRaw?.trim()) {
+    throw new Error('FROM_EMAIL is not configured');
+  }
+  const fromEmail = fromEmailRaw.trim();
+
+  // Per-request init: serverless can evaluate the module before env is bound; always set before send
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY.trim());
 
   const escapeHtml = (s: string) =>
     s
@@ -401,14 +408,26 @@ export async function sendContactInquiryEmail(data: ContactInquiryData): Promise
     data.message,
   ].join('\n');
 
-  await sgMail.send({
-    from: { email: fromEmail, name: fromName },
-    to: adminEmail,
-    replyTo: { email: data.email, name: `${data.firstName} ${data.lastName}`.trim() },
-    subject: `[Shackpack Contact] ${subjectLabel} — ${data.lastName}, ${data.firstName}`,
-    html,
-    text,
-  });
+  const replyName = `${data.firstName} ${data.lastName}`.trim() || data.email;
+
+  try {
+    await sgMail.send({
+      from: { email: fromEmail, name: fromName },
+      to: adminEmail.trim(),
+      replyTo: { email: data.email, name: replyName },
+      subject: `[Shackpack Contact] ${subjectLabel} — ${data.lastName}, ${data.firstName}`,
+      html,
+      text,
+    });
+  } catch (err: unknown) {
+    const body =
+      err &&
+      typeof err === 'object' &&
+      'response' in err &&
+      (err as { response?: { body?: string } }).response?.body;
+    console.error('[sendContactInquiryEmail] SendGrid send failed:', body || err);
+    throw err;
+  }
 }
 
 /**
