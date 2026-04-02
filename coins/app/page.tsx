@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { RepackCard } from '@/components/RepackCard';
 import { FeaturedSeriesSection } from '@/components/FeaturedSeriesSection';
-import { REPACK_CATALOG } from '@/lib/repack-catalog';
+import { getHomeFeaturedPacks } from '@/lib/repack-catalog';
 
 export default function HomePage() {
   return (
@@ -68,7 +68,7 @@ export default function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {REPACK_CATALOG.map((pack) => (
+          {getHomeFeaturedPacks().map((pack) => (
             <RepackCard 
               key={pack.id}
               id={pack.id}

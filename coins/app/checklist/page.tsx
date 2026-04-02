@@ -13,65 +13,7 @@ import {
 } from "./components";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { formatSeriesDisplayName } from "@/lib/series-display";
-
-const CASE_DESCRIPTIONS: Record<string, string> = {
-  'reign': 'Reign by Shackpack',
-  'prominence': 'Prominence by Shackpack',
-  'apex': 'Apex by Shackpack',
-  'base': 'ShackPack (1× 1/10 oz gold + 9 varied silver)',
-  'deluxe': 'ShackPack Deluxe (2× 1/10 oz gold + 8 varied silver)',
-  'xtreme': 'ShackPack Xtreme (1× 1/4 oz gold + 9 varied silver)',
-  'unleashed': 'ShackPack Unleashed (2× 1/4 oz gold + 8 varied silver)',
-  'resurgence': 'ShackPack Resurgence (1× 1/2 oz gold + 9 varied silver)',
-  'transcendent': 'ShackPack Transcendent (1× 1 oz gold + 9 varied silver)',
-  'transcendent-transformed': 'ShackPack Transcendent Transformed (2× 1 oz gold + 8 varied silver)',
-  'ignite': 'ShackPack Ignite (1× 1/4 oz platinum + 9 varied silver)',
-  'eclipse': 'ShackPack Eclipse (1× 1 oz platinum + 9 varied silver)',
-  'radiant': 'ShackPack Radiant (1× 1/2 oz platinum + 9 varied silver)',
-  'shackpack-expo': 'ShackPack Expo (premium line; contents may vary)',
-  'shackpack-ascension': 'ShackPack Ascension (premium line; contents may vary)',
-  'shackpack-flex': 'ShackPack Flex (premium line; contents may vary)',
-  'shackpack-pinnacle': 'ShackPack Pinnacle (premium line; contents may vary)',
-  'shackpack-summit': 'ShackPack Summit (premium line; contents may vary)',
-  'coinwave-platinum-drill': 'Coinwave Platinum Drill (contents may vary)',
-  'coinwave-gold-pan': 'Coinwave Gold Pan (contents may vary)',
-  'coinwave-the-mine': 'Coinwave The Mine (contents may vary)',
-  'coinwave-gold-mine': 'Coinwave Gold Mine (contents may vary)',
-  'currencyclash': 'Currency Clash by Shackpack',
-  'mystery': 'ShackPack Mystery (custom configuration)',
-  'custom': 'ShackPack Custom',
-  'aura': 'Aura by Shackpack'
-};
-
-const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
-  'reign': 'Reign by Shackpack',
-  'prominence': 'Prominence by Shackpack',
-  'apex': 'Apex by Shackpack',
-  'base': 'ShackPack',
-  'deluxe': 'ShackPack Deluxe',
-  'xtreme': 'ShackPack Xtreme',
-  'unleashed': 'ShackPack Unleashed',
-  'resurgence': 'ShackPack Resurgence',
-  'transcendent': 'ShackPack Transcendent',
-  'transcendent-transformed': 'ShackPack Transcendent Transformed',
-  'transcendenttransformed': 'ShackPack Transcendent Transformed',
-  'ignite': 'ShackPack Ignite',
-  'eclipse': 'ShackPack Eclipse',
-  'radiant': 'ShackPack Radiant',
-  'shackpack-expo': 'ShackPack Expo',
-  'shackpack-ascension': 'ShackPack Ascension',
-  'shackpack-flex': 'ShackPack Flex',
-  'shackpack-pinnacle': 'ShackPack Pinnacle',
-  'shackpack-summit': 'ShackPack Summit',
-  'coinwave-platinum-drill': 'Coinwave Platinum Drill',
-  'coinwave-gold-pan': 'Coinwave Gold Pan',
-  'coinwave-the-mine': 'Coinwave The Mine',
-  'coinwave-gold-mine': 'Coinwave Gold Mine',
-  'currencyclash': 'Currency Clash by Shackpack',
-  'mystery': 'ShackPack Mystery',
-  'custom': 'ShackPack Custom',
-  'aura': 'Aura by Shackpack'
-};
+import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 
 export default function ChecklistPage() {
   const [availableDates, setAvailableDates] = useState<AvailableDatesResponse | null>(null);
@@ -247,7 +189,7 @@ export default function ChecklistPage() {
     return Array.from(caseTypeMap.entries())
       .map(([caseType, info]) => ({
         caseType,
-        displayName: CASE_TYPE_DISPLAY_NAMES[caseType] || caseType,
+        displayName: getChecklistCaseShortLabel(caseType),
         totalDates: info.dates.size,
         totalCases: info.totalCases,
         isLoading: !hasLoadedData
@@ -436,7 +378,6 @@ export default function ChecklistPage() {
             caseTypes={caseTypes}
             selectedCaseType={selectedCaseType}
             onCaseTypeSelect={handleCaseTypeSelect}
-            caseDescriptions={CASE_DESCRIPTIONS}
           />
         )}
 
@@ -460,7 +401,7 @@ export default function ChecklistPage() {
               dates={datesForCaseType}
               selectedDate={selectedDate || ''}
               onDateSelect={handleDateSelect}
-              caseTypeName={selectedCaseType ? (CASE_TYPE_DISPLAY_NAMES[selectedCaseType] || selectedCaseType) : 'Unknown'}
+              caseTypeName={selectedCaseType ? getChecklistCaseShortLabel(selectedCaseType) : 'Unknown'}
             />
           </>
         )}
@@ -500,7 +441,6 @@ export default function ChecklistPage() {
                     <CaseCard
                       key={caseData.caseId}
                       caseData={caseData}
-                      caseDescriptions={CASE_DESCRIPTIONS}
                     />
                   ))}
                 </div>
@@ -508,7 +448,7 @@ export default function ChecklistPage() {
             ) : (
               <EmptyState 
                 date={selectedDate} 
-                caseTypeName={selectedCaseType ? (CASE_TYPE_DISPLAY_NAMES[selectedCaseType] || selectedCaseType) : 'Unknown'}
+                caseTypeName={selectedCaseType ? getChecklistCaseShortLabel(selectedCaseType) : 'Unknown'}
               />
             )}
           </>

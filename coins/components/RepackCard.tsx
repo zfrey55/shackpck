@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -18,6 +19,27 @@ export function RepackCard({
   coinCount, 
   category
 }: RepackCardProps) {
+  const isCoinwave = id.startsWith('coinwave-');
+  const isXtreme = id === 'shackpack-xtreme';
+  const isDeluxe = id === 'shackpack-deluxe';
+
+  let imageClass =
+    'object-cover transition-transform duration-500 will-change-transform ';
+  if (isCoinwave) {
+    // Wider artwork (e.g. 16:9): zoom so the card crops like a square hero
+    imageClass += 'scale-[1.32] group-hover:scale-[1.4] ';
+  } else if (isXtreme) {
+    imageClass += 'scale-[1.45] group-hover:scale-[1.52] ';
+  } else {
+    imageClass += 'group-hover:scale-105 ';
+  }
+
+  const imageStyle: CSSProperties | undefined = isDeluxe
+    ? { objectPosition: 'center 70%' }
+    : isCoinwave || isXtreme
+      ? { objectPosition: 'center center' }
+      : undefined;
+
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 shadow-sm transition-all duration-300 hover:border-slate-700 hover:shadow-glow">
       <div className="relative aspect-[4/3] w-full bg-slate-950 overflow-hidden">
@@ -26,14 +48,8 @@ export function RepackCard({
           alt={name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className={`transition-transform duration-500 group-hover:scale-105 ${
-            id === 'shackpack-xtreme' 
-              ? 'object-cover scale-110' 
-              : id === 'shackpack-deluxe'
-              ? 'object-cover'
-              : 'object-cover'
-          }`}
-          style={id === 'shackpack-deluxe' ? { objectPosition: 'center 70%' } : undefined}
+          className={imageClass}
+          style={imageStyle}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
       </div>

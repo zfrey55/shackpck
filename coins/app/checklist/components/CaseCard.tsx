@@ -1,21 +1,27 @@
 import { memo } from "react";
 import type { CaseData } from "../types";
+import {
+  getChecklistCaseLongDescription,
+  getChecklistCaseShortLabel,
+} from "@/lib/checklist-case-labels";
 
 interface CaseCardProps {
   caseData: CaseData;
-  caseDescriptions: Record<string, string>;
 }
 
-export const CaseCard = memo(function CaseCard({ caseData, caseDescriptions }: CaseCardProps) {
+export const CaseCard = memo(function CaseCard({ caseData }: CaseCardProps) {
+  const title = getChecklistCaseShortLabel(caseData.caseType);
+  const subtitle = getChecklistCaseLongDescription(caseData.caseType);
+
   return (
     <div className="bg-slate-900/40 rounded-lg shadow-lg border border-slate-700 p-6">
       {/* Case Header */}
       <div className="mb-4 pb-4 border-b border-slate-700">
         <h2 className="text-2xl font-bold text-gold mb-1">
-          📦 {caseData.displayName}
+          📦 {title}
         </h2>
         <p className="text-slate-300">
-          {caseDescriptions[caseData.caseType] || caseData.caseTypeName}
+          {subtitle}
         </p>
       </div>
 

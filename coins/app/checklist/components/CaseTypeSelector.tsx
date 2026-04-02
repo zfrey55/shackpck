@@ -5,14 +5,12 @@ interface CaseTypeSelectorProps {
   caseTypes: CaseTypeInfo[];
   selectedCaseType: string | null;
   onCaseTypeSelect: (caseType: string) => void;
-  caseDescriptions: Record<string, string>;
 }
 
 export const CaseTypeSelector = memo(function CaseTypeSelector({
   caseTypes,
   selectedCaseType,
   onCaseTypeSelect,
-  caseDescriptions
 }: CaseTypeSelectorProps) {
   if (caseTypes.length === 0) {
     return (
@@ -30,9 +28,7 @@ export const CaseTypeSelector = memo(function CaseTypeSelector({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {caseTypes.map((caseTypeInfo) => {
           const isSelected = caseTypeInfo.caseType === selectedCaseType;
-          const displayName = caseDescriptions[caseTypeInfo.caseType] 
-            ? caseDescriptions[caseTypeInfo.caseType].split('(')[0].trim()
-            : caseTypeInfo.displayName;
+          const displayName = caseTypeInfo.displayName;
 
           return (
             <button

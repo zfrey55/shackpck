@@ -131,7 +131,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
   {
     id: 'shackpack-expo',
-    name: 'ShackPack Expo',
+    name: 'Shackpack Expo',
     description: STANDARD_BLURB,
     image: '/images/packs/shackpack-expo.png',
     coinCount: '10 coins total',
@@ -139,7 +139,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
   {
     id: 'shackpack-ascension',
-    name: 'ShackPack Ascension',
+    name: 'Shackpack Ascension',
     description: STANDARD_BLURB,
     image: '/images/packs/shackpack-ascension.png',
     coinCount: '10 coins total',
@@ -147,7 +147,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
   {
     id: 'shackpack-flex',
-    name: 'ShackPack Flex',
+    name: 'Shackpack Flex',
     description: STANDARD_BLURB,
     image: '/images/packs/shackpack-flex.png',
     coinCount: '10 coins total',
@@ -155,7 +155,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
   {
     id: 'shackpack-pinnacle',
-    name: 'ShackPack Pinnacle',
+    name: 'Shackpack Pinnacle',
     description: STANDARD_BLURB,
     image: '/images/packs/shackpack-pinnacle.jpeg',
     coinCount: '10 coins total',
@@ -163,7 +163,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
   {
     id: 'shackpack-summit',
-    name: 'ShackPack Summit',
+    name: 'Shackpack Summit',
     description: STANDARD_BLURB,
     image: '/images/packs/shackpack-summit.png',
     coinCount: '10 coins total',
@@ -219,3 +219,25 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Variable',
   },
 ];
+
+/**
+ * Packs shown in the home page "Featured Packs" section only.
+ * `/repacks` always lists {@link REPACK_CATALOG} in full.
+ * Edit this list when you decide which packs to highlight on the home page.
+ */
+export const HOME_FEATURED_REPACK_IDS: string[] = [
+  'reign',
+  'prominence',
+  'apex',
+  'shackpack',
+  'shackpack-deluxe',
+  'shackpack-xtreme',
+  'currencyclash',
+];
+
+export function getHomeFeaturedPacks(): RepackCatalogItem[] {
+  const byId = new Map(REPACK_CATALOG.map((p) => [p.id, p]));
+  return HOME_FEATURED_REPACK_IDS.map((id) => byId.get(id)).filter(
+    (p): p is RepackCatalogItem => p != null
+  );
+}
