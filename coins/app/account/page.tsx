@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { formatSeriesDisplayName } from '@/lib/series-display';
 
 function AddressesList({ userId }: { userId?: string }) {
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -239,7 +240,7 @@ export default function AccountPage() {
                       {order.items.map((item: any) => (
                         <li key={item.id} className="flex justify-between">
                           <span>
-                            {item.series.name} × {item.quantity}
+                            {formatSeriesDisplayName(item.series.name)} × {item.quantity}
                           </span>
                           <span>${(item.total / 100).toFixed(2)}</span>
                         </li>

@@ -12,6 +12,7 @@ import {
   ErrorState
 } from "./components";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
+import { formatSeriesDisplayName } from "@/lib/series-display";
 
 const CASE_DESCRIPTIONS: Record<string, string> = {
   'reign': 'Reign by Shackpack',
@@ -27,6 +28,15 @@ const CASE_DESCRIPTIONS: Record<string, string> = {
   'ignite': 'ShackPack Ignite (1× 1/4 oz platinum + 9 varied silver)',
   'eclipse': 'ShackPack Eclipse (1× 1 oz platinum + 9 varied silver)',
   'radiant': 'ShackPack Radiant (1× 1/2 oz platinum + 9 varied silver)',
+  'shackpack-expo': 'ShackPack Expo (premium line; contents may vary)',
+  'shackpack-ascension': 'ShackPack Ascension (premium line; contents may vary)',
+  'shackpack-flex': 'ShackPack Flex (premium line; contents may vary)',
+  'shackpack-pinnacle': 'ShackPack Pinnacle (premium line; contents may vary)',
+  'shackpack-summit': 'ShackPack Summit (premium line; contents may vary)',
+  'coinwave-platinum-drill': 'Coinwave Platinum Drill (contents may vary)',
+  'coinwave-gold-pan': 'Coinwave Gold Pan (contents may vary)',
+  'coinwave-the-mine': 'Coinwave The Mine (contents may vary)',
+  'coinwave-gold-mine': 'Coinwave Gold Mine (contents may vary)',
   'currencyclash': 'Currency Clash by Shackpack',
   'mystery': 'ShackPack Mystery (custom configuration)',
   'custom': 'ShackPack Custom',
@@ -48,6 +58,15 @@ const CASE_TYPE_DISPLAY_NAMES: Record<string, string> = {
   'ignite': 'ShackPack Ignite',
   'eclipse': 'ShackPack Eclipse',
   'radiant': 'ShackPack Radiant',
+  'shackpack-expo': 'ShackPack Expo',
+  'shackpack-ascension': 'ShackPack Ascension',
+  'shackpack-flex': 'ShackPack Flex',
+  'shackpack-pinnacle': 'ShackPack Pinnacle',
+  'shackpack-summit': 'ShackPack Summit',
+  'coinwave-platinum-drill': 'Coinwave Platinum Drill',
+  'coinwave-gold-pan': 'Coinwave Gold Pan',
+  'coinwave-the-mine': 'Coinwave The Mine',
+  'coinwave-gold-mine': 'Coinwave Gold Mine',
   'currencyclash': 'Currency Clash by Shackpack',
   'mystery': 'ShackPack Mystery',
   'custom': 'ShackPack Custom',
@@ -359,7 +378,7 @@ export default function ChecklistPage() {
                   >
                     <div className="mb-4 pb-4 border-b border-slate-700">
                       <h2 className="text-2xl font-bold text-gold mb-1">
-                        📦 {series.name}
+                        📦 {formatSeriesDisplayName(series.name)}
                       </h2>
                       {series.description && (
                         <p className="text-slate-300 mt-2">{series.description}</p>

@@ -9,6 +9,7 @@ import { useToast } from '@/components/ToastProvider';
 import { isDirectPurchaseEnabled, CONTACT_INFO } from '@/lib/feature-flags';
 import { Series } from '@/lib/types';
 import type { DailyChecklistResponse, CaseData } from '@/app/checklist/types';
+import { formatSeriesDisplayName } from '@/lib/series-display';
 
 export default function SeriesPage() {
   const params = useParams();
@@ -104,7 +105,7 @@ export default function SeriesPage() {
 
     addItem({
       seriesId: series.id,
-      seriesName: series.name,
+      seriesName: formatSeriesDisplayName(series.name),
       seriesSlug: series.slug,
       quantity,
       pricePerPack: series.pricePerPack,
@@ -146,6 +147,7 @@ export default function SeriesPage() {
     );
   }
 
+  const displayName = formatSeriesDisplayName(series.name);
   // Use currency clash image for Currency Clash series
   let imageUrl = series.images[0] || '/images/packs/shackpack-starter.jpg';
   if (series.name?.toLowerCase().includes('currency clash') || series.slug?.includes('currency-clash')) {
@@ -162,7 +164,7 @@ export default function SeriesPage() {
           <div className="relative aspect-square bg-slate-900 rounded-lg overflow-hidden">
             <Image
               src={imageUrl}
-              alt={series.name}
+              alt={displayName}
               fill
               className="object-contain"
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -171,7 +173,7 @@ export default function SeriesPage() {
 
           {/* Details */}
           <div>
-            <h1 className="text-4xl font-bold mb-4">{series.name}</h1>
+            <h1 className="text-4xl font-bold mb-4">{displayName}</h1>
             <p className="text-3xl font-semibold text-gold mb-6">
               ${price} per pack
             </p>

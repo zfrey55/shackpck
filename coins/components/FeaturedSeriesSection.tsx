@@ -7,6 +7,7 @@ import { useCart } from './CartProvider';
 import { useToast } from './ToastProvider';
 import { Series } from '@/lib/types';
 import { isDirectPurchaseEnabled, CONTACT_INFO } from '@/lib/feature-flags';
+import { formatSeriesDisplayName } from '@/lib/series-display';
 
 interface TopHit {
   position: number;
@@ -133,7 +134,7 @@ export function FeaturedSeriesSection() {
     // Add 1 pack to cart
     addItem({
       seriesId: series.id,
-      seriesName: series.name,
+      seriesName: formatSeriesDisplayName(series.name),
       seriesSlug: series.slug,
       quantity: 1,
       pricePerPack: series.pricePerPack,
@@ -184,6 +185,7 @@ export function FeaturedSeriesSection() {
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
         {featuredSeries.map((series) => {
+          const displayName = formatSeriesDisplayName(series.name);
           // Use currency clash image for Currency Clash series
           let imageUrl = series.images[0] || '/images/packs/shackpack-starter.jpg';
           if (series.name?.toLowerCase().includes('currency clash') || series.slug?.includes('currency-clash')) {
@@ -202,13 +204,13 @@ export function FeaturedSeriesSection() {
                 <div className="relative aspect-[4/3] w-full bg-slate-900 rounded-lg overflow-hidden mb-4">
                   <Image
                     src={imageUrl}
-                    alt={series.name}
+                    alt={displayName}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{series.name}</h3>
+                <h3 className="text-xl font-semibold mb-2">{displayName}</h3>
                 {series.description && (
                   <p className="text-sm text-slate-400 line-clamp-2 mb-4">{series.description}</p>
                 )}

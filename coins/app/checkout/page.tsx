@@ -14,6 +14,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { ShippingAddress } from '@/lib/types';
 import { isCheckoutEnabled, CONTACT_INFO } from '@/lib/feature-flags';
+import { formatSeriesDisplayName } from '@/lib/series-display';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -463,7 +464,7 @@ function CheckoutForm({
           {items.map((item) => (
             <div key={item.seriesId} className="flex justify-between text-sm">
               <span>
-                {item.seriesName} × {item.quantity}
+                {formatSeriesDisplayName(item.seriesName)} × {item.quantity}
               </span>
               <span>${((item.pricePerPack * item.quantity) / 100).toFixed(2)}</span>
             </div>
@@ -897,7 +898,7 @@ function CheckoutFormWrapper({
           {items.map((item) => (
             <div key={item.seriesId} className="flex justify-between text-sm">
               <span>
-                {item.seriesName} × {item.quantity}
+                {formatSeriesDisplayName(item.seriesName)} × {item.quantity}
               </span>
               <span>${((item.pricePerPack * item.quantity) / 100).toFixed(2)}</span>
             </div>

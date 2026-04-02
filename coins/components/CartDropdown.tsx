@@ -7,6 +7,7 @@ import { useCart } from './CartProvider';
 import { ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { isCheckoutEnabled, CONTACT_INFO } from '@/lib/feature-flags';
+import { formatSeriesDisplayName } from '@/lib/series-display';
 
 export function CartDropdown() {
   const { items, totalItems, subtotal, removeItem, updateQuantity } = useCart();
@@ -80,7 +81,7 @@ export function CartDropdown() {
                       <div className="relative w-16 h-16 bg-slate-800 rounded overflow-hidden flex-shrink-0">
                         <Image
                           src={item.image}
-                          alt={item.seriesName}
+                          alt={formatSeriesDisplayName(item.seriesName)}
                           fill
                           className="object-cover"
                           sizes="64px"
@@ -93,7 +94,7 @@ export function CartDropdown() {
                         onClick={() => setIsOpen(false)}
                         className="font-medium text-sm hover:text-gold line-clamp-2"
                       >
-                        {item.seriesName}
+                        {formatSeriesDisplayName(item.seriesName)}
                       </Link>
                       <p className="text-xs text-slate-400 mt-1">
                         ${(item.pricePerPack / 100).toFixed(2)} each

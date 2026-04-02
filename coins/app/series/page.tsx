@@ -7,6 +7,7 @@ import { useCart } from '@/components/CartProvider';
 import { useToast } from '@/components/ToastProvider';
 import { isDirectPurchaseEnabled, CONTACT_INFO } from '@/lib/feature-flags';
 import { CoinInventorySeries } from '@/lib/coin-inventory-api';
+import { formatSeriesDisplayName } from '@/lib/series-display';
 
 export default function SeriesPage() {
   const [activeSeries, setActiveSeries] = useState<CoinInventorySeries[]>([]);
@@ -73,7 +74,7 @@ export default function SeriesPage() {
     // Add 1 pack to cart
     addItem({
       seriesId: series.id,
-      seriesName: series.name,
+      seriesName: formatSeriesDisplayName(series.name),
       seriesSlug: series.slug,
       quantity: 1,
       pricePerPack: series.pricePerPack,
@@ -151,6 +152,7 @@ interface SeriesCardProps {
 }
 
 function SeriesCard({ series, onBuyNow, isPast = false }: SeriesCardProps) {
+  const displayName = formatSeriesDisplayName(series.name);
   // Use currency clash image for Currency Clash series
   let imageUrl = series.images[0] || '/images/packs/shackpack-starter.jpg';
   if (series.name?.toLowerCase().includes('currency clash') || series.slug?.includes('currency-clash')) {
@@ -166,7 +168,7 @@ function SeriesCard({ series, onBuyNow, isPast = false }: SeriesCardProps) {
         <div className="relative aspect-[4/3] w-full bg-slate-900 rounded-lg overflow-hidden mb-4">
           <Image
             src={imageUrl}
-            alt={series.name}
+            alt={displayName}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -177,7 +179,7 @@ function SeriesCard({ series, onBuyNow, isPast = false }: SeriesCardProps) {
             </div>
           )}
         </div>
-        <h3 className="text-xl font-semibold mb-2">{series.name}</h3>
+        <h3 className="text-xl font-semibold mb-2">{displayName}</h3>
         {series.description && (
           <p className="text-sm text-slate-400 line-clamp-3 mb-4">{series.description}</p>
         )}
