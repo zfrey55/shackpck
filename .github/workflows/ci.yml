@@ -1,0 +1,61 @@
+# 12/10 baseline: every push/PR validates lint, schema, and production build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shackpck_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: coins
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/shackpck_ci?schema=public
+      NEXTAUTH_SECRET: ci-nextauth-secret-placeholder-min-32-characters
+      NEXTAUTH_URL: http://127.0.0.1:3000
+      AUTH_TRUST_HOST: "true"
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_ci_placeholder
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: coins/package-lock.json
+
+      - run: npm ci
+
+      - name: Sync Prisma schema to CI database
+        run: npx prisma db push
+
+      - run: npm run lint
+
+      - run: npm run build

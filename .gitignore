@@ -1,1 +1,9 @@
 .DS_Store
+
+# Secrets and local env (12/10: never commit)
+.env
+.env.*
+!.env.example
+coins/.env
+coins/.env.local
+coins/.env.*.local
