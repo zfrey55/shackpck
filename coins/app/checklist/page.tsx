@@ -227,6 +227,11 @@ export default function ChecklistPage() {
     return checklist.cases.filter(c => c.caseType === selectedCaseType);
   }, [checklist, selectedCaseType]);
 
+  /** Stable order so Series #1 / #2 / … stay consistent across reloads. */
+  const casesOrderedForDisplay = useMemo(() => {
+    return [...filteredCases].sort((a, b) => a.caseId.localeCompare(b.caseId));
+  }, [filteredCases]);
+
   if (loading && !availableDates) {
     return (
       <main className="container py-10">
@@ -417,7 +422,7 @@ export default function ChecklistPage() {
         {/* Series or Empty State */}
         {!loading && checklist && selectedDate && (
           <>
-            {filteredCases.length > 0 ? (
+            {casesOrderedForDisplay.length > 0 ? (
               <>
                 <div className="mb-4 text-center">
                   <p className="text-lg text-slate-300">
@@ -433,14 +438,15 @@ export default function ChecklistPage() {
                     })()}
                   </p>
                   <p className="text-slate-400">
-                    <span className="font-semibold text-gold">{filteredCases.length}</span> series available
+                    <span className="font-semibold text-gold">{casesOrderedForDisplay.length}</span> series available
                   </p>
                 </div>
                 <div className="space-y-6 mb-12">
-                  {filteredCases.map((caseData) => (
+                  {casesOrderedForDisplay.map((caseData, index) => (
                     <CaseCard
                       key={caseData.caseId}
                       caseData={caseData}
+                      seriesOrdinal={index + 1}
                     />
                   ))}
                 </div>

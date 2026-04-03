@@ -4,7 +4,8 @@ export interface CaseData {
   displayName: string;
   caseType: string;
   caseTypeName: string;
-  seriesNumber: number;
+  /** Optional field from inventory API; checklist UI numbers series per date using display order. */
+  seriesNumber?: number;
   createdDate: string;
   displayDate: string;
   status: string;

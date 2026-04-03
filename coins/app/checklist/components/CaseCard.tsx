@@ -7,10 +7,15 @@ import {
 
 interface CaseCardProps {
   caseData: CaseData;
+  /** 1-based index among series of this type on the selected date (after stable sort). */
+  seriesOrdinal: number;
 }
 
-export const CaseCard = memo(function CaseCard({ caseData }: CaseCardProps) {
-  const title = getChecklistCaseShortLabel(caseData.caseType);
+export const CaseCard = memo(function CaseCard({
+  caseData,
+  seriesOrdinal,
+}: CaseCardProps) {
+  const title = `${getChecklistCaseShortLabel(caseData.caseType)} Series #${seriesOrdinal}`;
   const subtitle = getChecklistCaseLongDescription(caseData.caseType);
 
   return (
