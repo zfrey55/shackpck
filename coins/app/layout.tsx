@@ -9,7 +9,8 @@ import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Shackpack — Premium Gold & Silver Coin Repacks',
-  description: 'Premium coin repacks featuring curated selections of gold, silver, and rare collectible coins.',
+  description:
+    'Premium graded coin repacks with published checklists — gold, silver, platinum, and pre-1933 series.',
   metadataBase: new URL('https://example.com'),
   icons: {
     icon: '/coin-icon.svg',

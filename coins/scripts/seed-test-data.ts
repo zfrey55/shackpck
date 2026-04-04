@@ -25,7 +25,8 @@ const testSeries = [
   {
     name: 'Apex by Shackpack - Limited Run',
     slug: 'apex-limited-2024',
-    description: 'Limited run of Apex packs featuring 1/4 oz gold coins and rare silver pieces.',
+    description:
+      'Limited run of Apex packs — 5× gold and 5 graded silver coins per published checklist.',
     images: ['/images/packs/shackpack-apex.png'],
     totalPacks: 200,
     pricePerPack: 19999, // $199.99 in cents

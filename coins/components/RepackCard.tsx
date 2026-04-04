@@ -59,14 +59,14 @@ export function RepackCard({
       <div className="p-6">
         <div className="mb-3">
           <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
-          <div className="flex items-center gap-3 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-400">
             <span>{coinCount}</span>
-            <span>•</span>
+            <span className="text-slate-600">•</span>
             <span>{category}</span>
           </div>
         </div>
         
-        <p className="text-slate-300 mb-4 line-clamp-3">{description}</p>
+        <p className="text-slate-300 mb-4 text-sm leading-relaxed">{description}</p>
         
         <div className="pt-3 border-t border-slate-700/50">
           <Link

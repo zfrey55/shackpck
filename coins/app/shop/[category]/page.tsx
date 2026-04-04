@@ -25,8 +25,17 @@ const sample = [
   }
 ];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  gold: 'Gold',
+  silver: 'Silver',
+  rare: 'Collectible',
+};
+
 export default function CategoryPage({ params }: { params: { category: string } }) {
-  const title = params.category?.[0]?.toUpperCase() + params.category?.slice(1);
+  const raw = params.category ?? '';
+  const title =
+    CATEGORY_LABELS[raw] ??
+    (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Shop');
   return (
     <main className="container py-10">
       <h1 className="text-3xl font-semibold">{title} Coins</h1>

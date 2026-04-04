@@ -137,7 +137,7 @@ export function ChecklistUpload() {
             <li>• Mint Mark</li>
             <li>• Country of Origin</li>
             <li>• Purchase Price</li>
-            <li>• Current Value</li>
+            <li>• Reference amount / cost basis (optional)</li>
             <li>• Notes/Description</li>
             <li>• Image URLs (optional)</li>
           </ul>

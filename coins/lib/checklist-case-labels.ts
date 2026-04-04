@@ -35,95 +35,107 @@ function toCanonicalKey(normalized: string): string {
 }
 
 const CANONICAL_LABELS: Record<string, { short: string; long: string }> = {
-  reign: { short: 'Reign by Shackpack', long: 'Reign by Shackpack' },
-  prominence: { short: 'Prominence by Shackpack', long: 'Prominence by Shackpack' },
-  apex: { short: 'Apex by Shackpack', long: 'Apex by Shackpack' },
+  reign: {
+    short: 'Reign by Shackpack',
+    long: '10 coins — 1× pre-1933 gold, 9 graded silver. See checklist for this date.',
+  },
+  prominence: {
+    short: 'Prominence by Shackpack',
+    long: '10 coins — 1× pre-1933 gold, 9 graded silver. See checklist for this date.',
+  },
+  apex: {
+    short: 'Apex by Shackpack',
+    long: '10 coins — 5× gold, 5 graded silver. See checklist for this date.',
+  },
   base: {
     short: 'ShackPack',
-    long: 'ShackPack (1× 1/10 oz gold + 9 varied silver)',
+    long: '10 coins — 1× gold, 9 graded silver. See checklist for this date.',
   },
   deluxe: {
     short: 'ShackPack Deluxe',
-    long: 'ShackPack Deluxe (2× 1/10 oz gold + 8 varied silver)',
+    long: '10 coins — 2× gold, 8 graded silver. See checklist for this date.',
   },
   xtreme: {
     short: 'ShackPack Xtreme',
-    long: 'ShackPack Xtreme (1× 1/4 oz gold + 9 varied silver)',
+    long: '10 coins — 1× gold, 9 graded silver. See checklist for this date.',
   },
   unleashed: {
     short: 'ShackPack Unleashed',
-    long: 'ShackPack Unleashed (2× 1/4 oz gold + 8 varied silver)',
+    long: '10 coins — 2× gold, 8 graded silver. See checklist for this date.',
   },
   resurgence: {
     short: 'ShackPack Resurgence',
-    long: 'ShackPack Resurgence (1× 1/2 oz gold + 9 varied silver)',
+    long: '10 coins — 1× gold, 9 graded silver. See checklist for this date.',
   },
   transcendent: {
     short: 'ShackPack Transcendent',
-    long: 'ShackPack Transcendent (1× 1 oz gold + 9 varied silver)',
+    long: '10 coins — 1× gold, 9 graded silver. See checklist for this date.',
   },
   'transcendent-transformed': {
     short: 'ShackPack Transcendent Transformed',
-    long: 'ShackPack Transcendent Transformed (2× 1 oz gold + 8 varied silver)',
+    long: '10 coins — 2× gold, 8 graded silver. See checklist for this date.',
   },
   ignite: {
     short: 'ShackPack Ignite',
-    long: 'ShackPack Ignite (1× 1/4 oz platinum + 9 varied silver)',
+    long: '10 coins — 1× platinum, 9 graded silver. See checklist for this date.',
   },
   eclipse: {
     short: 'ShackPack Eclipse',
-    long: 'ShackPack Eclipse (1× 1 oz platinum + 9 varied silver)',
+    long: '10 coins — 1× platinum, 9 graded silver. See checklist for this date.',
   },
   radiant: {
     short: 'ShackPack Radiant',
-    long: 'ShackPack Radiant (1× 1/2 oz platinum + 9 varied silver)',
+    long: '10 coins — 1× platinum, 9 graded silver. See checklist for this date.',
   },
   'shackpack-expo': {
-    short: 'Shackpack Expo',
-    long: 'Shackpack Expo (premium line; contents may vary)',
+    short: 'ShackPack Expo',
+    long: 'Custom event series — contact ShackPack first. Each series has its own published checklist.',
   },
   'shackpack-ascension': {
-    short: 'Shackpack Ascension',
-    long: 'Shackpack Ascension (premium line; contents may vary)',
+    short: 'Ascension by Shackpack',
+    long: '10 coins — 2× pre-1933 gold, 8 graded silver. See checklist for this date.',
   },
   'shackpack-flex': {
-    short: 'Shackpack Flex',
-    long: 'Shackpack Flex (premium line; contents may vary)',
+    short: 'ShackPack Flex',
+    long: 'Fully custom configuration — contact ShackPack first. Each series has its own published checklist.',
   },
   'shackpack-pinnacle': {
-    short: 'Shackpack Pinnacle',
-    long: 'Shackpack Pinnacle (premium line; contents may vary)',
+    short: 'Pinnacle by Shackpack',
+    long: '10 coins — 2× pre-1933 gold, 8 graded silver. See checklist for this date.',
   },
   'shackpack-summit': {
-    short: 'Shackpack Summit',
-    long: 'Shackpack Summit (premium line; contents may vary)',
+    short: 'Summit by Shackpack',
+    long: '10 coins — 1× pre-1933 gold, 9 graded silver. See checklist for this date.',
   },
   'coinwave-platinum-drill': {
     short: 'Coinwave Platinum Drill',
-    long: 'Coinwave Platinum Drill (contents may vary)',
+    long: '20 coins — 1× platinum, 2× Silver Eagles, 17 graded. See checklist for this date.',
   },
   'coinwave-gold-pan': {
     short: 'Coinwave Gold Pan',
-    long: 'Coinwave Gold Pan (contents may vary)',
+    long: '20 coins — 1× gold, 2× Silver Eagles, 17 graded. See checklist for this date.',
   },
   'coinwave-the-mine': {
     short: 'Coinwave The Mine',
-    long: 'Coinwave The Mine (contents may vary)',
+    long: '20 coins — 1× gold, 1× platinum, 1× Silver Eagle, 17 graded. See checklist for this date.',
   },
   'coinwave-gold-mine': {
     short: 'Coinwave Gold Mine',
-    long: 'Coinwave Gold Mine (contents may vary)',
+    long: '20 coins — 1× gold, 2× Silver Eagles, 17 graded. See checklist for this date.',
   },
   currencyclash: {
     short: 'Currency Clash by Shackpack',
-    long: 'Currency Clash by Shackpack',
+    long: 'Custom currency/coin mix — contact ShackPack first. Each series has its own published checklist.',
   },
   mystery: {
     short: 'ShackPack Mystery',
-    long: 'ShackPack Mystery (custom configuration)',
+    long: 'Custom configuration — contact ShackPack first.',
   },
-  custom: { short: 'ShackPack Custom', long: 'ShackPack Custom' },
-  aura: { short: 'Aura by Shackpack', long: 'Aura by Shackpack' },
+  custom: { short: 'ShackPack Custom', long: 'Custom configuration — contact ShackPack first.' },
+  aura: {
+    short: 'Aura by Shackpack',
+    long: '10 coins — 1× pre-1933 gold, 9 graded silver. See checklist for this date.',
+  },
 };
 
 function titleCaseFallback(raw: string): string {
@@ -146,5 +158,5 @@ export function getChecklistCaseLongDescription(caseType: string): string {
   const row = CANONICAL_LABELS[key];
   if (row) return row.long;
   const short = titleCaseFallback(caseType);
-  return `${short} (contents may vary)`;
+  return `${short}. See checklist for this date.`;
 }

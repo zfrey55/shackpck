@@ -115,10 +115,10 @@ export default function HomePage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="text-5xl mb-4">⚡</div>
-              <h3 className="font-semibold text-xl text-gold mb-2">Exciting Value</h3>
+              <div className="text-5xl mb-4">📋</div>
+              <h3 className="font-semibold text-xl text-gold mb-2">Published Checklists</h3>
               <p className="text-slate-400">
-                Experience the thrill of opening packs filled with potential rare coins, gold, silver, and more
+                Every ShackPack is a professionally sealed, graded coin pack with a fully published checklist. Know what&apos;s possible before you buy — then open and see what you get.
               </p>
             </div>
           </div>

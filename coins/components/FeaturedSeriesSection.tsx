@@ -234,7 +234,7 @@ export function FeaturedSeriesSection() {
 
                 {series.topHits && series.topHits.length > 0 && (
                   <div className="bg-slate-900/60 p-4 rounded-lg border border-slate-700">
-                    <h4 className="text-sm font-semibold mb-2 text-gold">Top Hits</h4>
+                    <h4 className="text-sm font-semibold mb-2 text-gold">Highlighted coins</h4>
                     <ul className="space-y-1 text-xs text-slate-300">
                       {series.topHits.slice(0, 3).map((coin, index) => (
                         <li key={index} className="flex items-center gap-2">

@@ -38,7 +38,7 @@ export default function PolicyPage() {
                 <li>All checklists include a statement that as of a specified date, the series has been finalized and the number of products and individual items will not be changed.</li>
                 <li>All items in each product are revealed upon opening and listed in the checklist. We do not include hidden items, "golden tickets," or unrevealed contents.</li>
                 <li>We do not advertise minimum ("floor") or maximum ("ceiling") values, average values, or individual item value comparisons. Only MSRP may be referenced where applicable.</li>
-                <li>By purchasing a repack, you acknowledge the inherent uncertainty and chance involved in the product.</li>
+                <li>By purchasing a repack, you acknowledge the inherent randomness and uncertainty of a professionally sealed surprise product.</li>
                 <li>All purchases are final — refunds, substitutions, or exchanges are not available except in cases of confirmed missing items or shipping damage directly attributable to our handling.</li>
               </ul>
             </div>

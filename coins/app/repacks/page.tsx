@@ -7,8 +7,8 @@ export default function RepacksPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-semibold">Gold & Silver Coin Repacks</h1>
         <p className="mt-4 text-xl text-slate-300 max-w-3xl mx-auto">
-          Curated collections of premium coins, carefully selected for quality and value. 
-          Each pack is assembled by experts to provide the best collecting experience.
+          Curated collections of premium coins, carefully selected for quality and authenticity.
+          Each pack is assembled by experts for a clear, checklist-backed collecting experience.
         </p>
       </div>
 
@@ -27,9 +27,9 @@ export default function RepacksPage() {
             <p className="text-sm text-slate-400 mt-2">Each coin is hand-selected by numismatic experts</p>
           </div>
           <div className="text-center">
-            <div className="text-4xl mb-3">📈</div>
-            <h3 className="font-semibold text-gold">Value Focused</h3>
-            <p className="text-sm text-slate-400 mt-2">Packs designed to maximize excitement and value</p>
+            <div className="text-4xl mb-3">📋</div>
+            <h3 className="font-semibold text-gold">Checklist Verified</h3>
+            <p className="text-sm text-slate-400 mt-2">Every series ships with a complete, publicly available checklist so buyers always know what&apos;s in the pool</p>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-3">🛡️</div>
