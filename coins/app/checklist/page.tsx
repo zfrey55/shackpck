@@ -14,8 +14,11 @@ import {
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { formatSeriesDisplayName } from "@/lib/series-display";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
+import { CoinsCardsToggle, type ProductLine } from "@/components/CoinsCardsToggle";
+import { CardChecklistView } from "./components/CardChecklistView";
 
 export default function ChecklistPage() {
+  const [productLine, setProductLine] = useState<ProductLine>("coins");
   const [availableDates, setAvailableDates] = useState<AvailableDatesResponse | null>(null);
   const [checklist, setChecklist] = useState<DailyChecklistResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -232,10 +235,38 @@ export default function ChecklistPage() {
     return [...filteredCases].sort((a, b) => a.caseId.localeCompare(b.caseId));
   }, [filteredCases]);
 
+  if (productLine === "cards") {
+    return (
+      <main className="container py-10">
+        <div className="max-w-6xl mx-auto px-4 space-y-6">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl font-bold mb-2 text-gold">ShackPack Checklist</h1>
+            <p className="text-lg text-slate-400">
+              Graded trading card series — published checklists
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
+          </div>
+          <div className="p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+            <p className="text-sm text-amber-200 text-center">
+              Card series and sealed products may vary by show or date. Use the series selector
+              below for the active checklist. Grades shown use PSA, BGS, or SGC as listed.
+            </p>
+          </div>
+          <CardChecklistView />
+        </div>
+      </main>
+    );
+  }
+
   if (loading && !availableDates) {
     return (
       <main className="container py-10">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-center mb-6">
+            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
+          </div>
           <LoadingState />
         </div>
       </main>
@@ -245,7 +276,10 @@ export default function ChecklistPage() {
   if (error && !availableDates) {
     return (
       <main className="container py-10">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-center mb-6">
+            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
+          </div>
           <ErrorState error={error} onRetry={loadAvailableDates} />
         </div>
       </main>
@@ -256,6 +290,9 @@ export default function ChecklistPage() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-center mb-6">
+            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
+          </div>
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
@@ -280,11 +317,15 @@ export default function ChecklistPage() {
           </p>
         </div>
 
+        <div className="flex justify-center mb-8">
+          <CoinsCardsToggle value={productLine} onChange={setProductLine} />
+        </div>
+
         {/* Disclaimer */}
         <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
           <p className="text-sm text-amber-200 text-center">
-            <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date. 
-            Please refer to the checklist for the most up-to-date information on each series.
+            <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
+            Please refer to the checklist for the most up-to-date information on each series. For card series, use the Cards tab.
           </p>
         </div>
 

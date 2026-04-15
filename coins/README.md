@@ -1,6 +1,6 @@
-# Shackpack - Premium Gold & Silver Coin Repacks
+# Shackpack - Premium Coin & Card Repacks
 
-A modern Next.js e-commerce website for showcasing and managing premium coin repack collections with full checkout, order management, and shipping integration.
+A modern Next.js e-commerce website for showcasing and managing premium coin and card repack collections with full checkout, order management, and shipping integration.
 
 ## 🏗️ Project Structure
 

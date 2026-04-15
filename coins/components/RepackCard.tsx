@@ -1,14 +1,18 @@
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { PackImagePlaceholder } from '@/components/PackImagePlaceholder';
 
 type RepackCardProps = {
   id: string;
   name: string;
   description: string;
+  /** Pack artwork URL; omit or set usePlaceholder for branded coming-soon art. */
   image: string;
   coinCount: string;
   category: string;
+  /** When true, shows branded placeholder instead of loading image URL. */
+  usePlaceholder?: boolean;
 };
 
 export function RepackCard({ 
@@ -17,8 +21,10 @@ export function RepackCard({
   description, 
   image, 
   coinCount, 
-  category
+  category,
+  usePlaceholder = false,
 }: RepackCardProps) {
+  const showPlaceholder = usePlaceholder || !image;
   const isCoinwave = id.startsWith('coinwave-');
   const isXtreme = id === 'shackpack-xtreme';
   const isDeluxe = id === 'shackpack-deluxe';
@@ -45,15 +51,21 @@ export function RepackCard({
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 shadow-sm transition-all duration-300 hover:border-slate-700 hover:shadow-glow">
       <div className="relative aspect-[4/3] w-full bg-slate-950 overflow-hidden">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className={imageClass}
-          style={imageStyle}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+        {showPlaceholder ? (
+          <PackImagePlaceholder />
+        ) : (
+          <>
+            <Image
+              src={image}
+              alt={name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className={imageClass}
+              style={imageStyle}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          </>
+        )}
       </div>
       
       <div className="p-6">

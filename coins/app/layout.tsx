@@ -8,10 +8,10 @@ import { ToastProvider } from '@/components/ToastProvider';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Shackpack — Premium Gold & Silver Coin Repacks',
+  title: 'Shackpack — Premium Coin & Card Repacks',
   description:
-    'Premium graded coin repacks with published checklists — gold, silver, platinum, and pre-1933 series.',
-  metadataBase: new URL('https://example.com'),
+    'Premium graded coin and trading card repacks with published checklists — gold, silver, platinum, pre-1933 coins, and PSA/BGS/SGC card series.',
+  metadataBase: new URL('https://shackpck.com'),
   icons: {
     icon: '/coin-icon.svg',
     shortcut: '/coin-icon.svg',
