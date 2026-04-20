@@ -56,6 +56,12 @@ export default function HomePage() {
                 >
                   View Checklists
                 </Link>
+                <Link
+                  href="/build"
+                  className="rounded-md border-2 border-gold/80 px-5 py-3 font-semibold text-gold hover:bg-gold/10 transition-colors"
+                >
+                  Custom build
+                </Link>
               </div>
             </div>
           </div>

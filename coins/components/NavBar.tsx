@@ -16,6 +16,7 @@ export function NavBar() {
         <nav className="flex items-center gap-6">
           <Link href="/" className="hover:text-gold">Home</Link>
           <Link href="/repacks" className="hover:text-gold">Packs</Link>
+          <Link href="/build" className="hover:text-gold">Build</Link>
           <Link href="/series" className="hover:text-gold">Series</Link>
           <Link href="/checklist" className="hover:text-gold">Checklists</Link>
           <Link href="/policy" className="hover:text-gold">Policy</Link>

@@ -1,5 +1,12 @@
 // Email notification functions using SendGrid
 import sgMail from '@sendgrid/mail';
+import type { ShackpackBuilderSpec } from '@/lib/shackpack-builder-schema';
+import {
+  BUDGET_LABELS,
+  INSPIRATION_LABELS,
+  PRODUCT_LINE_LABELS,
+  TIMELINE_LABELS,
+} from '@/lib/shackpack-builder-schema';
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -333,6 +340,7 @@ const CONTACT_SUBJECT_LABELS: Record<string, string> = {
   'coin-info': 'Coin Information',
   shipping: 'Shipping Question',
   other: 'Other',
+  'custom-build': 'Custom ShackPack build',
 };
 
 export interface ContactInquiryData {
@@ -343,6 +351,43 @@ export interface ContactInquiryData {
   subject: string;
   message: string;
   caseTypes: string;
+  /** Present when customer used the ShackPack Builder (subject custom-build). */
+  builderSpec?: ShackpackBuilderSpec;
+}
+
+function formatBuilderSpecHtml(spec: ShackpackBuilderSpec, escapeHtml: (s: string) => string): string {
+  const lines: [string, string][] = [
+    ['Product focus', escapeHtml(PRODUCT_LINE_LABELS[spec.productLine])],
+  ];
+  if (spec.inspiration) {
+    lines.push(['Inspiration', escapeHtml(INSPIRATION_LABELS[spec.inspiration])]);
+  }
+  lines.push(['Target pack quantity', escapeHtml(spec.packCount)]);
+  if (spec.caseCount?.trim()) {
+    lines.push(['Target case / run quantity', escapeHtml(spec.caseCount.trim())]);
+  }
+  if (spec.spotlightNotes?.trim()) {
+    lines.push(['Featured highlights / spotlights (request)', escapeHtml(spec.spotlightNotes.trim())]);
+  }
+  lines.push(['Budget range (indicative)', escapeHtml(BUDGET_LABELS[spec.budgetRange])]);
+  if (spec.timeline) {
+    lines.push(['Timeline', escapeHtml(TIMELINE_LABELS[spec.timeline])]);
+  }
+  lines.push(['Design & branding direction', escapeHtml(spec.designNotes)]);
+
+  const rows = lines
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;width:220px;">${escapeHtml(k)}</td><td style="padding:8px;border:1px solid #e5e7eb;">${v}</td></tr>`
+    )
+    .join('');
+
+  return `
+    <div style="margin-top:20px;padding:16px;background:#fffbeb;border-radius:8px;border:1px solid #fbbf24;">
+      <h3 style="margin:0 0 12px 0;color:#92400e;">ShackPack Builder specification</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">${rows}</table>
+    </div>
+  `;
 }
 
 /**
@@ -377,36 +422,56 @@ export async function sendContactInquiryEmail(data: ContactInquiryData): Promise
 
   const subjectLabel = CONTACT_SUBJECT_LABELS[data.subject] || data.subject;
   const caseTypesDisplay = data.caseTypes.trim() || '(none selected)';
+  const builderHtml = data.builderSpec
+    ? formatBuilderSpecHtml(data.builderSpec, escapeHtml)
+    : '';
 
   const html = `
     <!DOCTYPE html>
     <html>
       <head><meta charset="utf-8" /></head>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2 style="color: #b8860b;">New contact form message</h2>
+        <h2 style="color: #b8860b;">${data.builderSpec ? 'New ShackPack Builder inquiry' : 'New contact form message'}</h2>
         <p><strong>Subject:</strong> ${escapeHtml(subjectLabel)}</p>
         <p><strong>Name:</strong> ${escapeHtml(`${data.firstName} ${data.lastName}`)}<br/>
         <strong>Email:</strong> <a href="mailto:${data.email.replace(/"/g, '')}">${escapeHtml(data.email)}</a><br/>
         <strong>Phone:</strong> ${escapeHtml(data.phone)}</p>
         <p><strong>Case types:</strong> ${escapeHtml(caseTypesDisplay)}</p>
+        ${builderHtml}
         <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-top: 16px;">
-          <strong>Message</strong>
-          <p style="white-space: pre-wrap; margin: 8px 0 0 0;">${escapeHtml(data.message)}</p>
+          <strong>${data.builderSpec ? 'Additional notes' : 'Message'}</strong>
+          <p style="white-space: pre-wrap; margin: 8px 0 0 0;">${escapeHtml(data.message || '(none)')}</p>
         </div>
       </body>
     </html>
   `;
 
-  const text = [
-    'New contact form message',
+  const textParts = [
+    data.builderSpec ? 'New ShackPack Builder inquiry' : 'New contact form message',
     `Subject: ${subjectLabel}`,
     `Name: ${data.firstName} ${data.lastName}`,
     `Email: ${data.email}`,
     `Phone: ${data.phone}`,
     `Case types: ${caseTypesDisplay}`,
     '',
-    data.message,
-  ].join('\n');
+  ];
+  if (data.builderSpec) {
+    const s = data.builderSpec;
+    textParts.push(
+      '--- Builder spec ---',
+      `Product: ${PRODUCT_LINE_LABELS[s.productLine]}`,
+      s.inspiration ? `Inspiration: ${INSPIRATION_LABELS[s.inspiration]}` : '',
+      `Packs: ${s.packCount}`,
+      s.caseCount?.trim() ? `Cases: ${s.caseCount}` : '',
+      s.spotlightNotes?.trim() ? `Spotlights: ${s.spotlightNotes}` : '',
+      `Budget: ${BUDGET_LABELS[s.budgetRange]}`,
+      s.timeline ? `Timeline: ${TIMELINE_LABELS[s.timeline]}` : '',
+      `Design notes:\n${s.designNotes}`,
+      ''
+    );
+  }
+  textParts.push(data.message || '(no additional notes)');
+  const text = textParts.filter(Boolean).join('\n');
 
   const replyName = `${data.firstName} ${data.lastName}`.trim() || data.email;
 
@@ -415,7 +480,9 @@ export async function sendContactInquiryEmail(data: ContactInquiryData): Promise
       from: { email: fromEmail, name: fromName },
       to: adminEmail.trim(),
       replyTo: { email: data.email, name: replyName },
-      subject: `[Shackpack Contact] ${subjectLabel} — ${data.lastName}, ${data.firstName}`,
+      subject: data.builderSpec
+        ? `[Shackpack Builder] ${data.lastName}, ${data.firstName} — custom build`
+        : `[Shackpack Contact] ${subjectLabel} — ${data.lastName}, ${data.firstName}`,
       html,
       text,
     });

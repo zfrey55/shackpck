@@ -13,6 +13,7 @@ export function Footer() {
             <div className="font-medium">Explore</div>
             <ul className="mt-2 space-y-1 text-sm text-slate-300">
               <li><Link href="/repacks" className="hover:text-gold">Packs</Link></li>
+              <li><Link href="/build" className="hover:text-gold">Custom build</Link></li>
               <li><Link href="/checklist" className="hover:text-gold">Checklists</Link></li>
               <li><Link href="/contact" className="hover:text-gold">Contact</Link></li>
             </ul>
