@@ -1,55 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendContactInquiryEmail } from '@/lib/email';
-import { shackpackBuilderSpecSchema } from '@/lib/shackpack-builder-schema';
 
 /** SendGrid + @sendgrid/mail require Node; avoids Edge/runtime surprises on Netlify */
 export const runtime = 'nodejs';
 
-const contactSchema = z
-  .object({
-    firstName: z.string().trim().min(1).max(120),
-    lastName: z.string().trim().min(1).max(120),
-    email: z.string().trim().email().max(254),
-    phone: z.string().trim().min(1).max(40),
-    subject: z.enum([
-      'general',
-      'order',
-      'coin-info',
-      'shipping',
-      'other',
-      'custom-build',
-    ]),
-    message: z.string().trim().max(10000),
-    caseTypes: z.array(z.string().trim().max(64)).optional().default([]),
-    builderSpec: shackpackBuilderSpecSchema.optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.subject === 'custom-build') {
-      if (!data.builderSpec) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Builder specification is required for custom build inquiries.',
-          path: ['builderSpec'],
-        });
-      }
-    } else {
-      if (data.builderSpec) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Builder specification is only valid for custom build inquiries.',
-          path: ['builderSpec'],
-        });
-      }
-      if (!data.message.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Message is required.',
-          path: ['message'],
-        });
-      }
-    }
-  });
+const contactSchema = z.object({
+  firstName: z.string().trim().min(1).max(120),
+  lastName: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(254),
+  phone: z.string().trim().min(1).max(40),
+  subject: z.enum(['general', 'order', 'coin-info', 'shipping', 'other']),
+  message: z.string().trim().min(1).max(10000),
+  caseTypes: z.array(z.string().trim().max(64)).optional().default([]),
+});
 
 /** Non-empty env required for contact form (FROM_EMAIL must be a SendGrid-verified sender). */
 function contactFormEnvGap():
@@ -91,7 +55,6 @@ export async function POST(request: NextRequest) {
       subject: validated.subject,
       message: validated.message,
       caseTypes: caseTypesStr,
-      builderSpec: validated.builderSpec,
     });
 
     return NextResponse.json({ ok: true });

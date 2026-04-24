@@ -1,39 +1,48 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ShackpackBuilderWizard } from '@/components/shackpack-builder/ShackpackBuilderWizard';
+import { BuilderShell } from '@/components/builder/BuilderShell';
 
 export const metadata: Metadata = {
-  title: 'ShackPack Builder — Custom Shackpack',
+  title: 'ShackPack Builder — Design your custom case',
   description:
-    'Design your custom ShackPack case: scale, featured highlights, budget, and branding. Our team follows up to finalize every custom series.',
+    'Design a custom ShackPack case: choose pack count, drag coins from the catalog, set per-slot targets, and upload your pack artwork. Submissions are quote requests — no payment is taken until we confirm.',
 };
 
-export default function BuildPage() {
+export default function BuildPage({
+  searchParams,
+}: {
+  searchParams?: { id?: string };
+}) {
+  const id = typeof searchParams?.id === 'string' ? searchParams.id : null;
+
   return (
-    <main className="container py-10">
-      <div className="mx-auto max-w-3xl px-4">
-        <p className="text-center text-sm text-gold">
-          <Link href="/contact" className="hover:underline">
-            Prefer email only?
-          </Link>{' '}
-          ·{' '}
-          <Link href="/policy" className="hover:underline">
-            Policies
-          </Link>
-        </p>
-        <h1 className="mt-4 text-center text-4xl font-bold text-gold">ShackPack Builder</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-slate-300">
-          Walk through your custom case — product line, scale, budget, design direction, and contact
-          details. Custom configurations are quoted and finalized with ShackPack before production;
-          this form is not a binding order.
-        </p>
-        <div className="mt-8 rounded-lg border border-amber-700/40 bg-amber-900/15 p-4 text-center text-sm text-amber-100">
-          Custom series (Flex, Expo, Currency Clash, and bespoke lines) require direct coordination.
-          Submitting this form starts a conversation — not a commitment to buy.
+    <main className="container py-8">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-gold sm:text-4xl">ShackPack Builder</h1>
+            <p className="mt-1 max-w-2xl text-sm text-slate-300">
+              Build your custom case: pick your pack count, add the coins you want, set a target
+              per slot, and (optionally) upload your pack artwork. When you're happy, send it to
+              us for review.
+            </p>
+          </div>
+          <div className="flex gap-3 text-sm">
+            <Link href="/my-builds" className="text-gold hover:underline">
+              My builds
+            </Link>
+            <span className="text-slate-600">·</span>
+            <Link href="/policy" className="text-slate-400 hover:text-gold hover:underline">
+              Policies
+            </Link>
+            <span className="text-slate-600">·</span>
+            <Link href="/contact" className="text-slate-400 hover:text-gold hover:underline">
+              Contact
+            </Link>
+          </div>
         </div>
-        <div className="mt-10">
-          <ShackpackBuilderWizard />
-        </div>
+
+        <BuilderShell loadBuildId={id} />
       </div>
     </main>
   );

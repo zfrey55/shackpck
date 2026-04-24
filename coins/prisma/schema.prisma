@@ -32,7 +32,10 @@ model User {
   
   // Track pack purchases per series for limit enforcement
   seriesPurchases   SeriesPurchase[]
-  
+
+  // Custom case builds (ShackPack Builder)
+  builds            Build[]
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -200,4 +203,54 @@ model OrderItem {
 
   @@index([orderId])
   @@index([seriesId])
+}
+
+// ShackPack Builder: customer-designed custom cases (quote requests).
+// Not an order — submission creates an inquiry the team follows up on.
+model Build {
+  id          String      @id @default(cuid())
+  shortCode   String      @unique @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  packCount   Int         // number of packs in the custom case
+
+  status      BuildStatus @default(DRAFT)
+
+  artworkUrl  String?     // Netlify Blob public URL (front design mockup)
+  artworkKey  String?     // storage key for deletion
+  notes       String?     @db.Text
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  submittedAt DateTime?
+  archivedAt  DateTime?
+
+  lines       BuildLine[]
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+model BuildLine {
+  id        String @id @default(cuid())
+  buildId   String
+  build     Build  @relation(fields: [buildId], references: [id], onDelete: Cascade)
+
+  order     Int    // display order, 0-based
+  coinType  String // enum-as-string, validated server-side (BUILDER_COIN_TYPES)
+  quantity  Int
+  grader    String // NGC | PCGS | ICG | CAC | ANACS | ANY
+  tier      String // STARTER | SELECT | PREMIUM | COLLECTOR | SIGNATURE
+  notes     String?
+
+  @@index([buildId])
+}
+
+enum BuildStatus {
+  DRAFT
+  SAVED
+  SUBMITTED
+  ARCHIVED
 }
