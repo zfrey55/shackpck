@@ -28,14 +28,24 @@ export function RepackCard({
   const isCoinwave = id.startsWith('coinwave-');
   const isXtreme = id === 'shackpack-xtreme';
   const isDeluxe = id === 'shackpack-deluxe';
+  // Tall portrait pack mockups for card product lines — use object-contain so
+  // the full pack shows without cropping the top/bottom of the box.
+  const isCardPack =
+    id === 'shackpack-fusion' ||
+    id === 'shackpack-select' ||
+    id === 'shackpack-nova' ||
+    id === 'shackpack-inception';
 
   let imageClass =
-    'object-cover transition-transform duration-500 will-change-transform ';
+    (isCardPack ? 'object-contain ' : 'object-cover ') +
+    'transition-transform duration-500 will-change-transform ';
   if (isCoinwave) {
     // Wide artwork: slight zoom-out; anchor to top so the upper portion of the art is visible
     imageClass += 'origin-top scale-[0.92] group-hover:scale-[0.97] ';
   } else if (isXtreme) {
     imageClass += 'scale-[1.45] group-hover:scale-[1.52] ';
+  } else if (isCardPack) {
+    imageClass += 'group-hover:scale-[1.03] ';
   } else {
     imageClass += 'group-hover:scale-105 ';
   }

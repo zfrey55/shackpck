@@ -43,7 +43,7 @@ export function RepacksClient() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {CARD_REPACK_CATALOG.map((repack) => (
-            <RepackCard key={repack.id} {...repack} usePlaceholder />
+            <RepackCard key={repack.id} {...repack} />
           ))}
         </div>
       )}

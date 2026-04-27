@@ -1,48 +1,63 @@
 import type { RepackCatalogItem } from '@/lib/repack-catalog';
-import { REPACK_CHECKLIST_DISCLAIMER } from '@/lib/repack-catalog';
 
-const d = (body: string) => `${body.trim()} ${REPACK_CHECKLIST_DISCLAIMER}`;
+/**
+ * Card-side disclaimer. Unlike coin repacks (which use a "contents may vary"
+ * clause), each ShackPack card series is finalized once published — the
+ * specific products and items in a finalized series cannot change. This copy
+ * is consistent with the Whatnot Identified Product List requirements for
+ * Professionally Sealed Surprise Products.
+ */
+export const CARD_REPACK_CHECKLIST_DISCLAIMER =
+  'Each series is a finalized, sealed, tamper-proof set. See the published checklist for the complete contents of this series.';
 
-/** Graded trading card repacks (placeholders until pack art ships). */
+const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`;
+
+/**
+ * Graded trading card repacks. Four product lines:
+ *   Fusion     — TCG, multi-show
+ *   Nova       — Multi-sport, multi-show
+ *   Select     — TCG, single-show
+ *   Inception  — Multi-sport, single-show
+ */
 export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
-    id: 'card-tcg-multi',
-    name: 'ShackPack TCG',
+    id: 'shackpack-fusion',
+    name: 'ShackPack Fusion',
     description: d(
-      '100 graded cards per series — Pokémon TCG and non-sport / pop culture (Marvel, DC, Star Wars, DBZ, Naruto, SpongeBob, Disney/Lorcana). All cards graded PSA, BGS, or SGC. No raw cards.'
+      '100 graded cards per series — Pokémon, Magic the Gathering, Yu-Gi-Oh!, One Piece, Dragon Ball Super, Disney Lorcana, and other major TCG and pop-culture titles. All cards graded PSA, BGS, or SGC. No raw cards.'
     ),
-    image: '',
+    image: '/images/packs/shackpack-fusion.png',
     coinCount: '100 cards',
-    category: 'Multi-Show Series',
+    category: 'TCG · Multi-Show Series',
   },
   {
-    id: 'card-football-multi',
-    name: 'ShackPack Football',
+    id: 'shackpack-nova',
+    name: 'ShackPack Nova',
     description: d(
-      '50 graded NFL cards per series — vintage rookie cards through modern Panini Prizm. All cards graded PSA, BGS, or SGC. No raw cards.'
+      '50 graded sports cards per series spanning Football, Basketball, and Baseball — vintage rookies through modern Panini Prizm, Topps Chrome, and Bowman Chrome. All cards graded PSA, BGS, or SGC. No raw cards.'
     ),
-    image: '',
+    image: '/images/packs/shackpack-nova.png',
     coinCount: '50 cards',
-    category: 'Multi-Show Series',
+    category: 'Multi-Sport · Multi-Show Series',
   },
   {
-    id: 'card-tcg-single',
-    name: 'ShackPack TCG Single Show',
+    id: 'shackpack-select',
+    name: 'ShackPack Select',
     description: d(
-      '100 graded TCG cards — Pokémon and pop culture. Intended to be sold and opened within a single show. “Single Show” marked on product.'
+      '100 graded TCG cards per series, intended to be sold and opened within a single show. "Single Show Series" is clearly designated on the front of the sealed product.'
     ),
-    image: '',
+    image: '/images/packs/shackpack-select.png',
     coinCount: '100 cards',
-    category: 'Single Show Series',
+    category: 'TCG · Single Show Series',
   },
   {
-    id: 'card-football-single',
-    name: 'ShackPack Football Single Show',
+    id: 'shackpack-inception',
+    name: 'ShackPack Inception',
     description: d(
-      '50 graded NFL football cards. Intended to be sold and opened within a single show. “Single Show” marked on product.'
+      '50 graded multi-sport cards per series, intended to be sold and opened within a single show. "Single Show Series" is clearly designated on the front of the sealed product.'
     ),
-    image: '',
+    image: '/images/packs/shackpack-inception.png',
     coinCount: '50 cards',
-    category: 'Single Show Series',
+    category: 'Multi-Sport · Single Show Series',
   },
 ];
