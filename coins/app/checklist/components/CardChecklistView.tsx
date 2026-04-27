@@ -178,7 +178,7 @@ export function CardChecklistView() {
 
         <p className="mt-4 text-xs text-slate-500">
           Grade pills: PSA (blue), BGS (orange), SGC (green). Quantity is 1 for each individual item.
-          {isTcg ? ' Language is shown for TCG entries.' : ' Sport is shown for multi-sport entries.'}
+          {isTcg ? ' Language is shown for TCG entries.' : ' Sport is shown for Nova entries.'}
         </p>
       </div>
     </div>

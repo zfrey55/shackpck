@@ -41,7 +41,7 @@ export type CardSeriesDefinition = {
   /** Series Name (Whatnot required). */
   seriesName: string;
   /** Series category — drives the language column display. */
-  category: 'TCG' | 'Multi-Sport';
+  category: 'TCG' | 'Nova';
   /** Condition (Whatnot required). */
   condition: string;
   /** Quantity of each individual item in the series (Whatnot required). */
@@ -163,7 +163,7 @@ function buildTcgRows100(): CardChecklistRow[] {
 }
 
 // ---------------------------------------------------------------------------
-// Multi-Sport series — Football, Basketball, Baseball
+// ShackPack Nova — Multi-sport (Football, Basketball, Baseball)
 // ---------------------------------------------------------------------------
 
 type SportSeed = {
@@ -245,7 +245,7 @@ const sportSeeds: SportSeed[] = [
   { sport: 'Baseball', year: 2022, set: 'Bowman Chrome', player: 'Bobby Witt Jr.', variation: 'Refractor Rookie' },
 ];
 
-function buildMultiSportRows(count: number): CardChecklistRow[] {
+function buildNovaRows(count: number): CardChecklistRow[] {
   return Array.from({ length: count }, (_, i) => {
     const seed = sportSeeds[i % sportSeeds.length];
     const grader = pickGrader(i);
@@ -267,8 +267,8 @@ function exampleTcg(count: number): CardChecklistRow[] {
   return buildTcgRows100().slice(0, count);
 }
 
-function exampleMultiSport(count: number): CardChecklistRow[] {
-  return buildMultiSportRows(count);
+function exampleNova(count: number): CardChecklistRow[] {
+  return buildNovaRows(count);
 }
 
 // ---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ function exampleMultiSport(count: number): CardChecklistRow[] {
 // ---------------------------------------------------------------------------
 
 const TCG_IMAGE = '/images/packs/shackpack-tcg.png';
-const MULTISPORT_IMAGE = '/images/packs/shackpack-multisport.png';
+const NOVA_IMAGE = '/images/packs/shackpack-nova.png';
 
 function finalizationStatement(productTitle: string, seriesName: string): string {
   return `As of ${FINALIZATION_DATE}, the ${productTitle} Series ${seriesName} has been finalized. The number of Professionally Sealed Surprise Products in this Series, and the individual items contained in each product, will not change. Any additional products produced from additional items will constitute a new, distinct Series.`;
@@ -307,20 +307,20 @@ export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
     rows: buildTcgRows100(),
   },
   {
-    id: 'MS-001',
-    label: 'ShackPack Multi-Sport — Series MS-001 (50 cards)',
+    id: 'N-001',
+    label: 'ShackPack Nova — Series N-001 (50 cards)',
     brand: BRAND,
-    productTitle: 'ShackPack Multi-Sport Multi-Show',
-    seriesName: 'MS-001',
-    category: 'Multi-Sport',
+    productTitle: 'ShackPack Nova Multi-Show',
+    seriesName: 'N-001',
+    category: 'Nova',
     condition: CONDITION,
     quantityPerItem: 1,
     finalizationDate: FINALIZATION_DATE,
-    finalizationStatement: finalizationStatement('ShackPack Multi-Sport Multi-Show', 'MS-001'),
-    imageSrc: MULTISPORT_IMAGE,
-    imageAlt: 'ShackPack Multi-Sport Edition sealed pack',
+    finalizationStatement: finalizationStatement('ShackPack Nova Multi-Show', 'N-001'),
+    imageSrc: NOVA_IMAGE,
+    imageAlt: 'ShackPack Nova sealed pack',
     layout: 'full',
-    rows: buildMultiSportRows(50),
+    rows: buildNovaRows(50),
   },
   {
     id: 'SS-T-001',
@@ -343,23 +343,23 @@ export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
     rows: exampleTcg(12),
   },
   {
-    id: 'SS-MS-001',
-    label: 'ShackPack Multi-Sport Single Show — SS-MS-001',
+    id: 'SS-N-001',
+    label: 'ShackPack Nova Single Show — SS-N-001',
     brand: BRAND,
-    productTitle: 'ShackPack Multi-Sport Single Show',
-    seriesName: 'SS-MS-001',
-    category: 'Multi-Sport',
+    productTitle: 'ShackPack Nova Single Show',
+    seriesName: 'SS-N-001',
+    category: 'Nova',
     condition: CONDITION,
     quantityPerItem: 1,
     finalizationDate: FINALIZATION_DATE,
-    finalizationStatement: finalizationStatement('ShackPack Multi-Sport Single Show', 'SS-MS-001'),
-    imageSrc: MULTISPORT_IMAGE,
-    imageAlt: 'ShackPack Multi-Sport Single Show sealed pack',
+    finalizationStatement: finalizationStatement('ShackPack Nova Single Show', 'SS-N-001'),
+    imageSrc: NOVA_IMAGE,
+    imageAlt: 'ShackPack Nova Single Show sealed pack',
     layout: 'overview',
     overviewParagraphs: [
       'Each sealed product contains 50 graded sports cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
-      ...singleShowOverview('ShackPack Multi-Sport Single Show'),
+      ...singleShowOverview('ShackPack Nova Single Show'),
     ],
-    rows: exampleMultiSport(12),
+    rows: exampleNova(12),
   },
 ];
