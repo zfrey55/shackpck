@@ -1,11 +1,20 @@
 /**
- * Static card checklist content (TCG / multi-sport series).
+ * Static card checklist content for the four ShackPack card product lines.
+ *
+ * Naming convention mirrors the coin checklists:
+ *   "{ShackPack ProductName} Series #N" + a separate finalization date.
+ *
+ * Structure is dynamic-capable: each product line is a "case type" that can
+ * have any number of finalized series (Series #1, Series #2, …). For now we
+ * seed one example series per product. When the inventory system + API is
+ * wired up later, this file becomes the read-side projection of that data
+ * (or is replaced by an API call) without UI changes.
  *
  * Each series exposes the data Whatnot's Identified Product List audit
  * requires: Brand/Manufacturer, Title of Product, Series Name, Condition,
- * Quantity per item, Key distinguishing features per row (year, set,
- * player/character name, variation, language for TCG, grade), and an
- * explicit finalization statement with a date.
+ * Quantity per item, distinguishing features per row (year, set, name,
+ * variation, language for TCG, grade), and an explicit finalization
+ * statement with a date.
  *
  * No pricing, value, floor/ceiling, or comp data appears here. MSRP is
  * intentionally omitted.
@@ -24,47 +33,73 @@ export type CardChecklistRow = {
   variation: string;
   /** Required for TCG cards per Whatnot audit. Omitted for sports rows. */
   language?: string;
-  /** Sport tag for multi-sport series rows; omitted on TCG. */
+  /** Sport tag for multi-sport rows; omitted on TCG. */
   sport?: Sport;
   grader: Grader;
   grade: string;
 };
 
-export type CardSeriesDefinition = {
-  id: string;
-  /** Visible label in the dropdown selector. */
-  label: string;
+/**
+ * One product line / case type. The four products are:
+ *   - fusion     (TCG, multi-show)
+ *   - select     (TCG, single-show)
+ *   - nova       (multi-sport, multi-show)
+ *   - inception  (multi-sport, single-show)
+ */
+export type CardProductId = 'fusion' | 'select' | 'nova' | 'inception';
+
+export type CardProductLine = {
+  id: CardProductId;
+  /** Display name as it should appear before "Series #N", e.g. "ShackPack Fusion". */
+  productName: string;
   /** Brand / Manufacturer (Whatnot required). */
   brand: string;
   /** Title of Product (Whatnot required). */
   productTitle: string;
-  /** Series Name (Whatnot required). */
-  seriesName: string;
-  /** Series category — drives the language column display. */
-  category: 'TCG' | 'Nova';
+  /** Layout discriminant — drives Language vs Sport column. */
+  category: 'TCG' | 'Multi-Sport';
+  /** Multi-show vs single-show — drives Single Show overview block + designation copy. */
+  showType: 'multi-show' | 'single-show';
   /** Condition (Whatnot required). */
   condition: string;
-  /** Quantity of each individual item in the series (Whatnot required). */
+  /** Quantity of each individual item in any series of this product (Whatnot required). */
   quantityPerItem: number;
-  /** ISO/long-form finalization date displayed to users (Whatnot required). */
-  finalizationDate: string;
-  /** Full finalization statement shown above the table. */
-  finalizationStatement: string;
-  /** Pack image displayed as a banner above the series. */
+  /** Pack image displayed as a banner. */
   imageSrc: string;
   imageAlt: string;
-  /** Full grid vs overview + examples. */
-  layout: 'full' | 'overview';
-  /** Intro paragraphs for overview layout. */
-  overviewParagraphs?: string[];
-  rows: CardChecklistRow[];
+  /** Short blurb shown under the product header. */
+  tagline: string;
 };
 
-const FINALIZATION_DATE = 'April 27, 2026';
+export type CardSeriesDefinition = {
+  /** Stable id, e.g. "fusion-1". */
+  id: string;
+  /** Product line this series belongs to. */
+  productId: CardProductId;
+  /** 1-based ordinal within this product line. */
+  ordinal: number;
+  /** Long display date, e.g. "April 27, 2026". */
+  finalizationDate: string;
+  /** Title of Product (denormalized for convenience). */
+  productTitle: string;
+  /** Whatnot Series Name field — e.g. "Fusion Series #1". */
+  seriesName: string;
+  /** Convenience display label, e.g. "ShackPack Fusion Series #1". */
+  displayLabel: string;
+  /** Full finalization statement shown above the table. */
+  finalizationStatement: string;
+  /** Optional intro paragraphs (used for single-show overview content). */
+  overviewParagraphs?: string[];
+  /** Layout: "full" shows all rows; "overview" reads as an overview + example rows. */
+  layout: 'full' | 'overview';
+  rows: CardChecklistRow[];
+};
 
 const BRAND = 'ShackPack — G&J Packaging LLLP';
 
 const CONDITION = 'Professionally graded by PSA, BGS, or SGC. No raw cards.';
+
+const FINALIZATION_DATE = 'April 27, 2026';
 
 const graders: Grader[] = ['PSA', 'BGS', 'SGC'];
 
@@ -79,7 +114,7 @@ function pickGrade(g: Grader, i: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// TCG series
+// TCG seed data — used by Fusion (multi-show, full 100) and Select (single-show, overview)
 // ---------------------------------------------------------------------------
 
 type TcgSeed = {
@@ -143,8 +178,8 @@ const tcgSeeds: TcgSeed[] = [
   { set: 'Pokémon Paldea Evolved', card: 'Miriam', variation: 'Special Illustration Rare', language: 'English', yearStart: 2023 },
 ];
 
-function buildTcgRows100(): CardChecklistRow[] {
-  return Array.from({ length: 100 }, (_, i) => {
+function buildTcgRows(count: number): CardChecklistRow[] {
+  return Array.from({ length: count }, (_, i) => {
     const seed = tcgSeeds[i % tcgSeeds.length];
     const grader = pickGrader(i);
     const grade = pickGrade(grader, i);
@@ -163,7 +198,7 @@ function buildTcgRows100(): CardChecklistRow[] {
 }
 
 // ---------------------------------------------------------------------------
-// ShackPack Nova — Multi-sport (Football, Basketball, Baseball)
+// Multi-Sport seed data — Football, Basketball, Baseball
 // ---------------------------------------------------------------------------
 
 type SportSeed = {
@@ -245,7 +280,7 @@ const sportSeeds: SportSeed[] = [
   { sport: 'Baseball', year: 2022, set: 'Bowman Chrome', player: 'Bobby Witt Jr.', variation: 'Refractor Rookie' },
 ];
 
-function buildNovaRows(count: number): CardChecklistRow[] {
+function buildSportRows(count: number): CardChecklistRow[] {
   return Array.from({ length: count }, (_, i) => {
     const seed = sportSeeds[i % sportSeeds.length];
     const grader = pickGrader(i);
@@ -263,23 +298,74 @@ function buildNovaRows(count: number): CardChecklistRow[] {
   });
 }
 
-function exampleTcg(count: number): CardChecklistRow[] {
-  return buildTcgRows100().slice(0, count);
-}
-
-function exampleNova(count: number): CardChecklistRow[] {
-  return buildNovaRows(count);
-}
-
 // ---------------------------------------------------------------------------
-// Series definitions
+// Product line definitions (4 total)
 // ---------------------------------------------------------------------------
 
-const TCG_IMAGE = '/images/packs/shackpack-tcg.png';
-const NOVA_IMAGE = '/images/packs/shackpack-nova.png';
+export const CARD_PRODUCT_LINES: Record<CardProductId, CardProductLine> = {
+  fusion: {
+    id: 'fusion',
+    productName: 'ShackPack Fusion',
+    brand: BRAND,
+    productTitle: 'ShackPack Fusion',
+    category: 'TCG',
+    showType: 'multi-show',
+    condition: CONDITION,
+    quantityPerItem: 1,
+    imageSrc: '/images/packs/shackpack-fusion.png',
+    imageAlt: 'ShackPack Fusion sealed pack',
+    tagline: 'Trading card games — Pokémon, Magic, Yu-Gi-Oh!, One Piece, Lorcana, and more. Multi-show release.',
+  },
+  select: {
+    id: 'select',
+    productName: 'ShackPack Select',
+    brand: BRAND,
+    productTitle: 'ShackPack Select',
+    category: 'TCG',
+    showType: 'single-show',
+    condition: CONDITION,
+    quantityPerItem: 1,
+    imageSrc: '/images/packs/shackpack-select.png',
+    imageAlt: 'ShackPack Select sealed pack',
+    tagline: 'Trading card games — sold and opened within a single show. "Single Show Series" designated on the front of the product.',
+  },
+  nova: {
+    id: 'nova',
+    productName: 'ShackPack Nova',
+    brand: BRAND,
+    productTitle: 'ShackPack Nova',
+    category: 'Multi-Sport',
+    showType: 'multi-show',
+    condition: CONDITION,
+    quantityPerItem: 1,
+    imageSrc: '/images/packs/shackpack-nova.png',
+    imageAlt: 'ShackPack Nova sealed pack',
+    tagline: 'Multi-sport graded cards — Football, Basketball, Baseball. Multi-show release.',
+  },
+  inception: {
+    id: 'inception',
+    productName: 'ShackPack Inception',
+    brand: BRAND,
+    productTitle: 'ShackPack Inception',
+    category: 'Multi-Sport',
+    showType: 'single-show',
+    condition: CONDITION,
+    quantityPerItem: 1,
+    imageSrc: '/images/packs/shackpack-inception.png',
+    imageAlt: 'ShackPack Inception sealed pack',
+    tagline: 'Multi-sport graded cards — sold and opened within a single show. "Single Show Series" designated on the front of the product.',
+  },
+};
 
-function finalizationStatement(productTitle: string, seriesName: string): string {
-  return `As of ${FINALIZATION_DATE}, the ${productTitle} Series ${seriesName} has been finalized. The number of Professionally Sealed Surprise Products in this Series, and the individual items contained in each product, will not change. Any additional products produced from additional items will constitute a new, distinct Series.`;
+export const CARD_PRODUCT_ORDER: CardProductId[] = ['fusion', 'nova', 'select', 'inception'];
+
+// ---------------------------------------------------------------------------
+// Series definitions — seeded with one example series per product line.
+// To add more later, just append more entries with the next ordinal + a new date.
+// ---------------------------------------------------------------------------
+
+function buildFinalizationStatement(productTitle: string, seriesName: string, date: string): string {
+  return `As of ${date}, the ${productTitle} ${seriesName} has been finalized. The number of Professionally Sealed Surprise Products in this Series, and the individual items contained in each product, will not change. Any additional products produced from additional items will constitute a new, distinct Series.`;
 }
 
 function singleShowOverview(productTitle: string): string[] {
@@ -289,77 +375,71 @@ function singleShowOverview(productTitle: string): string[] {
   ];
 }
 
+function makeSeries(
+  productId: CardProductId,
+  ordinal: number,
+  finalizationDate: string,
+  rows: CardChecklistRow[],
+  layout: 'full' | 'overview',
+  overviewParagraphs?: string[]
+): CardSeriesDefinition {
+  const product = CARD_PRODUCT_LINES[productId];
+  const seriesName = `${product.productName.replace(/^ShackPack\s+/, '')} Series #${ordinal}`;
+  const displayLabel = `${product.productName} Series #${ordinal}`;
+  return {
+    id: `${productId}-${ordinal}`,
+    productId,
+    ordinal,
+    finalizationDate,
+    productTitle: product.productTitle,
+    seriesName,
+    displayLabel,
+    finalizationStatement: buildFinalizationStatement(product.productTitle, seriesName, finalizationDate),
+    overviewParagraphs,
+    layout,
+    rows,
+  };
+}
+
 export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
-  {
-    id: 'T-001',
-    label: 'ShackPack TCG — Series T-001 (100 cards)',
-    brand: BRAND,
-    productTitle: 'ShackPack TCG Multi-Show',
-    seriesName: 'T-001',
-    category: 'TCG',
-    condition: CONDITION,
-    quantityPerItem: 1,
-    finalizationDate: FINALIZATION_DATE,
-    finalizationStatement: finalizationStatement('ShackPack TCG Multi-Show', 'T-001'),
-    imageSrc: TCG_IMAGE,
-    imageAlt: 'ShackPack TCG sealed pack',
-    layout: 'full',
-    rows: buildTcgRows100(),
-  },
-  {
-    id: 'N-001',
-    label: 'ShackPack Nova — Series N-001 (50 cards)',
-    brand: BRAND,
-    productTitle: 'ShackPack Nova Multi-Show',
-    seriesName: 'N-001',
-    category: 'Nova',
-    condition: CONDITION,
-    quantityPerItem: 1,
-    finalizationDate: FINALIZATION_DATE,
-    finalizationStatement: finalizationStatement('ShackPack Nova Multi-Show', 'N-001'),
-    imageSrc: NOVA_IMAGE,
-    imageAlt: 'ShackPack Nova sealed pack',
-    layout: 'full',
-    rows: buildNovaRows(50),
-  },
-  {
-    id: 'SS-T-001',
-    label: 'ShackPack TCG Single Show — SS-T-001',
-    brand: BRAND,
-    productTitle: 'ShackPack TCG Single Show',
-    seriesName: 'SS-T-001',
-    category: 'TCG',
-    condition: CONDITION,
-    quantityPerItem: 1,
-    finalizationDate: FINALIZATION_DATE,
-    finalizationStatement: finalizationStatement('ShackPack TCG Single Show', 'SS-T-001'),
-    imageSrc: TCG_IMAGE,
-    imageAlt: 'ShackPack TCG Single Show sealed pack',
-    layout: 'overview',
-    overviewParagraphs: [
+  makeSeries('fusion', 1, FINALIZATION_DATE, buildTcgRows(100), 'full'),
+  makeSeries('nova', 1, FINALIZATION_DATE, buildSportRows(50), 'full'),
+  makeSeries(
+    'select',
+    1,
+    FINALIZATION_DATE,
+    buildTcgRows(12),
+    'overview',
+    [
       'Each sealed product contains 100 graded TCG cards. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
-      ...singleShowOverview('ShackPack TCG Single Show'),
-    ],
-    rows: exampleTcg(12),
-  },
-  {
-    id: 'SS-N-001',
-    label: 'ShackPack Nova Single Show — SS-N-001',
-    brand: BRAND,
-    productTitle: 'ShackPack Nova Single Show',
-    seriesName: 'SS-N-001',
-    category: 'Nova',
-    condition: CONDITION,
-    quantityPerItem: 1,
-    finalizationDate: FINALIZATION_DATE,
-    finalizationStatement: finalizationStatement('ShackPack Nova Single Show', 'SS-N-001'),
-    imageSrc: NOVA_IMAGE,
-    imageAlt: 'ShackPack Nova Single Show sealed pack',
-    layout: 'overview',
-    overviewParagraphs: [
+      ...singleShowOverview('ShackPack Select'),
+    ]
+  ),
+  makeSeries(
+    'inception',
+    1,
+    FINALIZATION_DATE,
+    buildSportRows(12),
+    'overview',
+    [
       'Each sealed product contains 50 graded sports cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
-      ...singleShowOverview('ShackPack Nova Single Show'),
-    ],
-    rows: exampleNova(12),
-  },
+      ...singleShowOverview('ShackPack Inception'),
+    ]
+  ),
 ];
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+export function getCardProduct(id: CardProductId): CardProductLine {
+  return CARD_PRODUCT_LINES[id];
+}
+
+export function getSeriesByProduct(productId: CardProductId): CardSeriesDefinition[] {
+  return CARD_CHECKLIST_SERIES.filter((s) => s.productId === productId);
+}
+
+export function getSeriesById(id: string): CardSeriesDefinition | undefined {
+  return CARD_CHECKLIST_SERIES.find((s) => s.id === id);
+}
