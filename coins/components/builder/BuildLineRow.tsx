@@ -1,12 +1,10 @@
 'use client';
 
-import { TierSlider } from './TierSlider';
 import {
   getCoinDef,
   GRADERS,
   GRADER_LABELS,
   type Grader,
-  type Tier,
 } from '@/lib/builder/catalog';
 import type { BuildLine } from '@/lib/builder/types';
 
@@ -43,7 +41,7 @@ export function BuildLineRow({ line, index, onChange, onRemove }: Props) {
         </button>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[90px_140px_1fr]">
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[120px_1fr]">
         <div>
           <label className="block text-[11px] font-medium uppercase tracking-wide text-slate-400">
             Qty
@@ -63,7 +61,7 @@ export function BuildLineRow({ line, index, onChange, onRemove }: Props) {
 
         <div>
           <label className="block text-[11px] font-medium uppercase tracking-wide text-slate-400">
-            Grader
+            Grader preference
           </label>
           <select
             value={line.grader}
@@ -76,19 +74,6 @@ export function BuildLineRow({ line, index, onChange, onRemove }: Props) {
               </option>
             ))}
           </select>
-        </div>
-
-        <div>
-          <label className="block text-[11px] font-medium uppercase tracking-wide text-slate-400">
-            Target per slot
-          </label>
-          <div className="mt-1">
-            <TierSlider
-              value={line.tier}
-              onChange={(tier: Tier) => onChange({ tier })}
-              compact
-            />
-          </div>
         </div>
       </div>
 

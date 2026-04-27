@@ -14,10 +14,13 @@ import {
 import {
   MAX_PACK_COUNT,
   MIN_PACK_COUNT,
+  TIER_DEFS,
   type CoinTypeDef,
   type Preset,
+  type Tier,
 } from '@/lib/builder/catalog';
 import {
+  dominantTier,
   emptyDraft,
   toUpsertInput,
   totalCoins,
@@ -31,6 +34,7 @@ import { BuildCanvas } from './BuildCanvas';
 import { PresetStrip } from './PresetStrip';
 import { ArtworkUploader } from './ArtworkUploader';
 import { SignInGateModal } from './SignInGateModal';
+import { TierSlider } from './TierSlider';
 
 type Props = {
   initialDraft?: BuildDraft | null;
@@ -69,11 +73,13 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null }: Props)
         }
         const data = (await res.json()) as PersistedBuild;
         if (cancelled) return;
+        const buildTier = dominantTier(data.lines, 'SELECT');
         setDraft({
           id: data.id,
           shortCode: data.shortCode,
           name: data.name,
           packCount: data.packCount,
+          tier: buildTier,
           status: data.status,
           artworkUrl: data.artworkUrl ?? null,
           artworkKey: data.artworkKey ?? null,
@@ -84,7 +90,7 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null }: Props)
             coinType: l.coinType,
             quantity: l.quantity,
             grader: l.grader,
-            tier: l.tier,
+            tier: buildTier,
             notes: l.notes ?? null,
           })),
         });
@@ -131,11 +137,19 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null }: Props)
         coinType: coin.id,
         quantity: 1,
         grader: 'ANY',
-        tier: coin.defaultTier,
+        tier: d.tier,
         notes: null,
       };
       return { ...d, lines: [...d.lines, line] };
     });
+  }, []);
+
+  const setBuildTier = useCallback((tier: Tier) => {
+    setDraft((d) => ({
+      ...d,
+      tier,
+      lines: d.lines.map((l) => ({ ...l, tier })),
+    }));
   }, []);
 
   const changeLine = useCallback((index: number, patch: Partial<BuildLine>) => {
@@ -150,18 +164,22 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null }: Props)
   }, []);
 
   const applyPreset = useCallback((preset: Preset) => {
-    setDraft((d) => ({
-      ...d,
-      name: d.lines.length === 0 ? `${preset.name} (custom)` : d.name,
-      packCount: preset.packCount,
-      lines: preset.lines.map((line, i) => ({
-        order: i,
-        coinType: line.coinType,
-        quantity: line.quantity,
-        grader: line.grader,
-        tier: line.tier,
-      })),
-    }));
+    setDraft((d) => {
+      const presetTier = dominantTier(preset.lines, d.tier);
+      return {
+        ...d,
+        name: d.lines.length === 0 ? `${preset.name} (custom)` : d.name,
+        packCount: preset.packCount,
+        tier: presetTier,
+        lines: preset.lines.map((line, i) => ({
+          order: i,
+          coinType: line.coinType,
+          quantity: line.quantity,
+          grader: line.grader,
+          tier: presetTier,
+        })),
+      };
+    });
     showToast({ kind: 'info', message: `Loaded preset: ${preset.name}. Edit freely.` });
   }, [showToast]);
 
@@ -416,6 +434,32 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null }: Props)
               value={draft.packCount}
               onChange={(n) => patchDraft({ packCount: Math.max(MIN_PACK_COUNT, Math.min(MAX_PACK_COUNT, n)) })}
             />
+
+            <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    Target per slot
+                  </h3>
+                  <p className="mt-0.5 text-[11px] text-slate-500">
+                    A single budget tier applied to every slot in this build.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-slate-100">
+                    {TIER_DEFS[draft.tier].label}
+                  </div>
+                  <div className="text-xs text-gold">{TIER_DEFS[draft.tier].range}</div>
+                </div>
+              </div>
+              <div className="mt-3">
+                <TierSlider value={draft.tier} onChange={setBuildTier} />
+              </div>
+              <p className="mt-2 text-[11px] text-slate-500">
+                {TIER_DEFS[draft.tier].hint}
+              </p>
+            </div>
+
             <BuildCanvas
               draft={draft}
               onLineChange={changeLine}
