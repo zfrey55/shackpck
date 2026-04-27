@@ -411,7 +411,7 @@ export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
     buildTcgRows(12),
     'overview',
     [
-      'Each sealed product contains 100 graded TCG cards. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
+      'Each sealed product contains professionally graded TCG cards. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
       ...singleShowOverview('ShackPack Select'),
     ]
   ),
@@ -422,7 +422,7 @@ export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
     buildSportRows(12),
     'overview',
     [
-      'Each sealed product contains 50 graded sports cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
+      'Each sealed product contains professionally graded multi-sport cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
       ...singleShowOverview('ShackPack Inception'),
     ]
   ),
