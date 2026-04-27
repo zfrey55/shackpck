@@ -248,10 +248,21 @@ export default function ChecklistPage() {
           <div className="flex justify-center">
             <CoinsCardsToggle value={productLine} onChange={setProductLine} />
           </div>
-          <div className="p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
-            <p className="text-sm text-amber-200 text-center">
-              Card series and sealed products may vary by show or date. Use the series selector
-              below for the active checklist. Grades shown use PSA, BGS, or SGC as listed.
+          <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-sm leading-relaxed text-slate-300">
+            <p className="text-slate-200">
+              <strong className="text-gold">About ShackPack Card Series.</strong> Each ShackPack card series is a
+              finalized, sealed, tamper-proof complete set of Professionally Sealed Surprise Products created from a
+              fixed, specific branded collection of individual graded cards.
+            </p>
+            <p>
+              The manufacturer (G&amp;J Packaging LLLP) is identified on the front of every product. Once a series is
+              finalized, the number of products in the series and the individual items contained in each product cannot
+              change. Any additional products produced from additional items will constitute a new, distinct series.
+            </p>
+            <p>
+              Single Show products are clearly and visibly designated as &ldquo;Single Show Series&rdquo; on the front
+              of the sealed packaging and are intended to be sold and opened within a single show. All cards are graded
+              by PSA, BGS, or SGC.
             </p>
           </div>
           <CardChecklistView />
