@@ -82,8 +82,12 @@ export function RepackCard({
         <div className="mb-3">
           <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-400">
-            <span>{coinCount}</span>
-            <span className="text-slate-600">•</span>
+            {!isCardPack && (
+              <>
+                <span>{coinCount}</span>
+                <span className="text-slate-600">•</span>
+              </>
+            )}
             <span>{category}</span>
           </div>
         </div>
