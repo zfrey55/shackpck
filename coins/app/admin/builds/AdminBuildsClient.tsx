@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   COIN_CATEGORY_LABELS,
@@ -51,7 +51,6 @@ const STATUS_BADGE: Record<string, string> = {
 
 export function AdminBuildsClient() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const params = useSearchParams();
   const initialId = params.get('id');
 
@@ -65,16 +64,38 @@ export function AdminBuildsClient() {
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [digestSending, setDigestSending] = useState(false);
+  const [digestResult, setDigestResult] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin?callbackUrl=/admin/builds');
-      return;
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const isAdmin = status === 'authenticated' && role === 'ADMIN';
+
+  const sendDigest = useCallback(async () => {
+    setDigestSending(true);
+    setDigestResult(null);
+    try {
+      const res = await fetch('/api/admin/builds/email-digest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ days: 45 }),
+      });
+      const data = await res.json().catch(() => ({}) as { count?: number; error?: string });
+      if (!res.ok) {
+        setDigestResult(
+          `Error sending digest: ${(data as { error?: string }).error ?? `HTTP ${res.status}`}`
+        );
+      } else {
+        const count = (data as { count?: number }).count ?? 0;
+        setDigestResult(
+          `Sent digest of ${count} ${count === 1 ? 'build' : 'builds'} to ADMIN_EMAIL. Check your inbox.`
+        );
+      }
+    } catch (err) {
+      setDigestResult(err instanceof Error ? err.message : 'Failed to send digest.');
+    } finally {
+      setDigestSending(false);
     }
-    if (status === 'authenticated' && (session?.user as { role?: string } | undefined)?.role !== 'ADMIN') {
-      router.push('/');
-    }
-  }, [status, session, router]);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -99,8 +120,8 @@ export function AdminBuildsClient() {
   }, [statusFilter, selectedId]);
 
   useEffect(() => {
-    if (status === 'authenticated') void load();
-  }, [status, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isAdmin) void load();
+  }, [isAdmin, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -125,8 +146,43 @@ export function AdminBuildsClient() {
   if (status === 'loading') {
     return <p className="text-center text-slate-400">Loading…</p>;
   }
-  if (status === 'authenticated' && (session?.user as { role?: string } | undefined)?.role !== 'ADMIN') {
-    return null;
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-6 text-sm text-slate-200">
+        <p className="font-semibold text-gold">You need to sign in first.</p>
+        <p className="mt-1 text-slate-300">
+          The builder inquiries page is only visible to admins.
+        </p>
+        <Link
+          href="/auth/signin?callbackUrl=/admin/builds"
+          className="mt-4 inline-block rounded-md bg-gold px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
+        >
+          Sign in
+        </Link>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="rounded-lg border border-amber-700/60 bg-amber-900/20 p-6 text-sm text-amber-100">
+        <p className="font-semibold">
+          Your account ({session?.user?.email}) isn't an admin yet.
+        </p>
+        <p className="mt-2">
+          Promote it from your terminal with the production database URL:
+        </p>
+        <pre className="mt-2 overflow-x-auto rounded-md bg-slate-950 p-3 text-xs text-slate-200">
+          <code>{`DATABASE_URL="postgresql://...prod url..." \\
+  npx tsx scripts/promote-admin.ts ${session?.user?.email ?? 'you@example.com'}`}</code>
+        </pre>
+        <p className="mt-2 text-amber-200">
+          After running it, <strong>sign out and sign back in</strong> so your session
+          picks up the new role. Then reload this page.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -161,7 +217,7 @@ export function AdminBuildsClient() {
             />
           </div>
         </div>
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           <button
             type="button"
             onClick={() => void load()}
@@ -170,11 +226,32 @@ export function AdminBuildsClient() {
           >
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
+          <button
+            type="button"
+            onClick={() => void sendDigest()}
+            disabled={digestSending}
+            className="rounded-md border border-gold/50 bg-gold/10 px-3 py-1.5 font-semibold text-gold hover:bg-gold/20 disabled:opacity-60"
+            title="Email a summary of the last 45 days of submissions to ADMIN_EMAIL"
+          >
+            {digestSending ? 'Sending…' : 'Email me last 45 days'}
+          </button>
           <span className="text-xs text-slate-500">
             {filtered.length} {filtered.length === 1 ? 'build' : 'builds'}
           </span>
         </div>
       </div>
+
+      {digestResult && (
+        <div
+          className={`mb-4 rounded-md border px-3 py-2 text-sm ${
+            digestResult.startsWith('Sent')
+              ? 'border-emerald-700 bg-emerald-900/30 text-emerald-100'
+              : 'border-red-700 bg-red-900/30 text-red-200'
+          }`}
+        >
+          {digestResult}
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 rounded-md border border-red-700 bg-red-900/30 p-3 text-sm text-red-200">

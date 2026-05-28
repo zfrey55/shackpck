@@ -1,33 +1,25 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const [series, setSeries] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const isAdmin = status === 'authenticated' && role === 'ADMIN';
+
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-      return;
-    }
-
-    if (status === 'authenticated') {
-      // Check if user is admin
-      if ((session?.user as any)?.role !== 'ADMIN') {
-        router.push('/');
-        return;
-      }
-
+    if (isAdmin) {
       fetchAdminData();
+    } else {
+      setLoading(false);
     }
-  }, [status, session]);
+  }, [isAdmin]);
 
   const fetchAdminData = async () => {
     try {
@@ -52,7 +44,7 @@ export default function AdminPage() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading') {
     return (
       <main className="container py-16">
         <div className="max-w-6xl mx-auto text-center">
@@ -62,8 +54,56 @@ export default function AdminPage() {
     );
   }
 
-  if (!session || (session.user as any)?.role !== 'ADMIN') {
-    return null;
+  if (status === 'unauthenticated') {
+    return (
+      <main className="container py-16">
+        <div className="max-w-md mx-auto rounded-lg border border-slate-700 bg-slate-900/60 p-6 text-center">
+          <h1 className="text-2xl font-bold text-gold">Admin sign-in required</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Sign in to your admin account to access the dashboard.
+          </p>
+          <Link
+            href="/auth/signin?callbackUrl=/admin"
+            className="mt-4 inline-block rounded-md bg-gold px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
+          >
+            Sign in
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <main className="container py-16">
+        <div className="max-w-2xl mx-auto rounded-lg border border-amber-700/60 bg-amber-900/20 p-6 text-amber-100">
+          <h1 className="text-2xl font-bold">Your account isn't an admin yet</h1>
+          <p className="mt-2 text-sm">
+            You're signed in as <strong>{session?.user?.email}</strong>, but this account has
+            role <code className="rounded bg-amber-950/40 px-1 py-0.5">{role ?? 'CUSTOMER'}</code>.
+          </p>
+          <p className="mt-3 text-sm">Promote it from your terminal with the production database URL:</p>
+          <pre className="mt-2 overflow-x-auto rounded-md bg-slate-950 p-3 text-xs text-slate-200">
+            <code>{`DATABASE_URL="postgresql://...prod url..." \\
+  npx tsx scripts/promote-admin.ts ${session?.user?.email ?? 'you@example.com'}`}</code>
+          </pre>
+          <p className="mt-3 text-sm text-amber-200">
+            Then <strong>sign out and sign back in</strong> so your session picks up the new role,
+            and reload this page.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (loading) {
+    return (
+      <main className="container py-16">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-slate-400">Loading admin data...</p>
+        </div>
+      </main>
+    );
   }
 
   return (
