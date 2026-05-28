@@ -69,7 +69,23 @@ export default function AdminPage() {
   return (
     <main className="container py-16">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Admin Dashboard</h1>
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/builds"
+              className="rounded-md border border-gold/50 bg-gold/10 px-3 py-2 text-sm font-semibold text-gold hover:bg-gold/20"
+            >
+              Builder inquiries →
+            </Link>
+            <Link
+              href="/admin/orders"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:border-gold/60"
+            >
+              All orders
+            </Link>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Series Management */}

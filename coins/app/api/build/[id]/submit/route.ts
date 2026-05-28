@@ -33,16 +33,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const body = await request.json().catch(() => ({}));
     const input = buildSubmitSchema.parse(body ?? {});
 
-    // Build public artwork URL (absolute) for the email link.
+    // Build absolute URLs for the email links.
     const base =
       process.env.NEXTAUTH_URL ||
       (process.env.URL ? process.env.URL : '') ||
       'https://shackpck.com';
+    const baseTrimmed = base.replace(/\/$/, '');
     const artworkUrl = build.artworkUrl
       ? build.artworkUrl.startsWith('http')
         ? build.artworkUrl
-        : `${base.replace(/\/$/, '')}${build.artworkUrl}`
+        : `${baseTrimmed}${build.artworkUrl}`
       : null;
+    const adminUrl = `${baseTrimmed}/admin/builds?id=${build.id}`;
 
     await sendBuildInquiryEmail({
       buildId: build.id,
@@ -54,6 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       customerPhone: input.phone ?? null,
       additionalNotes: input.additionalNotes ?? build.notes ?? null,
       artworkUrl,
+      adminUrl,
       lines: build.lines.map((l) => ({
         coinType: l.coinType,
         quantity: l.quantity,
