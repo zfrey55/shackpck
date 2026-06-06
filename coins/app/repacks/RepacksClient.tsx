@@ -27,7 +27,7 @@ export function RepacksClient() {
       <div className="text-center mb-10">
         <h1 className="text-4xl font-semibold">Coin & Card Repacks</h1>
         <p className="mt-4 text-xl text-slate-300 max-w-3xl mx-auto">
-          Curated graded coins and graded trading cards, each backed by published checklists.
+          Curated graded coins and multi-sport cards, each backed by published checklists.
         </p>
         <div className="mt-6 flex justify-center">
           <CoinsCardsToggle value={tab} onChange={handleTab} />

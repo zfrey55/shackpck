@@ -250,19 +250,19 @@ export default function ChecklistPage() {
           </div>
           <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-sm leading-relaxed text-slate-300">
             <p className="text-slate-200">
-              <strong className="text-gold">About ShackPack Card Series.</strong> Each ShackPack card series is a
-              finalized, sealed, tamper-proof complete set of Professionally Sealed Surprise Products created from a
-              fixed, specific branded collection of individual graded cards.
+              <strong className="text-gold">About ShackPack Card Products.</strong> ShackPack produces four sealed
+              multi-sport card products covering Football, Basketball, and Baseball: Fusion (multi-show) and Nova,
+              Select, and Inception (single-show). Each product contains 10 cards.
             </p>
             <p>
-              The manufacturer (G&amp;J Packaging LLLP) is identified on the front of every product. Once a series is
-              finalized, the number of products in the series and the individual items contained in each product cannot
-              change. Any additional products produced from additional items will constitute a new, distinct series.
+              The checklists below are <strong>EXAMPLES</strong> — they illustrate the format, sport mix, era mix, and
+              condition mix of each product. They are <strong>not</strong> finalized series, and the actual cards in any
+              produced ShackPack will be different from the examples shown.
             </p>
             <p>
-              Single Show products are clearly and visibly designated as &ldquo;Single Show Series&rdquo; on the front
-              of the sealed packaging and are intended to be sold and opened within a single show. All cards are graded
-              by PSA, BGS, or SGC.
+              Manufacturer: G&amp;J Packaging LLLP, identified on the front of every product. Products may include a
+              mix of professionally graded cards (PSA, BGS, or SGC) and raw / ungraded cards. Single-show products are
+              clearly designated as &ldquo;Single Show Series&rdquo; on the front of the sealed packaging.
             </p>
           </div>
           <CardChecklistView />

@@ -35,7 +35,7 @@ export default function HomePage() {
                 Premium Coin & Card Repacks
               </p>
               <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
-                Graded coins and graded trading cards — American Eagles, Morgan Dollars, Pokémon, MTG, NFL, NBA &amp; MLB rookies, all with published checklists
+                Graded coins and multi-sport cards — American Eagles, Morgan Dollars, NFL, NBA &amp; MLB rookies, all with published checklists
               </p>
               <div className="mt-8 flex flex-wrap gap-3 justify-center">
                 <Link 
@@ -110,7 +110,7 @@ export default function HomePage() {
         <div className="text-center mb-10">
           <h2 className="text-3xl font-semibold">Card Repacks</h2>
           <p className="mt-3 text-lg text-slate-400">
-            Graded TCG and multi-sport card series — Fusion, Nova, Select &amp; Inception
+            Multi-sport card series — Fusion, Nova, Select &amp; Inception. 10 cards per product.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

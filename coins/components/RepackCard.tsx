@@ -83,8 +83,9 @@ export function RepackCard({
           <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-400">
             {/* Coin packs always show their coinCount badge. Card packs only
-                show it when explicitly set (e.g. Nova / Inception publish
-                "10 cards per series"; Fusion / Select leave it blank). */}
+                show it when explicitly set; all four multi-sport card products
+                publish "10 cards per series". Future card packs could leave it
+                blank to hide the badge. */}
             {(!isCardPack || coinCount) && (
               <>
                 <span>{coinCount}</span>
