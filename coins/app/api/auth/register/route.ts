@@ -3,6 +3,10 @@ import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { pushUserToInventory } from '@/lib/inventory-api-push';
+import {
+  sendAdminNewUserNotification,
+  sendUserWelcomeEmail,
+} from '@/lib/email';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -60,8 +64,22 @@ export async function POST(request: NextRequest) {
       totalSpent: 0,
       loyaltyPoints: user.loyaltyPoints,
     }).catch((error) => {
-      // Log but don't fail user registration
       console.error('Failed to sync user to inventory app (non-blocking):', error);
+    });
+
+    // Notify admin inbox about the new signup (non-blocking, never fails the request).
+    sendAdminNewUserNotification({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt,
+    }).catch((error) => {
+      console.error('Failed to send admin new-user notification (non-blocking):', error);
+    });
+
+    // Welcome the new user (non-blocking).
+    sendUserWelcomeEmail(user.email, user.name).catch((error) => {
+      console.error('Failed to send welcome email (non-blocking):', error);
     });
 
     return NextResponse.json({ user }, { status: 201 });

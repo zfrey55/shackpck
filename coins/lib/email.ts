@@ -430,6 +430,199 @@ export async function sendContactInquiryEmail(data: ContactInquiryData): Promise
   }
 }
 
+export interface NewUserNotificationData {
+  userId: string;
+  email: string;
+  name: string | null;
+  createdAt: Date;
+}
+
+/**
+ * Notify the admin inbox that a new user account has been created.
+ *
+ * Non-throwing: a SendGrid hiccup must never block account creation. Mirrors the
+ * sendAdminOrderNotification pattern (log + return on missing config, log + swallow on send failure).
+ */
+export async function sendAdminNewUserNotification(
+  data: NewUserNotificationData
+): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL?.trim();
+  const fromEmailRaw = process.env.FROM_EMAIL?.trim();
+  const fromName = process.env.FROM_NAME || 'Shackpack';
+  const apiKey = process.env.SENDGRID_API_KEY?.trim();
+
+  if (!adminEmail || !fromEmailRaw || !apiKey) {
+    console.warn(
+      '[sendAdminNewUserNotification] Skipping: missing env (ADMIN_EMAIL / FROM_EMAIL / SENDGRID_API_KEY).'
+    );
+    return;
+  }
+
+  sgMail.setApiKey(apiKey);
+
+  const escapeHtml = (s: string) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const displayName = data.name?.trim() || data.email;
+  const createdAtIso = data.createdAt.toISOString();
+  const createdAtLocal = data.createdAt.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head><meta charset="utf-8" /></head>
+      <body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0;">
+        <div style="max-width:600px;margin:0 auto;padding:24px;">
+          <h2 style="color:#b8860b;margin:0 0 12px 0;">New Shackpack account created</h2>
+          <p style="margin:0 0 12px 0;">
+            <strong>Name:</strong> ${escapeHtml(data.name?.trim() || '(not provided)')}<br/>
+            <strong>Email:</strong> <a href="mailto:${data.email.replace(/"/g, '')}">${escapeHtml(data.email)}</a><br/>
+            <strong>User ID:</strong> <code>${escapeHtml(data.userId)}</code><br/>
+            <strong>Signed up:</strong> ${escapeHtml(createdAtLocal)} ET
+          </p>
+          <p style="margin-top:24px;color:#6b7280;font-size:12px;">
+            Automated notification from shackpck.com — no action required.
+          </p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const text = [
+    'New Shackpack account created',
+    `Name: ${data.name?.trim() || '(not provided)'}`,
+    `Email: ${data.email}`,
+    `User ID: ${data.userId}`,
+    `Signed up: ${createdAtLocal} ET (${createdAtIso})`,
+  ].join('\n');
+
+  try {
+    await sgMail.send({
+      from: { email: fromEmailRaw, name: fromName },
+      to: adminEmail,
+      replyTo: { email: data.email, name: displayName },
+      subject: `[Shackpack] New account: ${displayName}`,
+      html,
+      text,
+    });
+    console.log(`[sendAdminNewUserNotification] Sent to ${adminEmail} for ${data.email}`);
+  } catch (err: unknown) {
+    const body =
+      err &&
+      typeof err === 'object' &&
+      'response' in err &&
+      (err as { response?: { body?: string } }).response?.body;
+    console.error('[sendAdminNewUserNotification] SendGrid send failed:', body || err);
+  }
+}
+
+/**
+ * Send a welcome email to a freshly-registered user.
+ *
+ * Non-throwing for the same reason as sendAdminNewUserNotification.
+ */
+export async function sendUserWelcomeEmail(
+  email: string,
+  name: string | null
+): Promise<void> {
+  const fromEmailRaw = process.env.FROM_EMAIL?.trim();
+  const fromName = process.env.FROM_NAME || 'Shackpack';
+  const apiKey = process.env.SENDGRID_API_KEY?.trim();
+
+  if (!fromEmailRaw || !apiKey) {
+    console.warn(
+      '[sendUserWelcomeEmail] Skipping: missing env (FROM_EMAIL / SENDGRID_API_KEY).'
+    );
+    return;
+  }
+
+  sgMail.setApiKey(apiKey);
+
+  const escapeHtml = (s: string) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const greetingName = name?.trim() || email.split('@')[0] || 'collector';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head><meta charset="utf-8" /></head>
+      <body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0;">
+        <div style="max-width:600px;margin:0 auto;padding:24px;">
+          <div style="background:linear-gradient(135deg,#d4af37 0%,#f4d03f 100%);padding:30px 20px;text-align:center;border-radius:8px 8px 0 0;">
+            <h1 style="margin:0;color:#1a1a1a;">Welcome to Shackpack</h1>
+          </div>
+          <div style="background:#f9fafb;padding:30px;border-radius:0 0 8px 8px;">
+            <p style="margin:0 0 16px 0;">Hi ${escapeHtml(greetingName)},</p>
+            <p style="margin:0 0 16px 0;">
+              Thanks for creating a Shackpack account. You're all set to browse our card and coin
+              repack series, save your favorites, and build custom ShackPacks.
+            </p>
+            <p style="margin:24px 0;">
+              <a href="https://shackpck.com/build" style="display:inline-block;background:#d4af37;color:#000;font-weight:bold;padding:12px 20px;border-radius:6px;text-decoration:none;margin-right:8px;">
+                Start a custom build →
+              </a>
+              <a href="https://shackpck.com/repacks" style="display:inline-block;border:1px solid #d4af37;color:#b8860b;font-weight:bold;padding:12px 20px;border-radius:6px;text-decoration:none;">
+                Browse repacks
+              </a>
+            </p>
+            <p style="margin:24px 0 0 0;color:#374151;">
+              Questions? Just reply to this email or reach us at
+              <a href="mailto:support@shackpck.com">support@shackpck.com</a>.
+            </p>
+            <p style="margin-top:24px;color:#6b7280;font-size:12px;">
+              — The Shackpack team
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const text = [
+    `Hi ${greetingName},`,
+    '',
+    "Thanks for creating a Shackpack account. You're all set to browse our card and coin repack series, save your favorites, and build custom ShackPacks.",
+    '',
+    'Start a custom build: https://shackpck.com/build',
+    'Browse repacks: https://shackpck.com/repacks',
+    '',
+    'Questions? Reply to this email or reach us at support@shackpck.com.',
+    '',
+    '— The Shackpack team',
+  ].join('\n');
+
+  try {
+    await sgMail.send({
+      from: { email: fromEmailRaw, name: fromName },
+      to: email,
+      subject: 'Welcome to Shackpack',
+      html,
+      text,
+    });
+    console.log(`[sendUserWelcomeEmail] Sent welcome to ${email}`);
+  } catch (err: unknown) {
+    const body =
+      err &&
+      typeof err === 'object' &&
+      'response' in err &&
+      (err as { response?: { body?: string } }).response?.body;
+    console.error('[sendUserWelcomeEmail] SendGrid send failed:', body || err);
+  }
+}
+
 /**
  * Add contact to SendGrid for marketing emails
  * Use this when users register or subscribe
