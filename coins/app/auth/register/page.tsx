@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { isAccountsEnabled, CONTACT_INFO } from '@/lib/feature-flags';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -12,13 +11,6 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Redirect if accounts are disabled
-  useEffect(() => {
-    if (!isAccountsEnabled()) {
-      router.push('/contact');
-    }
-  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

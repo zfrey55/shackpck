@@ -512,6 +512,10 @@ export async function sendAdminNewUserNotification(
       subject: `[Shackpack] New account: ${displayName}`,
       html,
       text,
+      trackingSettings: {
+        clickTracking: { enable: false, enableText: false },
+        openTracking: { enable: false },
+      },
     });
     console.log(`[sendAdminNewUserNotification] Sent to ${adminEmail} for ${data.email}`);
   } catch (err: unknown) {

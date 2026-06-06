@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,20 +12,6 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Redirect if accounts are disabled
-  useEffect(() => {
-    if (!isAccountsEnabled()) {
-      router.push(CONTACT_INFO.contactPage);
-    }
-  }, [router]);
-
-  // Redirect if accounts are disabled
-  useEffect(() => {
-    if (!isAccountsEnabled()) {
-      router.push('/contact');
-    }
-  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
