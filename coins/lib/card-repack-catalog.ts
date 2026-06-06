@@ -19,10 +19,12 @@ const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`
  *   Select     — TCG, single-show
  *   Inception  — Multi-sport, single-show
  *
- * Card counts are intentionally not stated in description copy or in the
- * coinCount badge for card packs — see the published series checklist for
- * the exact per-series contents. (Builder card-count UI in RepackCard is
- * also suppressed for card pack ids.)
+ * Tile-level card counts:
+ *   - Multi-sport products (Nova, Inception) are sealed 10-card series, so
+ *     "10 cards per series" is published on the tile and on the checklist.
+ *   - TCG products (Fusion, Select) do not publish a per-tile count because
+ *     their finalized series sizes differ; see the published checklist for
+ *     the per-series contents.
  */
 export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
@@ -42,7 +44,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Graded sports cards spanning Football, Basketball, and Baseball — vintage rookies through modern Panini Prizm, Topps Chrome, and Bowman Chrome. All cards graded PSA, BGS, or SGC. No raw cards.'
     ),
     image: '/images/packs/shackpack-nova.png',
-    coinCount: '',
+    coinCount: '10 cards per series',
     category: 'Multi-Sport · Multi-Show Series',
   },
   {
@@ -62,7 +64,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Graded multi-sport cards intended to be sold and opened within a single show. "Single Show Series" is clearly designated on the front of the sealed product. All cards graded PSA, BGS, or SGC. No raw cards.'
     ),
     image: '/images/packs/shackpack-inception.png',
-    coinCount: '',
+    coinCount: '10 cards per series',
     category: 'Multi-Sport · Single Show Series',
   },
 ];

@@ -402,8 +402,18 @@ function makeSeries(
 }
 
 export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
-  makeSeries('fusion', 1, FINALIZATION_DATE, buildTcgRows(100), 'full'),
-  makeSeries('nova', 1, FINALIZATION_DATE, buildSportRows(50), 'full'),
+  makeSeries('fusion', 1, FINALIZATION_DATE, buildTcgRows(50), 'full'),
+  makeSeries(
+    'nova',
+    1,
+    FINALIZATION_DATE,
+    buildSportRows(10),
+    'overview',
+    [
+      'Each sealed product contains 10 professionally graded multi-sport cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
+      'This series contains 10 cards per pack.',
+    ]
+  ),
   makeSeries(
     'select',
     1,
@@ -419,10 +429,11 @@ export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
     'inception',
     1,
     FINALIZATION_DATE,
-    buildSportRows(12),
+    buildSportRows(10),
     'overview',
     [
-      'Each sealed product contains professionally graded multi-sport cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
+      'Each sealed product contains 10 professionally graded multi-sport cards spanning football, basketball, and baseball. All cards are graded by PSA, BGS, or SGC. No raw cards are included.',
+      'This single show series contains 10 cards per pack.',
       ...singleShowOverview('ShackPack Inception'),
     ]
   ),
