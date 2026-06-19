@@ -13,9 +13,9 @@ export const metadata: Metadata = {
     'Premium graded coin and trading card repacks with published checklists — gold, silver, platinum, pre-1933 coins, and PSA/BGS/SGC card series.',
   metadataBase: new URL('https://shackpck.com'),
   icons: {
-    icon: '/coin-icon.svg',
-    shortcut: '/coin-icon.svg',
-    apple: '/coin-icon.svg',
+    icon: '/shackpack-favicon.png',
+    shortcut: '/shackpack-favicon.png',
+    apple: '/shackpack-favicon.png',
   }
 };
 
