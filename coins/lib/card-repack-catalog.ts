@@ -12,11 +12,10 @@ export const CARD_REPACK_CHECKLIST_DISCLAIMER =
 const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`;
 
 /**
- * Multi-sport card repacks. Four product lines:
+ * Multi-sport card repacks. Three product lines:
  *   Fusion     — Multi-Sport, Multi-Show
  *   Nova       — Multi-Sport, Single-Show
  *   Select     — Multi-Sport, Single-Show
- *   Inception  — Multi-Sport, Single-Show
  *
  * Every product is a sealed 10-card series spanning Football, Basketball, and
  * Baseball. Products may include a mix of professionally graded and raw cards.
@@ -54,17 +53,5 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     coinCount: '10 cards per series',
     category: 'Multi-Sport · Single Show Series',
     brand: 'shackpack',
-  },
-  {
-    id: 'shackpack-inception',
-    name: 'ShackPack Inception',
-    description: d(
-      'Multi-sport graded cards spanning Football, Basketball, and Baseball — sold and opened within a single show. All cards in this product line are professionally graded (PSA, BGS, or SGC).'
-    ),
-    image: '',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Single Show Series',
-    brand: 'shackpack',
-    usePlaceholder: true, // art pending re-upload (shackpack-inception.png removed)
   },
 ];

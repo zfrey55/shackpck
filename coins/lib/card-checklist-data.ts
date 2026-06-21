@@ -9,11 +9,9 @@
  *   - fusion     — Multi-Sport Multi-Show example
  *   - nova       — Multi-Sport Single-Show example
  *   - select     — Multi-Sport Single-Show example
- *   - inception  — Multi-Sport Single-Show example
  *
- * Each example shows 10 cards. Three of the four (Fusion, Nova, Select)
- * include 2 raw / ungraded cards alongside 8 graded to illustrate that
- * products may contain a mix. Inception's example is fully graded.
+ * Each example shows 10 cards, including 2 raw / ungraded cards alongside 8
+ * graded to illustrate that products may contain a mix.
  */
 
 export type Sport = 'Football' | 'Basketball' | 'Baseball';
@@ -37,7 +35,7 @@ export type CardChecklistRow = {
   grade?: string;
 };
 
-export type CardProductId = 'fusion' | 'select' | 'nova' | 'inception';
+export type CardProductId = 'fusion' | 'select' | 'nova';
 
 export type ShowType = 'multi-show' | 'single-show';
 
@@ -100,20 +98,9 @@ export const CARD_PRODUCT_LINES: Record<CardProductId, CardProductLine> = {
     imageAlt: 'ShackPack Select sealed pack',
     tagline: 'Multi-sport cards — Football, Basketball, Baseball — sold and opened within a single show.',
   },
-  inception: {
-    id: 'inception',
-    productName: 'ShackPack Inception',
-    brand: BRAND,
-    productTitle: 'ShackPack Inception',
-    showType: 'single-show',
-    quantityPerItem: 1,
-    imageSrc: '/images/packs/shackpack-inception.png',
-    imageAlt: 'ShackPack Inception sealed pack',
-    tagline: 'Multi-sport graded cards — Football, Basketball, Baseball — sold and opened within a single show.',
-  },
 };
 
-export const CARD_PRODUCT_ORDER: CardProductId[] = ['fusion', 'nova', 'select', 'inception'];
+export const CARD_PRODUCT_ORDER: CardProductId[] = ['fusion', 'nova', 'select'];
 
 // ---------------------------------------------------------------------------
 // Row builders
@@ -166,7 +153,6 @@ function rawRow(
 
 // ---------------------------------------------------------------------------
 // Example rows — 10 per product. Fusion, Nova, Select have 8 graded + 2 raw.
-// Inception is fully graded (10/10).
 // ---------------------------------------------------------------------------
 
 const fusionRows: CardChecklistRow[] = [
@@ -208,19 +194,6 @@ const selectRows: CardChecklistRow[] = [
   rawRow(10, 'Baseball', '2014', 'Topps Chrome Update', 'Mookie Betts', 'Refractor Rookie'),
 ];
 
-const inceptionRows: CardChecklistRow[] = [
-  gradedRow(1, 'Basketball', '1996', 'Topps Chrome', 'Allen Iverson', 'Refractor Rookie', 'PSA', '9'),
-  gradedRow(2, 'Football', '1986', 'Topps', 'Reggie White', 'Rookie', 'PSA', '9'),
-  gradedRow(3, 'Baseball', '1952', 'Topps', 'Mickey Mantle', 'Base', 'PSA', '7'),
-  gradedRow(4, 'Basketball', '2007', 'Topps Chrome', 'Kevin Durant', 'Refractor Rookie', 'PSA', '10'),
-  gradedRow(5, 'Football', '1984', 'Topps', 'John Elway', 'Rookie', 'BGS', '9'),
-  gradedRow(6, 'Baseball', '1951', 'Bowman', 'Willie Mays', 'Rookie', 'PSA', '7'),
-  gradedRow(7, 'Basketball', '2017', 'Panini Prizm', 'Jayson Tatum', 'Silver Prizm Rookie', 'PSA', '10'),
-  gradedRow(8, 'Football', '2024', 'Panini Mosaic', 'Marvin Harrison Jr.', 'Silver Mosaic Rookie', 'PSA', '10'),
-  gradedRow(9, 'Baseball', '2018', 'Topps Chrome', 'Shohei Ohtani', 'Refractor Rookie', 'BGS', '9.5'),
-  gradedRow(10, 'Basketball', '2015', 'Panini Prizm', 'Devin Booker', 'Silver Prizm Rookie', 'PSA', '10'),
-];
-
 function exampleOverview(
   productName: string,
   isMultiShow: boolean,
@@ -258,14 +231,6 @@ export const CARD_CHECKLIST_SERIES: CardSeriesDefinition[] = [
     displayLabel: 'ShackPack Select — EXAMPLE Checklist',
     overviewParagraphs: exampleOverview('ShackPack Select', false, true),
     rows: selectRows,
-  },
-  {
-    id: 'inception-example',
-    productId: 'inception',
-    productTitle: 'ShackPack Inception',
-    displayLabel: 'ShackPack Inception — EXAMPLE Checklist',
-    overviewParagraphs: exampleOverview('ShackPack Inception', false, false),
-    rows: inceptionRows,
   },
 ];
 

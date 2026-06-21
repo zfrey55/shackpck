@@ -284,9 +284,9 @@ function ChecklistPageInner() {
           {brandNav}
           <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-sm leading-relaxed text-slate-300">
             <p className="text-slate-200">
-              <strong className="text-gold">About ShackPack Card Products.</strong> ShackPack produces four sealed
-              multi-sport card products covering Football, Basketball, and Baseball: Fusion (multi-show) and Nova,
-              Select, and Inception (single-show). Each product contains 10 cards.
+              <strong className="text-gold">About ShackPack Card Products.</strong> ShackPack produces three sealed
+              multi-sport card products covering Football, Basketball, and Baseball: Fusion (multi-show) plus Nova
+              and Select (single-show). Each product contains 10 cards.
             </p>
             <p>
               The checklists below are <strong>EXAMPLES</strong> — they illustrate the format, sport mix, era mix, and

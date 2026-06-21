@@ -132,7 +132,7 @@ export default function HomePage() {
         <div className="text-center mb-10">
           <h2 className="text-3xl font-semibold">Card Repacks</h2>
           <p className="mt-3 text-lg text-slate-400">
-            Multi-sport card series — Fusion, Nova, Select &amp; Inception. 10 cards per product.
+            Multi-sport card series — Fusion, Nova &amp; Select. 10 cards per product.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -19,7 +19,7 @@ export type RepackCatalogItem = {
   name: string;
   description: string;
   image: string;
-  coinCount: string;
+  coinCount?: string;
   /** Badge / pill next to coin count (metal tier + graded). */
   category: string;
   /** Owning customer brand. */
@@ -162,11 +162,10 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     id: 'shackpack-summit',
     name: 'Summit by Shackpack',
     description: D,
-    image: '',
+    image: '/images/packs/shackpack-summit.png',
     coinCount: '10 coins',
     category: 'Pre-33 Gold & Silver | Graded',
     brand: 'shackpack',
-    usePlaceholder: true, // art pending re-upload (shackpack-summit.png removed)
   },
   {
     id: 'shackpack-ignite',
@@ -330,7 +329,6 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Fortune Forge Gold Quest',
     description: D,
     image: '/images/packs/fortuneforge-goldquest.png',
-    coinCount: 'See checklist',
     category: 'Gold & Silver | Graded',
     brand: 'fortune-forge',
   },
@@ -339,7 +337,6 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Fortune Forge Platinum Pursuit',
     description: D,
     image: '/images/packs/fortuneforge-platinumpursuit.png',
-    coinCount: 'See checklist',
     category: 'Platinum & Silver | Graded',
     brand: 'fortune-forge',
   },
@@ -350,7 +347,6 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Bald Bunny Black Label',
     description: D,
     image: '/images/packs/baldbunny-blacklabel.png',
-    coinCount: 'See checklist',
     category: 'Graded',
     brand: 'bald-bunny',
   },
@@ -359,7 +355,6 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Bald Bunny Pink Diamond',
     description: D,
     image: '/images/packs/baldbunny-pinkdiamond.png',
-    coinCount: 'See checklist',
     category: 'Graded',
     brand: 'bald-bunny',
   },
@@ -370,7 +365,6 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Lincoln Reserve Banger Bags',
     description: D,
     image: '/images/packs/lincolnreserve-bangerbags.png',
-    coinCount: 'See checklist',
     category: 'Graded',
     brand: 'lincoln-reserve',
   },
