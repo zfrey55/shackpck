@@ -31,6 +31,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     image: '/images/packs/shackpack-fusion.png',
     coinCount: '10 cards per series',
     category: 'Multi-Sport · Multi-Show Series',
+    brand: 'shackpack',
   },
   {
     id: 'shackpack-nova',
@@ -41,6 +42,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     image: '/images/packs/shackpack-nova.png',
     coinCount: '10 cards per series',
     category: 'Multi-Sport · Single Show Series',
+    brand: 'shackpack',
   },
   {
     id: 'shackpack-select',
@@ -51,6 +53,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     image: '/images/packs/shackpack-select.png',
     coinCount: '10 cards per series',
     category: 'Multi-Sport · Single Show Series',
+    brand: 'shackpack',
   },
   {
     id: 'shackpack-inception',
@@ -58,8 +61,10 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     description: d(
       'Multi-sport graded cards spanning Football, Basketball, and Baseball — sold and opened within a single show. All cards in this product line are professionally graded (PSA, BGS, or SGC).'
     ),
-    image: '/images/packs/shackpack-inception.png',
+    image: '',
     coinCount: '10 cards per series',
     category: 'Multi-Sport · Single Show Series',
+    brand: 'shackpack',
+    usePlaceholder: true, // art pending re-upload (shackpack-inception.png removed)
   },
 ];

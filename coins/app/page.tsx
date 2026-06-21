@@ -6,6 +6,7 @@ import { RepackCard } from '@/components/RepackCard';
 import { FeaturedSeriesSection } from '@/components/FeaturedSeriesSection';
 import { getHomeFeaturedPacks } from '@/lib/repack-catalog';
 import { CARD_REPACK_CATALOG } from '@/lib/card-repack-catalog';
+import { BRANDS } from '@/lib/brands';
 
 export default function HomePage() {
   return (
@@ -38,14 +39,14 @@ export default function HomePage() {
                 Graded coins and multi-sport cards — American Eagles, Morgan Dollars, NFL, NBA &amp; MLB rookies, all with published checklists
               </p>
               <div className="mt-8 flex flex-wrap gap-3 justify-center">
-                <Link 
-                  href="/repacks?tab=coins" 
+                <Link
+                  href="/repacks?brand=shackpack"
                   className="rounded-md bg-gold px-5 py-3 font-semibold text-black hover:opacity-90 transition-opacity"
                 >
                   Coin Repacks
                 </Link>
-                <Link 
-                  href="/repacks?tab=cards" 
+                <Link
+                  href="/repacks?brand=shackpack&tab=cards"
                   className="rounded-md bg-gold/90 px-5 py-3 font-semibold text-black hover:opacity-90 transition-opacity"
                 >
                   Card Repacks
@@ -65,6 +66,27 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Shop by brand */}
+      <section className="container py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-semibold">Shop by Brand</h2>
+          <p className="mt-3 text-lg text-slate-400">
+            Each customer has their own branded packs and checklists
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-3">
+          {BRANDS.map((brand) => (
+            <Link
+              key={brand.id}
+              href={`/repacks?brand=${brand.id}`}
+              className="rounded-full border border-slate-700 bg-slate-900/60 px-6 py-3 font-semibold text-slate-200 transition-colors hover:border-gold/60 hover:text-gold"
+            >
+              {brand.name}
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -95,8 +117,8 @@ export default function HomePage() {
         </div>
 
         <div className="text-center mt-12">
-          <Link 
-            href="/repacks?tab=coins" 
+          <Link
+            href="/repacks?brand=shackpack"
             className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
           >
             View all coin repacks
@@ -123,12 +145,13 @@ export default function HomePage() {
               image={pack.image}
               coinCount={pack.coinCount}
               category={pack.category}
+              usePlaceholder={pack.usePlaceholder}
             />
           ))}
         </div>
         <div className="text-center mt-12">
           <Link
-            href="/repacks?tab=cards"
+            href="/repacks?brand=shackpack&tab=cards"
             className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
           >
             View all card repacks

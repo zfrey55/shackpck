@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { DailyChecklistResponse, AvailableDatesResponse, CaseTypeInfo } from "./types";
 import { fetchDailyChecklist, fetchAvailableDates } from "./api";
 import {
@@ -16,9 +17,19 @@ import { formatSeriesDisplayName } from "@/lib/series-display";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { CoinsCardsToggle, type ProductLine } from "@/components/CoinsCardsToggle";
 import { CardChecklistView } from "./components/CardChecklistView";
+import { BrandTabs } from "@/components/BrandTabs";
+import { getBrand, toBrandId, brandForCaseType, type BrandId } from "@/lib/brands";
 
-export default function ChecklistPage() {
+function ChecklistPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [brandId, setBrandId] = useState<BrandId>(() => toBrandId(searchParams?.get("brand")));
+  const brand = getBrand(brandId);
+  const isShackpack = brand.id === "shackpack";
+
   const [productLine, setProductLine] = useState<ProductLine>("coins");
+  // Cards only exist for ShackPack; never let another brand land on the cards view.
+  const effectiveLine: ProductLine = brand.hasCards ? productLine : "coins";
   const [availableDates, setAvailableDates] = useState<AvailableDatesResponse | null>(null);
   const [checklist, setChecklist] = useState<DailyChecklistResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -125,6 +136,18 @@ export default function ChecklistPage() {
     setSelectedDate(date);
   };
 
+  const handleBrandSelect = (next: BrandId) => {
+    setBrandId(next);
+    setProductLine("coins");
+    setSelectedCaseType(null);
+    setSelectedDate(null);
+    setChecklist(null);
+    setShowSpecializedSeries(false);
+    const p = new URLSearchParams(searchParams?.toString());
+    p.set("brand", next);
+    router.replace(`/checklist?${p.toString()}`);
+  };
+
   // State to store casesByType data for each date
   const [casesByTypeByDate, setCasesByTypeByDate] = useState<Record<string, Record<string, number>>>({});
 
@@ -188,8 +211,9 @@ export default function ChecklistPage() {
       });
     });
 
-    // Convert to array and sort by display name
+    // Convert to array, keep only this brand's case types, sort by display name
     return Array.from(caseTypeMap.entries())
+      .filter(([caseType]) => brandForCaseType(caseType) === brand.id)
       .map(([caseType, info]) => ({
         caseType,
         displayName: getChecklistCaseShortLabel(caseType),
@@ -201,7 +225,7 @@ export default function ChecklistPage() {
         // Sort by display name alphabetically
         return a.displayName.localeCompare(b.displayName);
       });
-  }, [availableDates, casesByTypeByDate, hasLoadedData]);
+  }, [availableDates, casesByTypeByDate, hasLoadedData, brand.id]);
 
   // Get dates for selected case type with accurate series counts
   const datesForCaseType = useMemo(() => {
@@ -235,7 +259,19 @@ export default function ChecklistPage() {
     return [...filteredCases].sort((a, b) => a.caseId.localeCompare(b.caseId));
   }, [filteredCases]);
 
-  if (productLine === "cards") {
+  // Brand tabs + (ShackPack-only) Coins/Cards toggle, reused across every state.
+  const brandNav = (
+    <div className="space-y-4">
+      <BrandTabs value={brand.id} onChange={handleBrandSelect} />
+      {brand.hasCards && (
+        <div className="flex justify-center">
+          <CoinsCardsToggle value={effectiveLine} onChange={setProductLine} />
+        </div>
+      )}
+    </div>
+  );
+
+  if (brand.hasCards && productLine === "cards") {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4 space-y-6">
@@ -245,9 +281,7 @@ export default function ChecklistPage() {
               Graded trading card series — published checklists
             </p>
           </div>
-          <div className="flex justify-center">
-            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
-          </div>
+          {brandNav}
           <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-sm leading-relaxed text-slate-300">
             <p className="text-slate-200">
               <strong className="text-gold">About ShackPack Card Products.</strong> ShackPack produces four sealed
@@ -275,9 +309,7 @@ export default function ChecklistPage() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-center mb-6">
-            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
-          </div>
+          <div className="mb-6">{brandNav}</div>
           <LoadingState />
         </div>
       </main>
@@ -288,9 +320,7 @@ export default function ChecklistPage() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-center mb-6">
-            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
-          </div>
+          <div className="mb-6">{brandNav}</div>
           <ErrorState error={error} onRetry={loadAvailableDates} />
         </div>
       </main>
@@ -301,9 +331,7 @@ export default function ChecklistPage() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-center mb-6">
-            <CoinsCardsToggle value={productLine} onChange={setProductLine} />
-          </div>
+          <div className="mb-6">{brandNav}</div>
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
@@ -321,16 +349,14 @@ export default function ChecklistPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2 text-gold">
-            📅 ShackPack Checklist
+            📅 {brand.name} Checklists
           </h1>
           <p className="text-lg text-slate-400">
             Select a series to view available dates
           </p>
         </div>
 
-        <div className="flex justify-center mb-8">
-          <CoinsCardsToggle value={productLine} onChange={setProductLine} />
-        </div>
+        <div className="mb-8">{brandNav}</div>
 
         {/* Disclaimer */}
         <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
@@ -340,8 +366,8 @@ export default function ChecklistPage() {
           </p>
         </div>
 
-        {/* Featured Series Section */}
-        {!selectedCaseType && !showSpecializedSeries && (
+        {/* Featured Series Section (ShackPack only) */}
+        {isShackpack && !selectedCaseType && !showSpecializedSeries && (
           <div className="mb-8">
             <button
               onClick={() => setShowSpecializedSeries(true)}
@@ -357,7 +383,7 @@ export default function ChecklistPage() {
           </div>
         )}
 
-        {showSpecializedSeries && !selectedCaseType && (
+        {isShackpack && showSpecializedSeries && !selectedCaseType && (
           <div className="mb-8">
             <button
               onClick={() => setShowSpecializedSeries(false)}
@@ -430,12 +456,25 @@ export default function ChecklistPage() {
         )}
 
         {/* Series Type Selector */}
-        {!selectedCaseType && !showSpecializedSeries && (
+        {!selectedCaseType && !showSpecializedSeries && caseTypes.length > 0 && (
           <CaseTypeSelector
             caseTypes={caseTypes}
             selectedCaseType={selectedCaseType}
             onCaseTypeSelect={handleCaseTypeSelect}
           />
+        )}
+
+        {/* No series yet for this brand (e.g. a newly onboarded customer) */}
+        {!selectedCaseType && !showSpecializedSeries && caseTypes.length === 0 && hasLoadedData && (
+          <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
+            <div className="text-6xl mb-4">📋</div>
+            <h2 className="text-2xl font-bold mb-2 text-slate-200">
+              {brand.name} checklists coming soon
+            </h2>
+            <p className="text-slate-400">
+              No published {brand.name} series are available yet. Check back soon.
+            </p>
+          </div>
         )}
 
         {/* Date Selector for Selected Case Type */}
@@ -513,5 +552,21 @@ export default function ChecklistPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ChecklistPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="container py-10">
+          <div className="max-w-6xl mx-auto px-4">
+            <LoadingState />
+          </div>
+        </main>
+      }
+    >
+      <ChecklistPageInner />
+    </Suspense>
   );
 }

@@ -1,52 +1,98 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RepackCard } from '@/components/RepackCard';
-import { REPACK_CATALOG } from '@/lib/repack-catalog';
+import { BrandTabs, BrandHeader } from '@/components/BrandTabs';
+import { getCoinPacksForBrand } from '@/lib/repack-catalog';
 import { CARD_REPACK_CATALOG } from '@/lib/card-repack-catalog';
 import { CoinsCardsToggle, type ProductLine } from '@/components/CoinsCardsToggle';
+import { getBrand, toBrandId, type BrandId } from '@/lib/brands';
 
-function tabFromSearch(params: URLSearchParams | null): ProductLine {
-  const t = params?.get('tab');
-  return t === 'cards' ? 'cards' : 'coins';
+function brandFromSearch(params: URLSearchParams | null): BrandId {
+  return toBrandId(params?.get('brand'));
+}
+
+function lineFromSearch(params: URLSearchParams | null): ProductLine {
+  return params?.get('tab') === 'cards' ? 'cards' : 'coins';
 }
 
 export function RepacksClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const tab = tabFromSearch(searchParams);
 
-  const handleTab = (next: ProductLine) => {
-    const p = new URLSearchParams(searchParams.toString());
-    p.set('tab', next === 'cards' ? 'cards' : 'coins');
+  const brandId = brandFromSearch(searchParams);
+  const brand = getBrand(brandId);
+  const productLine = lineFromSearch(searchParams);
+
+  // Cards only exist for brands flagged hasCards (ShackPack today). Force coins
+  // for everyone else so a stale ?tab=cards can't show an empty grid.
+  const effectiveLine: ProductLine = brand.hasCards ? productLine : 'coins';
+
+  const coinPacks = getCoinPacksForBrand(brand.id);
+  const cardPacks = brand.hasCards
+    ? CARD_REPACK_CATALOG.filter((p) => p.brand === brand.id)
+    : [];
+  const packs = effectiveLine === 'cards' ? cardPacks : coinPacks;
+
+  const setBrand = (next: BrandId) => {
+    const p = new URLSearchParams(searchParams?.toString());
+    p.set('brand', next);
+    p.delete('tab'); // reset Coins/Cards when switching brand
+    router.push(`/repacks?${p.toString()}`);
+  };
+
+  const setLine = (next: ProductLine) => {
+    const p = new URLSearchParams(searchParams?.toString());
+    p.set('brand', brand.id);
+    p.set('tab', next);
     router.push(`/repacks?${p.toString()}`);
   };
 
   return (
     <>
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-semibold">Coin & Card Repacks</h1>
-        <p className="mt-4 text-xl text-slate-300 max-w-3xl mx-auto">
-          Curated graded coins and multi-sport cards, each backed by published checklists.
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-semibold">Packs</h1>
+        <p className="mt-3 text-lg text-slate-300 max-w-3xl mx-auto">
+          Browse repacks by brand — every series is backed by a published checklist.
         </p>
-        <div className="mt-6 flex justify-center">
-          <CoinsCardsToggle value={tab} onChange={handleTab} />
+        <div className="mt-6">
+          <BrandTabs value={brand.id} onChange={setBrand} />
         </div>
       </div>
 
-      {tab === 'coins' ? (
+      {/* Brand header (logo / wordmark + tagline) */}
+      <BrandHeader brand={brand} />
+
+      {/* Coins/Cards sub-toggle, only for brands that have cards */}
+      {brand.hasCards && (
+        <div className="mb-8 flex justify-center">
+          <CoinsCardsToggle value={effectiveLine} onChange={setLine} />
+        </div>
+      )}
+
+      {packs.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {REPACK_CATALOG.map((repack) => (
+          {packs.map((repack) => (
             <RepackCard key={repack.id} {...repack} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {CARD_REPACK_CATALOG.map((repack) => (
-            <RepackCard key={repack.id} {...repack} />
-          ))}
+        <div className="text-center text-slate-400 py-16">
+          No packs to show for {brand.name} yet — check back soon.
         </div>
       )}
+
+      {/* Checklist link for this brand */}
+      <div className="mt-10 text-center">
+        <Link
+          href={`/checklist?brand=${brand.id}`}
+          className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
+        >
+          View {brand.name} checklists
+          <span>→</span>
+        </Link>
+      </div>
 
       <div className="mt-16 text-center">
         <h2 className="text-2xl font-semibold mb-4">Why Choose Shackpack?</h2>

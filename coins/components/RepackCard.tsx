@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PackImagePlaceholder } from '@/components/PackImagePlaceholder';
@@ -15,52 +14,28 @@ type RepackCardProps = {
   usePlaceholder?: boolean;
 };
 
-export function RepackCard({ 
+export function RepackCard({
   id,
-  name, 
-  description, 
-  image, 
-  coinCount, 
+  name,
+  description,
+  image,
+  coinCount,
   category,
   usePlaceholder = false,
 }: RepackCardProps) {
   const showPlaceholder = usePlaceholder || !image;
-  const isCoinwave = id.startsWith('coinwave-');
-  const isXtreme = id === 'shackpack-xtreme';
-  const isDeluxe = id === 'shackpack-deluxe';
-  // Tall portrait pack mockups for card product lines — use object-contain so
-  // the full pack shows without cropping the top/bottom of the box.
+  // Pack artwork is designed at 4x6 (2:3 portrait). The image frame matches
+  // that aspect exactly, so object-cover shows the full design with no
+  // cropping and no per-pack scale/position tweaks.
   const isCardPack =
     id === 'shackpack-fusion' ||
     id === 'shackpack-select' ||
     id === 'shackpack-nova' ||
     id === 'shackpack-inception';
 
-  let imageClass =
-    (isCardPack ? 'object-contain ' : 'object-cover ') +
-    'transition-transform duration-500 will-change-transform ';
-  if (isCoinwave) {
-    // Wide artwork: slight zoom-out; anchor to top so the upper portion of the art is visible
-    imageClass += 'origin-top scale-[0.92] group-hover:scale-[0.97] ';
-  } else if (isXtreme) {
-    imageClass += 'scale-[1.45] group-hover:scale-[1.52] ';
-  } else if (isCardPack) {
-    imageClass += 'group-hover:scale-[1.03] ';
-  } else {
-    imageClass += 'group-hover:scale-105 ';
-  }
-
-  const imageStyle: CSSProperties | undefined = isDeluxe
-    ? { objectPosition: 'center 70%' }
-    : isXtreme
-      ? { objectPosition: 'center center' }
-      : isCoinwave
-        ? { objectPosition: 'center top' }
-        : undefined;
-
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 shadow-sm transition-all duration-300 hover:border-slate-700 hover:shadow-glow">
-      <div className="relative aspect-[4/3] w-full bg-slate-950 overflow-hidden">
+      <div className="relative aspect-[2/3] w-full bg-slate-950 overflow-hidden">
         {showPlaceholder ? (
           <PackImagePlaceholder />
         ) : (
@@ -70,14 +45,13 @@ export function RepackCard({
               alt={name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className={imageClass}
-              style={imageStyle}
+              className="object-cover transition-transform duration-500 will-change-transform group-hover:scale-[1.03]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
           </>
         )}
       </div>
-      
+
       <div className="p-6">
         <div className="mb-3">
           <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
@@ -95,9 +69,9 @@ export function RepackCard({
             <span>{category}</span>
           </div>
         </div>
-        
+
         <p className="text-slate-300 mb-4 text-sm leading-relaxed">{description}</p>
-        
+
         <div className="pt-3 border-t border-slate-700/50">
           <Link
             href="/contact"
