@@ -87,7 +87,9 @@ export const BRANDS: Brand[] = [
     id: 'blue-collar-bullion',
     name: 'Blue Collar Bullion',
     tagline: 'Hard-working graded coin repacks — every series backed by a published checklist.',
-    caseTypePrefixes: ['bluecollarbullion', 'blue-collar-bullion'],
+    // 'golden-girl' is the product-named caseType (e.g. "Golden Girl") that
+    // belongs to this brand even though it doesn't carry the brand name.
+    caseTypePrefixes: ['bluecollarbullion', 'blue-collar-bullion', 'golden-girl', 'goldengirl'],
   },
   {
     id: 'cobra-coin',
@@ -99,7 +101,9 @@ export const BRANDS: Brand[] = [
     id: 'golden-emu',
     name: 'Golden Emu',
     tagline: 'Graded coin repacks with a golden touch — every series backed by a published checklist.',
-    caseTypePrefixes: ['goldenemu', 'golden-emu'],
+    // 'silver-egg...' is the product-named caseType (e.g. "Silver Egg Surprise
+    // Pack") that belongs to this brand even though it doesn't carry the name.
+    caseTypePrefixes: ['goldenemu', 'golden-emu', 'silver-egg', 'silveregg'],
   },
   {
     id: 'juicebox-bullion',
