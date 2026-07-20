@@ -12,13 +12,19 @@ export const CARD_REPACK_CHECKLIST_DISCLAIMER =
 const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`;
 
 /**
- * Multi-sport card repacks. Three product lines:
+ * Multi-sport card repacks. Product lines:
  *   Fusion     — Multi-Sport, Multi-Show
  *   Nova       — Multi-Sport, Single-Show
  *   Select     — Multi-Sport, Single-Show
+ *   Abyss      — Multi-Sport, Multi-Show
+ *   Equinox    — Multi-Sport, Multi-Show
+ *   Limitless  — Multi-Sport, Multi-Show
+ *   Blitz      — Multi-Sport, Multi-Show
  *
  * Every product is a sealed 10-card series spanning Football, Basketball, and
  * Baseball. Products may include a mix of professionally graded and raw cards.
+ * Abyss/Equinox/Limitless/Blitz are tiles only for now — no example checklist
+ * on the /checklist Cards tab yet.
  */
 export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
@@ -52,6 +58,50 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     image: '/images/packs/shackpack-select.png',
     coinCount: '10 cards per series',
     category: 'Multi-Sport · Single Show Series',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-abyss',
+    name: 'ShackPack Abyss',
+    description: d(
+      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
+    ),
+    image: '/images/packs/shackpack-abyss.png',
+    coinCount: '10 cards per series',
+    category: 'Multi-Sport · Multi-Show Series',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-equinox',
+    name: 'ShackPack Equinox',
+    description: d(
+      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
+    ),
+    image: '/images/packs/shackpack-equinox.png',
+    coinCount: '10 cards per series',
+    category: 'Multi-Sport · Multi-Show Series',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-limitless',
+    name: 'ShackPack Limitless',
+    description: d(
+      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
+    ),
+    image: '/images/packs/shackpack-limitless.png',
+    coinCount: '10 cards per series',
+    category: 'Multi-Sport · Multi-Show Series',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-blitz',
+    name: 'ShackPack Blitz',
+    description: d(
+      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
+    ),
+    image: '/images/packs/shackpack-blitz.png',
+    coinCount: '10 cards per series',
+    category: 'Multi-Sport · Multi-Show Series',
     brand: 'shackpack',
   },
 ];

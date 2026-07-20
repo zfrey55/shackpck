@@ -221,6 +221,14 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Custom Series',
     brand: 'shackpack',
   },
+  {
+    id: 'shackpack-67',
+    name: 'ShackPack 67',
+    description: D,
+    image: '/images/packs/shackpack-67.png',
+    category: 'Graded',
+    brand: 'shackpack',
+  },
 
   // ----- Coinwave -----
   {
@@ -322,6 +330,22 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Gold & Silver | Graded',
     brand: 'coinwave',
   },
+  {
+    id: 'coinwave-orca',
+    name: 'Coinwave Orca',
+    description: D,
+    image: '/images/packs/coinwave-orca.png',
+    category: 'Graded',
+    brand: 'coinwave',
+  },
+  {
+    id: 'coinwave-kraken',
+    name: 'Coinwave Kraken',
+    description: D,
+    image: '/images/packs/coinwave-kraken.png',
+    category: 'Graded',
+    brand: 'coinwave',
+  },
 
   // ----- Fortune Forge -----
   {
@@ -367,6 +391,88 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     image: '/images/packs/lincolnreserve-bangerbags.png',
     category: 'Graded',
     brand: 'lincoln-reserve',
+  },
+
+  // ----- Blue Collar Bullion -----
+  {
+    id: 'bluecollarbullion-goldengirl',
+    name: 'Blue Collar Bullion Golden Girl',
+    description: D,
+    image: '/images/packs/bluecollarbullion-goldengirl.png',
+    category: 'Graded',
+    brand: 'blue-collar-bullion',
+  },
+
+  // ----- Cobra Coin -----
+  {
+    id: 'cobracoin-shadow',
+    name: 'Cobra Coin Shadow',
+    description: D,
+    image: '/images/packs/cobracoin-shadow.png',
+    category: 'Graded',
+    brand: 'cobra-coin',
+  },
+  {
+    id: 'cobracoin-venom',
+    name: 'Cobra Coin Venom',
+    description: D,
+    image: '/images/packs/cobracoin-venom.png',
+    category: 'Graded',
+    brand: 'cobra-coin',
+  },
+  {
+    id: 'cobracoin-strike',
+    name: 'Cobra Coin Strike',
+    description: D,
+    image: '/images/packs/cobracoin-strike.png',
+    category: 'Graded',
+    brand: 'cobra-coin',
+  },
+
+  // ----- Golden Emu -----
+  {
+    id: 'goldenemu-silveregg',
+    name: 'Golden Emu Silver Egg',
+    description: D,
+    image: '/images/packs/goldenemu-silveregg.png',
+    category: 'Graded',
+    brand: 'golden-emu',
+  },
+
+  // ----- Juicebox Bullion -----
+  {
+    id: 'juicebox-singlesqueeze',
+    name: 'Juicebox Bullion Single Squeeze',
+    description: D,
+    image: '/images/packs/juicebox-singlesqueeze.png',
+    category: 'Graded',
+    brand: 'juicebox-bullion',
+  },
+  {
+    id: 'juicebox-doublesqueeze',
+    name: 'Juicebox Bullion Double Squeeze',
+    description: D,
+    image: '/images/packs/juicebox-doublesqueeze.png',
+    category: 'Graded',
+    brand: 'juicebox-bullion',
+  },
+  {
+    id: 'juicebox-fullsqueeze',
+    name: 'Juicebox Bullion Full Squeeze',
+    description: D,
+    image: '/images/packs/juicebox-fullsqueeze.png',
+    category: 'Graded',
+    brand: 'juicebox-bullion',
+  },
+
+  // ----- One Nasty Coin -----
+  {
+    id: 'onenastycoin-mysterypack',
+    name: 'One Nasty Coin Mystery Pack',
+    description: D,
+    image: '/images/packs/onenastycoin-mysterypack.png',
+    category: 'Graded',
+    brand: 'one-nasty-coin',
   },
 ];
 

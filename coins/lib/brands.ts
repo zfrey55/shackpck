@@ -19,7 +19,12 @@ export type BrandId =
   | 'coinwave'
   | 'fortune-forge'
   | 'bald-bunny'
-  | 'lincoln-reserve';
+  | 'lincoln-reserve'
+  | 'blue-collar-bullion'
+  | 'cobra-coin'
+  | 'golden-emu'
+  | 'juicebox-bullion'
+  | 'one-nasty-coin';
 
 export type Brand = {
   id: BrandId;
@@ -77,6 +82,36 @@ export const BRANDS: Brand[] = [
     name: 'Lincoln Reserve',
     tagline: 'Reserve-grade graded coin repacks.',
     caseTypePrefixes: ['lincolnreserve', 'lincoln-reserve'],
+  },
+  {
+    id: 'blue-collar-bullion',
+    name: 'Blue Collar Bullion',
+    tagline: 'Hard-working graded coin repacks — every series backed by a published checklist.',
+    caseTypePrefixes: ['bluecollarbullion', 'blue-collar-bullion'],
+  },
+  {
+    id: 'cobra-coin',
+    name: 'Cobra Coin',
+    tagline: 'Strike-ready graded coin repacks — every series backed by a published checklist.',
+    caseTypePrefixes: ['cobracoin', 'cobra-coin'],
+  },
+  {
+    id: 'golden-emu',
+    name: 'Golden Emu',
+    tagline: 'Graded coin repacks with a golden touch — every series backed by a published checklist.',
+    caseTypePrefixes: ['goldenemu', 'golden-emu'],
+  },
+  {
+    id: 'juicebox-bullion',
+    name: 'Juicebox Bullion',
+    tagline: 'Squeeze more from every pack — graded coin repacks backed by a published checklist.',
+    caseTypePrefixes: ['juicebox', 'juiceboxbullion', 'juicebox-bullion'],
+  },
+  {
+    id: 'one-nasty-coin',
+    name: 'One Nasty Coin',
+    tagline: 'Graded coin repacks with attitude — every series backed by a published checklist.',
+    caseTypePrefixes: ['onenastycoin', 'one-nasty-coin'],
   },
 ];
 
