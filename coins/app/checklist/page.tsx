@@ -10,7 +10,8 @@ import {
   DateButtonsForCaseType,
   EmptyState,
   LoadingState,
-  ErrorState
+  ErrorState,
+  CardSeriesList
 } from "./components";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { formatSeriesDisplayName } from "@/lib/series-display";
@@ -299,6 +300,12 @@ function ChecklistPageInner() {
               clearly designated as &ldquo;Single Show Series&rdquo; on the front of the sealed packaging.
             </p>
           </div>
+
+          <div>
+            <h2 className="mb-4 text-2xl font-bold text-gold">Featured Series Checklists</h2>
+            <CardSeriesList />
+          </div>
+
           <CardChecklistView />
         </div>
       </main>
