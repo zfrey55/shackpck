@@ -1,5 +1,6 @@
 import {
   CARD_SERIES_CHECKLISTS,
+  groupCardSeriesByType,
   type CardSeriesChecklist,
 } from "@/lib/card-series-checklist";
 
@@ -35,9 +36,18 @@ export default function CardSeriesList() {
   if (CARD_SERIES_CHECKLISTS.length === 0) return null;
 
   return (
-    <div className="space-y-6">
-      {CARD_SERIES_CHECKLISTS.map((series) => (
-        <SeriesSection key={series.id} series={series} />
+    <div className="space-y-10">
+      {groupCardSeriesByType().map((group) => (
+        <section key={group.seriesType} className="space-y-4">
+          <h3 className="border-b border-gold/30 pb-2 text-xl font-bold text-gold">
+            {group.seriesType} Series
+          </h3>
+          <div className="space-y-6">
+            {group.series.map((series) => (
+              <SeriesSection key={series.id} series={series} />
+            ))}
+          </div>
+        </section>
       ))}
     </div>
   );

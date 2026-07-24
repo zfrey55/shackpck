@@ -301,12 +301,12 @@ function ChecklistPageInner() {
             </p>
           </div>
 
+          <CardChecklistView />
+
           <div>
-            <h2 className="mb-4 text-2xl font-bold text-gold">Featured Series Checklists</h2>
+            <h2 className="mb-4 text-2xl font-bold text-gold">Series Checklists</h2>
             <CardSeriesList />
           </div>
-
-          <CardChecklistView />
         </div>
       </main>
     );
