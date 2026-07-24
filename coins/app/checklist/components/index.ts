@@ -4,5 +4,5 @@ export { DateButtonsForCaseType } from "./DateButtonsForCaseType";
 export { EmptyState } from "./EmptyState";
 export { LoadingState } from "./LoadingState";
 export { ErrorState } from "./ErrorState";
-export { default as CardSeriesList } from "./CardSeriesList";
+export { default as CardSeriesBrowser } from "./CardSeriesBrowser";
 

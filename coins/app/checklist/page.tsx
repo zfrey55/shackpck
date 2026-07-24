@@ -11,13 +11,12 @@ import {
   EmptyState,
   LoadingState,
   ErrorState,
-  CardSeriesList
+  CardSeriesBrowser
 } from "./components";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { formatSeriesDisplayName } from "@/lib/series-display";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { CoinsCardsToggle, type ProductLine } from "@/components/CoinsCardsToggle";
-import { CardChecklistView } from "./components/CardChecklistView";
 import { BrandTabs } from "@/components/BrandTabs";
 import { getBrand, toBrandId, brandForCaseType, type BrandId } from "@/lib/brands";
 
@@ -301,12 +300,7 @@ function ChecklistPageInner() {
             </p>
           </div>
 
-          <CardChecklistView />
-
-          <div>
-            <h2 className="mb-4 text-2xl font-bold text-gold">Series Checklists</h2>
-            <CardSeriesList />
-          </div>
+          <CardSeriesBrowser />
         </div>
       </main>
     );

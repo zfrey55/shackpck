@@ -8,36 +8,31 @@ export type CardSeriesChecklist = {
   id: string;
   title: string;
   subtitle?: string;
-  /**
-   * Grouping shown on the Cards tab, e.g. 'Gauntlet', 'Nova', 'Fusion',
-   * 'Limitless'. Gauntlet is always shown first; other types appear in the
-   * order they first occur in CARD_SERIES_CHECKLISTS.
-   */
+  /** Series type, e.g. 'Gauntlet', 'Nova', 'Fusion', 'Blitz'. */
   seriesType: string;
+  /** Publish date in ISO form (YYYY-MM-DD); drives the date buttons on the Cards tab. */
+  date: string;
   cards: string[];
 };
 
-export type CardSeriesGroup = {
-  seriesType: string;
+export type CardSeriesDateGroup = {
+  date: string;
   series: CardSeriesChecklist[];
 };
 
-export function groupCardSeriesByType(): CardSeriesGroup[] {
-  const groups: CardSeriesGroup[] = [];
+/** Groups checklists by publish date, most recent date first. Within a date,
+ *  series keep the order they appear in CARD_SERIES_CHECKLISTS. */
+export function groupCardSeriesByDate(): CardSeriesDateGroup[] {
+  const groups: CardSeriesDateGroup[] = [];
   for (const series of CARD_SERIES_CHECKLISTS) {
-    let group = groups.find((g) => g.seriesType === series.seriesType);
+    let group = groups.find((g) => g.date === series.date);
     if (!group) {
-      group = { seriesType: series.seriesType, series: [] };
+      group = { date: series.date, series: [] };
       groups.push(group);
     }
     group.series.push(series);
   }
-  // Gauntlet always leads; the rest keep first-appearance order (stable sort).
-  return groups.sort((a, b) => {
-    if (a.seriesType === 'Gauntlet') return b.seriesType === 'Gauntlet' ? 0 : -1;
-    if (b.seriesType === 'Gauntlet') return 1;
-    return 0;
-  });
+  return groups.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
@@ -46,6 +41,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
     title: 'Gauntlet Series 1 7/24/2026',
     subtitle: 'Exact 100-card checklist',
     seriesType: 'Gauntlet',
+    date: '2026-07-24',
     cards: [
       '2025 topps chrome /99 Tyler Allgeier',
       "2025 topps chrome light speed /75 De'Von Achane",
@@ -154,6 +150,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
     title: 'Gauntlet Live Series 2 7/24/2026',
     subtitle: 'Exact 100-card checklist',
     seriesType: 'Gauntlet',
+    date: '2026-07-24',
     cards: [
       '2025 topps chrome all etch psa 10 Aaron Judge',
       '2022 panini mosaic green aces Shohei Ohtani',
@@ -262,6 +259,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
     title: 'Gauntlet Live Series 1 7/23/2026',
     subtitle: 'Exact 100-card checklist',
     seriesType: 'Gauntlet',
+    date: '2026-07-23',
     cards: [
       '1991 Topps auto /25 Scott Rolen',
       '2005 SP Authentic Michael Jordan PSA 9',
@@ -370,6 +368,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
     title: 'Gauntlet Live Series 2 7/23/2026',
     subtitle: 'Exact 75-card checklist',
     seriesType: 'Gauntlet',
+    date: '2026-07-23',
     cards: [
       '1986 donruss rookies Barry Bonds psa 9',
       '1989 Hoops Michael Jordan psa 9',
