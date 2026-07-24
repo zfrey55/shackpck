@@ -188,7 +188,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
       '2025 Topps chrome purple refractor psa 8 Tyrese Proctor',
       '2025 Topps chrome starry night CeeDee Lamb',
       '2025 Topps chrome starry nights Cam Ward',
-      '2025 Topps chrome starry nits Emeka Egbuka',
+      '2025 Topps chrome starry nights Emeka Egbuka',
       '2025 Topps chrome starry nights Ja’Marr Chase',
       '2025 Topps finest auto Chase Brown',
       '2025 Topps finest auto Mason Miller',
