@@ -12,7 +12,6 @@ export interface ChecklistCoin {
   grade?: string;
   gradingCompany?: string;
   weight?: string | null; // Weight (e.g., "1 oz", "1/10 oz") or null if not available
-  cost: number; // Cost in cents
 }
 
 export interface CoinInventorySeries {
@@ -39,7 +38,6 @@ export interface TopHit {
   year: string;
   grade?: string;
   gradingCompany?: string;
-  cost: number; // Cost in cents (from coin's Cost field)
   description: string; // Required - written in inventory app, read-only in e-commerce app
 }
 

@@ -4,8 +4,17 @@ export interface CaseData {
   displayName: string;
   caseType: string;
   caseTypeName: string;
-  /** Optional field from inventory API; checklist UI numbers series per date using display order. */
+  /**
+   * Series number from the inventory API. Rendered directly by CaseCard; the
+   * per-date display ordinal is only a fallback when this is absent.
+   */
   seriesNumber?: number;
+  /**
+   * Attribution fields from the getDailyChecklist payload. Typed now so the
+   * data is carried through; no customer page or filtering consumes them yet.
+   */
+  customerName?: string | null;
+  buyerCode?: string | null;
   createdDate: string;
   displayDate: string;
   status: string;

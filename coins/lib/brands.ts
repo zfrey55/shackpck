@@ -109,7 +109,18 @@ export const BRANDS: Brand[] = [
     id: 'juicebox-bullion',
     name: 'Juicebox Bullion',
     tagline: 'Squeeze more from every pack — graded coin repacks backed by a published checklist.',
-    caseTypePrefixes: ['juicebox', 'juiceboxbullion', 'juicebox-bullion'],
+    // The '*-squeeze' entries are product-named caseTypes (e.g. "Full Squeeze")
+    // that belong to this brand even though they don't carry the brand name —
+    // same pattern as 'golden-girl' / 'silver-egg' above. Hyphenated because
+    // normalizeChecklistCaseTypeKey turns "full squeeze" into "full-squeeze".
+    caseTypePrefixes: [
+      'juicebox',
+      'juiceboxbullion',
+      'juicebox-bullion',
+      'full-squeeze',
+      'single-squeeze',
+      'double-squeeze',
+    ],
   },
   {
     id: 'one-nasty-coin',

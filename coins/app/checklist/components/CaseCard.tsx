@@ -7,7 +7,11 @@ import {
 
 interface CaseCardProps {
   caseData: CaseData;
-  /** 1-based index among series of this type on the selected date (after stable sort). */
+  /**
+   * Fallback 1-based index among series of this type on the selected date
+   * (after the stable caseId sort). Used only when the inventory API omits
+   * `seriesNumber` on the case.
+   */
   seriesOrdinal: number;
 }
 
@@ -15,7 +19,11 @@ export const CaseCard = memo(function CaseCard({
   caseData,
   seriesOrdinal,
 }: CaseCardProps) {
-  const title = `${getChecklistCaseShortLabel(caseData.caseType)} Series #${seriesOrdinal}`;
+  // Prefer the inventory API's own series number. `??` falls back only on
+  // null/undefined, so a legitimate 0 is preserved and we never render
+  // "Series #undefined".
+  const seriesNumber = caseData.seriesNumber ?? seriesOrdinal;
+  const title = `${getChecklistCaseShortLabel(caseData.caseType)} Series #${seriesNumber}`;
   const subtitle = getChecklistCaseLongDescription(caseData.caseType);
 
   return (
