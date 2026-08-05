@@ -254,9 +254,28 @@ function ChecklistPageInner() {
     return checklist.cases.filter(c => c.caseType === selectedCaseType);
   }, [checklist, selectedCaseType]);
 
-  /** Stable order so Series #1 / #2 / … stay consistent across reloads. */
+  /**
+   * Stable order so Series #1 / #2 / … stay consistent across reloads.
+   * Primary key is the API's `seriesNumber`; `caseId` only breaks ties, so a
+   * case whose id sorts out of step with its label still lands in the right slot.
+   * `seriesNumber` is optional, so unnumbered cases fall to the end and order
+   * among themselves by `caseId` rather than comparing against NaN.
+   */
   const casesOrderedForDisplay = useMemo(() => {
-    return [...filteredCases].sort((a, b) => a.caseId.localeCompare(b.caseId));
+    const seriesRank = (n: number | undefined) =>
+      typeof n === 'number' && Number.isFinite(n) ? n : null;
+    return [...filteredCases].sort((a, b) => {
+      const aNum = seriesRank(a.seriesNumber);
+      const bNum = seriesRank(b.seriesNumber);
+      if (aNum !== null && bNum !== null) {
+        if (aNum !== bNum) return aNum - bNum;
+      } else if (aNum !== null) {
+        return -1;
+      } else if (bNum !== null) {
+        return 1;
+      }
+      return a.caseId.localeCompare(b.caseId);
+    });
   }, [filteredCases]);
 
   // Brand tabs + (ShackPack-only) Coins/Cards toggle, reused across every state.

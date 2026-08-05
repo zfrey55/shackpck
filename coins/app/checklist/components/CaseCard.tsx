@@ -26,6 +26,12 @@ export const CaseCard = memo(function CaseCard({
   const title = `${getChecklistCaseShortLabel(caseData.caseType)} Series #${seriesNumber}`;
   const subtitle = getChecklistCaseLongDescription(caseData.caseType);
 
+  // The API does not always return coins in position order. `position` is the
+  // inventory's value-descending rank, so sorting a copy by it renders coins
+  // most-valuable-first and numbered down the list. Copy, never sort in place:
+  // Array.prototype.sort mutates, and caseData.coins is upstream props.
+  const coinsInValueOrder = [...caseData.coins].sort((a, b) => a.position - b.position);
+
   return (
     <div className="bg-slate-900/40 rounded-lg shadow-lg border border-slate-700 p-6">
       {/* Case Header */}
@@ -44,7 +50,7 @@ export const CaseCard = memo(function CaseCard({
           Contents ({caseData.totalCoins} coins):
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {caseData.coins.map((coin) => (
+          {coinsInValueOrder.map((coin) => (
             <div 
               key={coin.position}
               className="flex items-start p-3 bg-slate-800/50 rounded border border-slate-700"
