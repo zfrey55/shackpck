@@ -38,7 +38,7 @@ export function groupCardSeriesByDate(): CardSeriesDateGroup[] {
 export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
   {
     id: 'gauntlet-game-4',
-    title: 'Gauntlet Live Series 1 8/6/2026',
+    title: 'Gauntlet Live Series 1 8/7/2026',
     subtitle: 'Exact 150-card checklist',
     seriesType: 'Gauntlet',
     date: '2026-08-06',
@@ -197,7 +197,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
   },
   {
     id: 'gauntlet-game-5',
-    title: 'Gauntlet Live Series 2 8/6/2026',
+    title: 'Gauntlet Live Series 2 8/7/2026',
     subtitle: 'Exact 150-card checklist',
     seriesType: 'Gauntlet',
     date: '2026-08-06',
