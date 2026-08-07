@@ -7,17 +7,28 @@ type BrandTabsProps = {
   value: BrandId;
   onChange: (next: BrandId) => void;
   className?: string;
+  /**
+   * Brands to render. Defaults to every brand; the packs tab passes a list
+   * filtered to customers flagged hasPacks so a checklist-only customer never
+   * shows a pack tab.
+   */
+  brands?: Brand[];
 };
 
 /** Horizontal, scrollable customer-brand tab bar. ShackPack is first/default. */
-export function BrandTabs({ value, onChange, className = '' }: BrandTabsProps) {
+export function BrandTabs({
+  value,
+  onChange,
+  className = '',
+  brands = BRANDS,
+}: BrandTabsProps) {
   return (
     <div
       role="tablist"
       aria-label="Customer brand"
       className={`flex flex-wrap items-center justify-center gap-2 ${className}`}
     >
-      {BRANDS.map((brand) => {
+      {brands.map((brand) => {
         const active = brand.id === value;
         return (
           <button

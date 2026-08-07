@@ -7,7 +7,18 @@ import { BrandTabs, BrandHeader } from '@/components/BrandTabs';
 import { getCoinPacksForBrand } from '@/lib/repack-catalog';
 import { CARD_REPACK_CATALOG } from '@/lib/card-repack-catalog';
 import { CoinsCardsToggle, type ProductLine } from '@/components/CoinsCardsToggle';
-import { getBrand, toBrandId, type BrandId } from '@/lib/brands';
+import { BRANDS, getBrand, toBrandId, type BrandId } from '@/lib/brands';
+import {
+  brandHasPacks,
+  customerSlugForBrand,
+} from '@/lib/customer-attribution';
+
+/**
+ * Only customers flagged hasPacks in CUSTOMER_PACKS get a pack tab. A
+ * checklist-only customer (a generic ShackPack buyer with no custom pack
+ * designs) appears in the checklist nav but never here.
+ */
+const PACK_BRANDS = BRANDS.filter((brand) => brandHasPacks(brand.id));
 
 function brandFromSearch(params: URLSearchParams | null): BrandId {
   return toBrandId(params?.get('brand'));
@@ -57,7 +68,7 @@ export function RepacksClient() {
           Browse repacks by brand — every series is backed by a published checklist.
         </p>
         <div className="mt-6">
-          <BrandTabs value={brand.id} onChange={setBrand} />
+          <BrandTabs value={brand.id} onChange={setBrand} brands={PACK_BRANDS} />
         </div>
       </div>
 
@@ -86,7 +97,12 @@ export function RepacksClient() {
       {/* Checklist link for this brand */}
       <div className="mt-10 text-center">
         <Link
-          href={`/checklist?brand=${brand.id}`}
+          href={
+            // The checklist now keys on customer, not brand; ?brand= is gone.
+            customerSlugForBrand(brand.id)
+              ? `/checklist?customer=${customerSlugForBrand(brand.id)}`
+              : '/checklist'
+          }
           className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
         >
           View {brand.name} checklists

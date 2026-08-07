@@ -1,4 +1,5 @@
 export { CaseCard } from "./CaseCard";
+export { CustomerNav } from "./CustomerNav";
 export { CaseTypeSelector } from "./CaseTypeSelector";
 export { DateButtonsForCaseType } from "./DateButtonsForCaseType";
 export { EmptyState } from "./EmptyState";

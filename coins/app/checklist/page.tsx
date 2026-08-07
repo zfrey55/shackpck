@@ -7,29 +7,45 @@ import { fetchDailyChecklist, fetchAvailableDates } from "./api";
 import {
   CaseCard,
   CaseTypeSelector,
+  CustomerNav,
   DateButtonsForCaseType,
   EmptyState,
   LoadingState,
   ErrorState,
   CardSeriesBrowser
 } from "./components";
+import { useCustomerIndex } from "./useCustomerIndex";
+import { sortCasesForDisplay } from "./sorting";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { formatSeriesDisplayName } from "@/lib/series-display";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { CoinsCardsToggle, type ProductLine } from "@/components/CoinsCardsToggle";
-import { BrandTabs } from "@/components/BrandTabs";
-import { getBrand, toBrandId, brandForCaseType, type BrandId } from "@/lib/brands";
+import {
+  SHACKPACK_SLUG,
+  customerLabelFromSlug,
+  slugToMatcher,
+  type CustomerBucket,
+} from "@/lib/customer-attribution";
 
 function ChecklistPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [brandId, setBrandId] = useState<BrandId>(() => toBrandId(searchParams?.get("brand")));
-  const brand = getBrand(brandId);
-  const isShackpack = brand.id === "shackpack";
+  // Customer attribution replaces the old brand tabs. `slug` is the active
+  // customer; it is null only while "Other" is open and none has been picked.
+  const [customerBucketId, setCustomerBucketId] = useState<CustomerBucket>(() => {
+    const fromUrl = searchParams?.get("customer");
+    if (fromUrl === "bullion-bureau") return "bullion-bureau";
+    if (fromUrl && fromUrl !== SHACKPACK_SLUG) return "other";
+    return "shackpack";
+  });
+  const [customerSlug, setCustomerSlug] = useState<string | null>(
+    () => searchParams?.get("customer") || SHACKPACK_SLUG
+  );
+  const isShackpack = customerBucketId === "shackpack";
 
   const [productLine, setProductLine] = useState<ProductLine>("coins");
-  // Cards only exist for ShackPack; never let another brand land on the cards view.
-  const effectiveLine: ProductLine = brand.hasCards ? productLine : "coins";
+  // Cards only exist for ShackPack; never let another customer land on the cards view.
+  const effectiveLine: ProductLine = isShackpack ? productLine : "coins";
   const [availableDates, setAvailableDates] = useState<AvailableDatesResponse | null>(null);
   const [checklist, setChecklist] = useState<DailyChecklistResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,22 +81,6 @@ function ChecklistPageInner() {
       setLoadingSpecialized(false);
     }
   };
-
-  // Auto-select most recent date when case type is selected
-  useEffect(() => {
-    if (selectedCaseType && availableDates) {
-      const datesForType = availableDates.dates
-        .filter(date => date.caseTypes.includes(selectedCaseType))
-        .sort((a, b) => b.displayDate.localeCompare(a.displayDate)); // Most recent first
-      
-      if (datesForType.length > 0) {
-        setSelectedDate(datesForType[0].displayDate);
-      } else {
-        setSelectedDate(null);
-        setChecklist(null);
-      }
-    }
-  }, [selectedCaseType, availableDates]);
 
   // Load checklist when both case type and date are selected
   useEffect(() => {
@@ -136,84 +136,57 @@ function ChecklistPageInner() {
     setSelectedDate(date);
   };
 
-  const handleBrandSelect = (next: BrandId) => {
-    setBrandId(next);
+  const handleCustomerSelect = (next: CustomerBucket, slug: string | null) => {
+    setCustomerBucketId(next);
+    setCustomerSlug(slug);
     setProductLine("coins");
     setSelectedCaseType(null);
     setSelectedDate(null);
     setChecklist(null);
     setShowSpecializedSeries(false);
     const p = new URLSearchParams(searchParams?.toString());
-    p.set("brand", next);
-    router.replace(`/checklist?${p.toString()}`);
+    // The old ?brand= param is dropped outright — no redirect, no back-compat.
+    p.delete("brand");
+    if (slug) p.set("customer", slug);
+    else p.delete("customer");
+    const query = p.toString();
+    router.replace(query ? `/checklist?${query}` : "/checklist");
   };
 
-  // State to store casesByType data for each date
-  const [casesByTypeByDate, setCasesByTypeByDate] = useState<Record<string, Record<string, number>>>({});
+  // One sweep over every available date builds both the per-caseType counts and
+  // the customer index. Same requests this page always made — see
+  // useCustomerIndex for why nothing extra is fetched or retained.
+  const { customerIndex, otherCustomers, hasLoadedData } =
+    useCustomerIndex(availableDates);
 
-  // Fetch casesByType for all dates when availableDates changes
-  useEffect(() => {
-    if (!availableDates || availableDates.dates.length === 0) return;
+  /** The customer whose cases are currently in scope, if one is picked. */
+  const activeCustomer = customerSlug
+    ? customerIndex.get(customerSlug) ?? null
+    : null;
 
-    const fetchAllCasesByType = async () => {
-      const casesByTypeMap: Record<string, Record<string, number>> = {};
-      
-      // Fetch checklist for each date in batches to avoid overwhelming the API
-      const BATCH_SIZE = 10; // Process 10 dates at a time
-      const dates = availableDates.dates;
-      
-      for (let i = 0; i < dates.length; i += BATCH_SIZE) {
-        const batch = dates.slice(i, i + BATCH_SIZE);
-        const promises = batch.map(async (dateInfo) => {
-          try {
-            const checklist = await fetchDailyChecklist(dateInfo.displayDate);
-            casesByTypeMap[dateInfo.displayDate] = checklist.casesByType;
-          } catch (err) {
-            console.error(`Failed to fetch checklist for ${dateInfo.displayDate}:`, err);
-            // If fetch fails, use empty object (no series for that date)
-            casesByTypeMap[dateInfo.displayDate] = {};
-          }
-        });
+  const activeCustomerLabel = customerSlug
+    ? activeCustomer?.name ?? customerLabelFromSlug(customerSlug)
+    : "Other";
 
-        await Promise.all(promises);
-        
-        // Update state incrementally so UI can show progress
-        setCasesByTypeByDate({ ...casesByTypeMap });
-      }
-    };
-
-    fetchAllCasesByType();
-  }, [availableDates]);
-
-  // Check if we have any data loaded yet
-  const hasLoadedData = Object.keys(casesByTypeByDate).length > 0;
-
-  // Compute case types from available dates using accurate casesByType data
+  // Case types scoped to the selected customer. `customerName` lives only on
+  // cases, so this comes from the swept index rather than availableDates —
+  // which is why it cannot be pre-filtered the way brandForCaseType was.
   const caseTypes = useMemo<CaseTypeInfo[]>(() => {
-    if (!availableDates) return [];
+    if (!activeCustomer) return [];
 
-    // Collect all unique case types and their stats
     const caseTypeMap = new Map<string, { dates: Set<string>, totalCases: number }>();
-
-    availableDates.dates.forEach(dateInfo => {
-      dateInfo.caseTypes.forEach(caseType => {
+    activeCustomer.datesByCaseType.forEach((perType, displayDate) => {
+      perType.forEach((count, caseType) => {
         if (!caseTypeMap.has(caseType)) {
           caseTypeMap.set(caseType, { dates: new Set(), totalCases: 0 });
         }
         const info = caseTypeMap.get(caseType)!;
-        info.dates.add(dateInfo.displayDate);
-        
-        // Use accurate count from casesByType if available
-        const casesByTypeForDate = casesByTypeByDate[dateInfo.displayDate];
-        if (casesByTypeForDate && casesByTypeForDate[caseType]) {
-          info.totalCases += casesByTypeForDate[caseType];
-        }
+        info.dates.add(displayDate);
+        info.totalCases += count;
       });
     });
 
-    // Convert to array, keep only this brand's case types, sort by display name
     return Array.from(caseTypeMap.entries())
-      .filter(([caseType]) => brandForCaseType(caseType) === brand.id)
       .map(([caseType, info]) => ({
         caseType,
         displayName: getChecklistCaseShortLabel(caseType),
@@ -225,64 +198,70 @@ function ChecklistPageInner() {
         // Sort by display name alphabetically
         return a.displayName.localeCompare(b.displayName);
       });
-  }, [availableDates, casesByTypeByDate, hasLoadedData, brand.id]);
+  }, [activeCustomer, hasLoadedData]);
 
-  // Get dates for selected case type with accurate series counts
+  // Dates where THIS customer has THIS case type, with exact per-customer counts.
   const datesForCaseType = useMemo(() => {
-    if (!availableDates || !selectedCaseType) return [];
-    
-    return availableDates.dates
-      .filter(date => date.caseTypes.includes(selectedCaseType))
-      .sort((a, b) => b.displayDate.localeCompare(a.displayDate)) // Most recent first
-      .map(date => {
-        // Use accurate count from casesByTypeByDate if available
-        const casesByTypeForDate = casesByTypeByDate[date.displayDate];
-        const seriesCount = casesByTypeForDate && casesByTypeForDate[selectedCaseType] 
-          ? casesByTypeForDate[selectedCaseType] 
-          : 0;
-        
-        return {
-          displayDate: date.displayDate,
-          totalCases: seriesCount // Accurate count for this specific case type
-        };
-      });
-  }, [availableDates, selectedCaseType, casesByTypeByDate]);
+    if (!activeCustomer || !selectedCaseType) return [];
 
-  // Get filtered cases for selected case type
+    const dates: { displayDate: string; totalCases: number }[] = [];
+    activeCustomer.datesByCaseType.forEach((perType, displayDate) => {
+      const seriesCount = perType.get(selectedCaseType);
+      if (seriesCount) dates.push({ displayDate, totalCases: seriesCount });
+    });
+    return dates.sort((a, b) => b.displayDate.localeCompare(a.displayDate));
+  }, [activeCustomer, selectedCaseType]);
+
+  // Auto-select most recent date when case type is selected, and keep the
+  // selection valid as the sweep fills more dates in.
+  useEffect(() => {
+    if (!selectedCaseType) return;
+    if (datesForCaseType.length === 0) {
+      setSelectedDate(null);
+      setChecklist(null);
+      return;
+    }
+    setSelectedDate((prev) =>
+      prev && datesForCaseType.some((d) => d.displayDate === prev)
+        ? prev
+        : datesForCaseType[0].displayDate
+    );
+  }, [selectedCaseType, datesForCaseType]);
+
+  const customerMatcher = useMemo(
+    () => (customerSlug ? slugToMatcher(customerSlug) : null),
+    [customerSlug]
+  );
+
+  // Cases for the selected case type, narrowed to the selected customer. The
+  // narrowing happens here, after the daily fetch, because customerName is a
+  // per-case field.
   const filteredCases = useMemo(() => {
     if (!checklist || !selectedCaseType) return [];
-    return checklist.cases.filter(c => c.caseType === selectedCaseType);
-  }, [checklist, selectedCaseType]);
+    return checklist.cases.filter(
+      (c) =>
+        c.caseType === selectedCaseType &&
+        (!customerMatcher || customerMatcher(c))
+    );
+  }, [checklist, selectedCaseType, customerMatcher]);
 
-  /**
-   * Stable order so Series #1 / #2 / … stay consistent across reloads.
-   * Primary key is the API's `seriesNumber`; `caseId` only breaks ties, so a
-   * case whose id sorts out of step with its label still lands in the right slot.
-   * `seriesNumber` is optional, so unnumbered cases fall to the end and order
-   * among themselves by `caseId` rather than comparing against NaN.
-   */
-  const casesOrderedForDisplay = useMemo(() => {
-    const seriesRank = (n: number | undefined) =>
-      typeof n === 'number' && Number.isFinite(n) ? n : null;
-    return [...filteredCases].sort((a, b) => {
-      const aNum = seriesRank(a.seriesNumber);
-      const bNum = seriesRank(b.seriesNumber);
-      if (aNum !== null && bNum !== null) {
-        if (aNum !== bNum) return aNum - bNum;
-      } else if (aNum !== null) {
-        return -1;
-      } else if (bNum !== null) {
-        return 1;
-      }
-      return a.caseId.localeCompare(b.caseId);
-    });
-  }, [filteredCases]);
+  /** Comparator lives in ./sorting so the customer route shares it verbatim. */
+  const casesOrderedForDisplay = useMemo(
+    () => sortCasesForDisplay(filteredCases),
+    [filteredCases]
+  );
 
-  // Brand tabs + (ShackPack-only) Coins/Cards toggle, reused across every state.
-  const brandNav = (
+  // Customer tabs + (ShackPack-only) Coins/Cards toggle, reused across every state.
+  const customerNav = (
     <div className="space-y-4">
-      <BrandTabs value={brand.id} onChange={handleBrandSelect} />
-      {brand.hasCards && (
+      <CustomerNav
+        otherCustomers={otherCustomers}
+        bucket={customerBucketId}
+        slug={customerSlug}
+        onSelect={handleCustomerSelect}
+        loading={!hasLoadedData}
+      />
+      {isShackpack && (
         <div className="flex justify-center">
           <CoinsCardsToggle value={effectiveLine} onChange={setProductLine} />
         </div>
@@ -290,7 +269,7 @@ function ChecklistPageInner() {
     </div>
   );
 
-  if (brand.hasCards && productLine === "cards") {
+  if (isShackpack && productLine === "cards") {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4 space-y-6">
@@ -300,7 +279,7 @@ function ChecklistPageInner() {
               Graded trading card series — published checklists
             </p>
           </div>
-          {brandNav}
+          {customerNav}
           <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-sm leading-relaxed text-slate-300">
             <p className="text-slate-200">
               <strong className="text-gold">About ShackPack Card Products.</strong> ShackPack produces three sealed
@@ -329,7 +308,7 @@ function ChecklistPageInner() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="mb-6">{brandNav}</div>
+          <div className="mb-6">{customerNav}</div>
           <LoadingState />
         </div>
       </main>
@@ -340,7 +319,7 @@ function ChecklistPageInner() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="mb-6">{brandNav}</div>
+          <div className="mb-6">{customerNav}</div>
           <ErrorState error={error} onRetry={loadAvailableDates} />
         </div>
       </main>
@@ -351,7 +330,7 @@ function ChecklistPageInner() {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="mb-6">{brandNav}</div>
+          <div className="mb-6">{customerNav}</div>
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
@@ -369,14 +348,14 @@ function ChecklistPageInner() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2 text-gold">
-            📅 {brand.name} Checklists
+            📅 {activeCustomerLabel} Checklists
           </h1>
           <p className="text-lg text-slate-400">
             Select a series to view available dates
           </p>
         </div>
 
-        <div className="mb-8">{brandNav}</div>
+        <div className="mb-8">{customerNav}</div>
 
         {/* Disclaimer */}
         <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
@@ -484,15 +463,15 @@ function ChecklistPageInner() {
           />
         )}
 
-        {/* No series yet for this brand (e.g. a newly onboarded customer) */}
+        {/* No series yet for this customer (e.g. a newly onboarded customer) */}
         {!selectedCaseType && !showSpecializedSeries && caseTypes.length === 0 && hasLoadedData && (
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-2 text-slate-200">
-              {brand.name} checklists coming soon
+              {activeCustomerLabel} checklists coming soon
             </h2>
             <p className="text-slate-400">
-              No published {brand.name} series are available yet. Check back soon.
+              No published {activeCustomerLabel} series are available yet. Check back soon.
             </p>
           </div>
         )}
