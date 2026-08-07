@@ -38,10 +38,10 @@ export function groupCardSeriesByDate(): CardSeriesDateGroup[] {
 export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
   {
     id: 'gauntlet-game-4',
-    title: 'Gauntlet Live Series 1 8/7/2026',
+    title: 'Gauntlet Live Series 1',
     subtitle: 'Exact 150-card checklist',
     seriesType: 'Gauntlet',
-    date: '2026-08-06',
+    date: '2026-08-07',
     cards: [
       '1987 Topps Mark McGwire, PSA 8',
       '1987 Fleer update Mark McGwire PSA 8',
@@ -197,10 +197,10 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
   },
   {
     id: 'gauntlet-game-5',
-    title: 'Gauntlet Live Series 2 8/7/2026',
+    title: 'Gauntlet Live Series 2',
     subtitle: 'Exact 150-card checklist',
     seriesType: 'Gauntlet',
-    date: '2026-08-06',
+    date: '2026-08-07',
     cards: [
       '1983 Topps proof. Carl Yastrzemski PSA 10',
       '1987 Donruss Barry Larkin MT 9',
