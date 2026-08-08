@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { AvailableDatesResponse } from "./types";
-import { fetchDailyChecklist } from "./api";
 import {
   CUSTOMER_BUCKET_LABELS,
   SHACKPACK_SLUG,
@@ -17,14 +16,12 @@ import {
 /**
  * One customer's coverage across the whole date range.
  *
- * `datesByCaseType` is date -> caseType -> case count. Counts ONLY — full case
- * objects are deliberately not retained. The sweep below reads every case on
- * every date, and holding those (hundreds of dates x dozens of cases x 20 coins
- * each) would be a large client-side blob for data the nav never reads.
+ * `datesByCaseType` is date -> caseType -> case count. Counts ONLY — no case
+ * objects are retained, and none are fetched to build this.
  */
 export type CustomerIndexEntry = {
   slug: string;
-  /** Display name as the API spells it; the house bucket uses a fixed label. */
+  /** Canonical roster name; the house bucket uses a fixed label. */
   name: string;
   bucket: CustomerBucket;
   datesByCaseType: Map<string, Map<string, number>>;
@@ -35,103 +32,74 @@ export type CustomerIndex = Map<string, CustomerIndexEntry>;
 
 // Prefer the canonical roster name so aliased spellings ('Coinwave',
 // 'CoinWave, LLC') label their shared group identically, rather than showing
-// whichever raw spelling the sweep happened to see first.
+// whichever raw spelling happened to be seen first.
 function displayNameFor(slug: string, rawName: string | null | undefined) {
   if (slug === SHACKPACK_SLUG) return CUSTOMER_BUCKET_LABELS.shackpack;
   return canonicalNameForSlug(slug) ?? ((rawName ?? '').trim() || slug);
 }
 
 /**
- * Sweep every available date once and build both the per-caseType counts the
- * series selector needs and the customer index the nav needs.
+ * Build the customer index from the `caseBreakdown` rows that getAvailableDates
+ * already returns. Synchronous — no fetching.
  *
- * This is the same sweep the checklist page has always run — same dates, same
- * batch size, same requests. It simply retains a few metadata fields from
- * responses it was already fetching and discarding, so the customer nav costs
- * no additional network traffic.
+ * This replaces a sweep that fetched every daily checklist up front: 267 calls
+ * and ~16.7 MB at roughly 5s each, purely to count cases. getAvailableDates now
+ * carries per-date rows of {customerName, caseType, count, seriesNumbers},
+ * which reconstruct the identical index from the one call the page already
+ * makes. Full case data is still fetched on demand by loadChecklist when a
+ * caseType + date is picked.
  */
 export function useCustomerIndex(availableDates: AvailableDatesResponse | null) {
-  const [casesByTypeByDate, setCasesByTypeByDate] = useState<
-    Record<string, Record<string, number>>
-  >({});
-  const [customerIndex, setCustomerIndex] = useState<CustomerIndex>(new Map());
-
-  useEffect(() => {
-    if (!availableDates || availableDates.dates.length === 0) return;
-
-    let cancelled = false;
-    const casesByTypeMap: Record<string, Record<string, number>> = {};
+  const { customerIndex, casesByTypeByDate } = useMemo(() => {
     const index: CustomerIndex = new Map();
+    const byTypeByDate: Record<string, Record<string, number>> = {};
 
-    const sweep = async () => {
-      const BATCH_SIZE = 10; // Process 10 dates at a time
-      const dates = availableDates.dates;
+    for (const dateInfo of availableDates?.dates ?? []) {
+      const perTypeAll: Record<string, number> = {};
 
-      for (let i = 0; i < dates.length; i += BATCH_SIZE) {
-        const batch = dates.slice(i, i + BATCH_SIZE);
+      for (const row of dateInfo.caseBreakdown ?? []) {
+        // A breakdown row is structurally an AttributableCase — it carries both
+        // customerName and caseType — so attribution runs on it unchanged.
+        const slug = caseToSlug(row);
+        let entry = index.get(slug);
+        if (!entry) {
+          entry = {
+            slug,
+            name: displayNameFor(slug, row.customerName),
+            bucket: customerBucket(row),
+            datesByCaseType: new Map(),
+            totalCases: 0,
+          };
+          index.set(slug, entry);
+        }
 
-        await Promise.all(
-          batch.map(async (dateInfo) => {
-            try {
-              const day = await fetchDailyChecklist(dateInfo.displayDate);
-              casesByTypeMap[dateInfo.displayDate] = day.casesByType;
+        let perDate = entry.datesByCaseType.get(dateInfo.displayDate);
+        if (!perDate) {
+          perDate = new Map();
+          entry.datesByCaseType.set(dateInfo.displayDate, perDate);
+        }
 
-              for (const caseData of day.cases) {
-                // Hybrid resolution: a branded caseType identifies its
-                // customer even when the case is stamped house/untagged.
-                const slug = caseToSlug(caseData);
-                let entry = index.get(slug);
-                if (!entry) {
-                  entry = {
-                    slug,
-                    name: displayNameFor(slug, caseData.customerName),
-                    bucket: customerBucket(caseData),
-                    datesByCaseType: new Map(),
-                    totalCases: 0,
-                  };
-                  index.set(slug, entry);
-                }
-
-                let perDate = entry.datesByCaseType.get(dateInfo.displayDate);
-                if (!perDate) {
-                  perDate = new Map();
-                  entry.datesByCaseType.set(dateInfo.displayDate, perDate);
-                }
-                perDate.set(
-                  caseData.caseType,
-                  (perDate.get(caseData.caseType) ?? 0) + 1
-                );
-                entry.totalCases += 1;
-              }
-            } catch (err) {
-              console.error(
-                `Failed to fetch checklist for ${dateInfo.displayDate}:`,
-                err
-              );
-              // If fetch fails, use empty object (no series for that date)
-              casesByTypeMap[dateInfo.displayDate] = {};
-            }
-          })
+        // ACCUMULATE, never set: several rows on one date can resolve to the
+        // same slug — 'The Coin Shack', null and any off-roster name all fold
+        // into 'shackpack'. Overwriting here would silently drop those cases.
+        perDate.set(
+          row.caseType,
+          (perDate.get(row.caseType) ?? 0) + row.count
         );
-
-        if (cancelled) return;
-
-        // Update state incrementally so UI can show progress. New container
-        // identities each batch so downstream memos recompute.
-        setCasesByTypeByDate({ ...casesByTypeMap });
-        setCustomerIndex(new Map(index));
+        entry.totalCases += row.count;
+        perTypeAll[row.caseType] = (perTypeAll[row.caseType] ?? 0) + row.count;
       }
-    };
 
-    sweep();
-    return () => {
-      cancelled = true;
-    };
+      byTypeByDate[dateInfo.displayDate] = perTypeAll;
+    }
+
+    return { customerIndex: index, casesByTypeByDate: byTypeByDate };
   }, [availableDates]);
 
-  const hasLoadedData = Object.keys(casesByTypeByDate).length > 0;
+  /** True once getAvailableDates has returned; the index is complete with it. */
+  const hasLoadedData = (availableDates?.dates?.length ?? 0) > 0;
 
-  /** Newest checklist date — "the day" the nav is scoped to. */
+  /** Newest checklist date. */
   const latestDate = availableDates?.dates?.[0]?.displayDate ?? null;
 
   /**
@@ -139,9 +107,7 @@ export function useCustomerIndex(availableDates: AvailableDatesResponse | null) 
    *
    * The full fixed roster is ALWAYS present, so an active customer shows even
    * with no case on the selected date (and lands on its own empty state rather
-   * than vanishing). Real swept data is then overlaid on top, so counts and
-   * date coverage come from the hybrid resolution — a branded case stamped
-   * 'The Coin Shack' now surfaces under its real customer here.
+   * than vanishing). Real data is then overlaid on top.
    */
   const otherCustomers = useMemo(() => {
     const bySlug = new Map<string, CustomerIndexEntry>();

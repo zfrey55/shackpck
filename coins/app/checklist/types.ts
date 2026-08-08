@@ -39,6 +39,20 @@ export interface DailyChecklistResponse {
   cases: CaseData[];
 }
 
+/**
+ * One (customerName, caseType) pairing on a single date. `count` is how many
+ * cases that pairing covers; `seriesNumbers` lists their series numbers.
+ *
+ * This is the whole reason the checklist no longer fetches every daily
+ * checklist up front — the customer index is built from these rows.
+ */
+export interface CaseBreakdownRow {
+  customerName: string | null;
+  caseType: string;
+  count: number;
+  seriesNumbers: number[];
+}
+
 export interface AvailableDatesResponse {
   success: boolean;
   totalDates: number;
@@ -46,6 +60,7 @@ export interface AvailableDatesResponse {
     displayDate: string;
     totalCases: number;
     caseTypes: string[];
+    caseBreakdown: CaseBreakdownRow[];
   }[];
 }
 
