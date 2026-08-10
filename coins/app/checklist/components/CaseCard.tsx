@@ -45,17 +45,19 @@ export const CaseCard = memo(function CaseCard({
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/*
-            Render in the API's array order — that IS the intended value order.
-            `position` is a slot number, deliberately not 1..N, so sorting by it
-            scatters the high-value coins. Printed verbatim, never renumbered.
+            The API returns coins already in value order, most valuable first,
+            so we render the array as-is and never sort it. `position` is a
+            slot/scan number, not a value rank — it is unique within a case, so
+            we use it as the React key, but it is never displayed. The visible
+            number is the render index, which keeps the list reading 1..N.
           */}
-          {caseData.coins.map((coin) => (
-            <div 
+          {caseData.coins.map((coin, i) => (
+            <div
               key={coin.position}
               className="flex items-start p-3 bg-slate-800/50 rounded border border-slate-700"
             >
               <span className="font-bold text-gold mr-2 min-w-[24px]">
-                {coin.position}.
+                {i + 1}.
               </span>
               <div className="flex-1">
                 <div className="font-medium text-slate-200">{coin.coinType}</div>
