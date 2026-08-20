@@ -104,4 +104,39 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Multi-Sport · Multi-Show Series',
     brand: 'shackpack',
   },
+
+  // ----- Vault Room Breaks -----
+  // Card products, per the pack art ("Premium Sports Card Breaks", graded
+  // slabs). Same disclaimer wrapper as the ShackPack card tiles — the copy
+  // never claims specific contents and defers to the published checklist.
+  {
+    id: 'vaultroombreaks-breach',
+    name: 'Vault Room Breaks Breach',
+    description: d(
+      'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
+    ),
+    image: '/images/packs/vaultroombreaks-breach.png',
+    category: 'Multi-Sport · Graded Slabs',
+    brand: 'vault-room-breaks',
+  },
+  {
+    id: 'vaultroombreaks-heist',
+    name: 'Vault Room Breaks Heist',
+    description: d(
+      'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
+    ),
+    image: '/images/packs/vaultroombreaks-heist.png',
+    category: 'Multi-Sport · Graded Slabs',
+    brand: 'vault-room-breaks',
+  },
+  {
+    id: 'vaultroombreaks-seize',
+    name: 'Vault Room Breaks Seize',
+    description: d(
+      'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
+    ),
+    image: '/images/packs/vaultroombreaks-seize.png',
+    category: 'Multi-Sport · Graded Slabs',
+    brand: 'vault-room-breaks',
+  },
 ];

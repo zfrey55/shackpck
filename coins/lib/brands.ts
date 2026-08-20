@@ -24,7 +24,8 @@ export type BrandId =
   | 'cobra-coin'
   | 'golden-emu'
   | 'juicebox-bullion'
-  | 'one-nasty-coin';
+  | 'one-nasty-coin'
+  | 'vault-room-breaks';
 
 export type Brand = {
   id: BrandId;
@@ -127,6 +128,16 @@ export const BRANDS: Brand[] = [
     name: 'One Nasty Coin',
     tagline: 'Graded coin repacks with attitude — every series backed by a published checklist.',
     caseTypePrefixes: ['onenastycoin', 'one-nasty-coin'],
+  },
+  {
+    id: 'vault-room-breaks',
+    name: 'Vault Room Breaks',
+    tagline: 'Premium sports card breaks — curated graded slabs, straight from the vault.',
+    // The only non-ShackPack brand with card products; its prefixes are listed
+    // for parity with the coin brands, but no vaultroombreaks-* coin caseType
+    // exists in the inventory today.
+    hasCards: true,
+    caseTypePrefixes: ['vaultroombreaks', 'vault-room-breaks'],
   },
 ];
 
