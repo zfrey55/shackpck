@@ -243,6 +243,18 @@ export type CustomerPacksConfig = {
   hasPacks: true;
   /** Brand in lib/brands.ts supplying this customer's pack tiles, if any. */
   brandId?: BrandId;
+  /**
+   * Where this brand's "View checklists" link should point.
+   *
+   *   undefined -> default to /checklist?customer=<slug>. Correct for every
+   *                customer that actually has coin cases in the inventory.
+   *   string    -> an explicit destination, for a brand whose checklist
+   *                content is not reachable by customer slug.
+   *   null      -> no checklist link at all. The brand has pack tiles but no
+   *                published checklist content of any kind, and a customer
+   *                link would land on an empty page.
+   */
+  checklistHref?: string | null;
 };
 
 export const CUSTOMER_PACKS: Record<string, CustomerPacksConfig> = {
@@ -258,6 +270,23 @@ export const CUSTOMER_PACKS: Record<string, CustomerPacksConfig> = {
   'golden-emu': { hasPacks: true, brandId: 'golden-emu' },
   'juice-box-bullion': { hasPacks: true, brandId: 'juicebox-bullion' },
   'lincoln-reserve': { hasPacks: true, brandId: 'lincoln-reserve' },
+  // Card-only customer: three pack tiles, and its checklist content lives on
+  // the Cards line. There are no Vault Room Breaks COIN cases in the inventory
+  // (no matching caseType or customerName across the last 90 days) and no
+  // roster entry, so the default /checklist?customer= link would be empty.
+  'vault-room-breaks': {
+    hasPacks: true,
+    brandId: 'vault-room-breaks',
+    checklistHref: '/checklist?line=cards&cardBrand=vault-room-breaks',
+  },
+  // Has pack art and a coin pack tile, but no cases in the inventory and no
+  // roster entry, so there is nothing to link to yet. Give it its tab; drop
+  // the checklist link rather than emit a dead one.
+  'one-nasty-coin': {
+    hasPacks: true,
+    brandId: 'one-nasty-coin',
+    checklistHref: null,
+  },
 };
 
 /** True when this customer has branded pack designs. Packs tab only. */
@@ -283,4 +312,22 @@ export function customerSlugForBrand(brandId: BrandId): string | null {
     ([, config]) => config.brandId === brandId
   );
   return found ? found[0] : null;
+}
+
+/**
+ * The checklist URL for a brand's packs, or null when it has no checklist.
+ *
+ * Resolves the `checklistHref` tri-state above: an explicit destination wins,
+ * an explicit null suppresses the link, and anything else falls back to the
+ * customer-slug URL that every coin customer uses.
+ */
+export function checklistHrefForBrand(brandId: BrandId): string | null {
+  const found = Object.entries(CUSTOMER_PACKS).find(
+    ([, config]) => config.brandId === brandId
+  );
+  if (!found) return null;
+  const [slug, config] = found;
+  // `in` rather than a truthiness check, so an explicit null is honored.
+  if ('checklistHref' in config) return config.checklistHref ?? null;
+  return `/checklist?customer=${slug}`;
 }

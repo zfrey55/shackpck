@@ -10,7 +10,7 @@ import { CoinsCardsToggle, type ProductLine } from '@/components/CoinsCardsToggl
 import { BRANDS, getBrand, toBrandId, type BrandId } from '@/lib/brands';
 import {
   brandHasPacks,
-  customerSlugForBrand,
+  checklistHrefForBrand,
 } from '@/lib/customer-attribution';
 
 /**
@@ -36,15 +36,25 @@ export function RepacksClient() {
   const brand = getBrand(brandId);
   const productLine = lineFromSearch(searchParams);
 
-  // Cards only exist for brands flagged hasCards (ShackPack today). Force coins
-  // for everyone else so a stale ?tab=cards can't show an empty grid.
-  const effectiveLine: ProductLine = brand.hasCards ? productLine : 'coins';
-
   const coinPacks = getCoinPacksForBrand(brand.id);
   const cardPacks = brand.hasCards
     ? CARD_REPACK_CATALOG.filter((p) => p.brand === brand.id)
     : [];
+
+  // Cards only exist for brands flagged hasCards. Force coins for everyone
+  // else so a stale ?tab=cards can't show an empty grid — and conversely, a
+  // card-only brand (no coin packs at all) opens on cards rather than showing
+  // an empty coin grid as its landing state.
+  const effectiveLine: ProductLine = !brand.hasCards
+    ? 'coins'
+    : coinPacks.length === 0 && cardPacks.length > 0
+      ? 'cards'
+      : productLine;
+
   const packs = effectiveLine === 'cards' ? cardPacks : coinPacks;
+
+  // Null for a brand with pack tiles but no checklist content of any kind.
+  const checklistHref = checklistHrefForBrand(brand.id);
 
   const setBrand = (next: BrandId) => {
     const p = new URLSearchParams(searchParams?.toString());
@@ -94,21 +104,18 @@ export function RepacksClient() {
         </div>
       )}
 
-      {/* Checklist link for this brand */}
-      <div className="mt-10 text-center">
-        <Link
-          href={
-            // The checklist now keys on customer, not brand; ?brand= is gone.
-            customerSlugForBrand(brand.id)
-              ? `/checklist?customer=${customerSlugForBrand(brand.id)}`
-              : '/checklist'
-          }
-          className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
-        >
-          View {brand.name} checklists
-          <span>→</span>
-        </Link>
-      </div>
+      {/* Checklist link for this brand, omitted when it has no checklist. */}
+      {checklistHref && (
+        <div className="mt-10 text-center">
+          <Link
+            href={checklistHref}
+            className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
+          >
+            View {brand.name} checklists
+            <span>→</span>
+          </Link>
+        </div>
+      )}
 
       <div className="mt-16 text-center">
         <h2 className="text-2xl font-semibold mb-4">Why Choose Shackpack?</h2>

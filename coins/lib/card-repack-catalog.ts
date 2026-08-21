@@ -1,13 +1,23 @@
 import type { RepackCatalogItem } from '@/lib/repack-catalog';
 
 /**
- * Card-side disclaimer. ShackPack card products are multi-sport sealed products
- * whose published checklists are EXAMPLES — they illustrate the format, sport
- * mix, era mix, and condition mix of the product line, but the actual cards in
- * any produced ShackPack will differ from the example.
+ * Card-side disclaimer, shared by every card pack tile.
+ *
+ * It used to call the published checklist an EXAMPLE. That is no longer true:
+ * these tiles link to the Cards line of /checklist, which serves the frozen
+ * archive in lib/card-series-checklist.ts — real, dated, exact published
+ * series that its own header states are NOT subject to a contents-may-vary
+ * caveat. Calling those examples contradicted the data.
+ *
+ * The wording now defers to the published checklist without characterizing
+ * what it contains, so it stays true whether the series behind it is a real
+ * archived checklist or an undated example. Per the compliance policy in
+ * lib/repack-catalog.ts, the tile itself still makes no specific-contents
+ * claim. Example-only content carries its own caveat at the point of render,
+ * in the checklist's CardSeriesBrowser.
  */
 export const CARD_REPACK_CHECKLIST_DISCLAIMER =
-  'See the published checklist for an example of the cards that may appear in this product. Example checklist only — actual contents will vary.';
+  'See the published checklist for each series — contents vary by series.';
 
 const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`;
 
