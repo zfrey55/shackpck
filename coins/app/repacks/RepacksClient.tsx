@@ -14,60 +14,86 @@ import {
 } from '@/lib/customer-attribution';
 
 /**
- * Only customers flagged hasPacks in CUSTOMER_PACKS get a pack tab. A
- * checklist-only customer (a generic ShackPack buyer with no custom pack
- * designs) appears in the checklist nav but never here.
+ * Brands with COIN pack tiles.
+ *
+ * Same derivation as before — customers flagged hasPacks in CUSTOMER_PACKS —
+ * with the added requirement that the brand actually has coin packs. That
+ * requirement only excludes card-only brands (Vault Room Breaks), which would
+ * otherwise land on an empty coin grid. Every brand that had a coin tab keeps
+ * one.
  */
-const PACK_BRANDS = BRANDS.filter((brand) => brandHasPacks(brand.id));
+const COIN_BRANDS = BRANDS.filter(
+  (brand) => brandHasPacks(brand.id) && getCoinPacksForBrand(brand.id).length > 0
+);
 
-function brandFromSearch(params: URLSearchParams | null): BrandId {
-  return toBrandId(params?.get('brand'));
+/**
+ * Brands with CARD pack tiles, derived from the catalog's own entries rather
+ * than a list or the `hasCards` flag — a brand appears here only if it really
+ * has card tiles, so the tab can never open on an empty grid.
+ */
+const CARD_BRAND_IDS = new Set(CARD_REPACK_CATALOG.map((pack) => pack.brand));
+const CARD_BRANDS = BRANDS.filter((brand) => CARD_BRAND_IDS.has(brand.id));
+
+function brandsForLine(line: ProductLine) {
+  return line === 'cards' ? CARD_BRANDS : COIN_BRANDS;
 }
 
+/**
+ * Product line from the URL.
+ *
+ * `?line=` matches /checklist exactly, so the two pages read the same param
+ * with the same semantics (absent means coins). `?tab=` is the parameter this
+ * page used before and is still honored, so older links keep working; it is
+ * never written back.
+ */
 function lineFromSearch(params: URLSearchParams | null): ProductLine {
-  return params?.get('tab') === 'cards' ? 'cards' : 'coins';
+  const line = params?.get('line') ?? params?.get('tab');
+  return line === 'cards' ? 'cards' : 'coins';
 }
 
 export function RepacksClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const brandId = brandFromSearch(searchParams);
+  const requestedLine = lineFromSearch(searchParams);
+  // Fall back to coins if the cards line has no brands at all.
+  const line: ProductLine = CARD_BRANDS.length > 0 ? requestedLine : 'coins';
+  const lineBrands = brandsForLine(line);
+
+  // ?brand= is unchanged: same param, same toBrandId resolution as before. It
+  // is only clamped when the brand has no tiles on the CURRENT line, so that
+  // switching lines can never strand the grid on an empty brand.
+  const requestedBrandId = toBrandId(searchParams?.get('brand'));
+  const brandId: BrandId = lineBrands.some((b) => b.id === requestedBrandId)
+    ? requestedBrandId
+    : lineBrands[0]?.id ?? requestedBrandId;
   const brand = getBrand(brandId);
-  const productLine = lineFromSearch(searchParams);
 
-  const coinPacks = getCoinPacksForBrand(brand.id);
-  const cardPacks = brand.hasCards
-    ? CARD_REPACK_CATALOG.filter((p) => p.brand === brand.id)
-    : [];
-
-  // Cards only exist for brands flagged hasCards. Force coins for everyone
-  // else so a stale ?tab=cards can't show an empty grid — and conversely, a
-  // card-only brand (no coin packs at all) opens on cards rather than showing
-  // an empty coin grid as its landing state.
-  const effectiveLine: ProductLine = !brand.hasCards
-    ? 'coins'
-    : coinPacks.length === 0 && cardPacks.length > 0
-      ? 'cards'
-      : productLine;
-
-  const packs = effectiveLine === 'cards' ? cardPacks : coinPacks;
+  const packs =
+    line === 'cards'
+      ? CARD_REPACK_CATALOG.filter((p) => p.brand === brand.id)
+      : getCoinPacksForBrand(brand.id);
 
   // Null for a brand with pack tiles but no checklist content of any kind.
   const checklistHref = checklistHrefForBrand(brand.id);
 
-  const setBrand = (next: BrandId) => {
+  const pushState = (nextLine: ProductLine, nextBrand: BrandId) => {
     const p = new URLSearchParams(searchParams?.toString());
-    p.set('brand', next);
-    p.delete('tab'); // reset Coins/Cards when switching brand
+    p.delete('tab'); // legacy param: read for back-compat, never written
+    if (nextLine === 'cards') p.set('line', 'cards');
+    else p.delete('line');
+    p.set('brand', nextBrand);
     router.push(`/repacks?${p.toString()}`);
   };
 
+  const setBrand = (next: BrandId) => pushState(line, next);
+
   const setLine = (next: ProductLine) => {
-    const p = new URLSearchParams(searchParams?.toString());
-    p.set('brand', brand.id);
-    p.set('tab', next);
-    router.push(`/repacks?${p.toString()}`);
+    // Keep the current brand if it has tiles on the target line; otherwise
+    // land on that line's first brand.
+    const target = brandsForLine(next);
+    const keep = target.some((b) => b.id === brand.id) ? brand.id : target[0]?.id;
+    pushState(next, keep ?? brand.id);
   };
 
   return (
@@ -77,20 +103,21 @@ export function RepacksClient() {
         <p className="mt-3 text-lg text-slate-300 max-w-3xl mx-auto">
           Browse repacks by brand — every series is backed by a published checklist.
         </p>
-        <div className="mt-6">
-          <BrandTabs value={brand.id} onChange={setBrand} brands={PACK_BRANDS} />
+
+        {/* Product line is the OUTER tier; brand tabs sit under it, scoped to it. */}
+        {CARD_BRANDS.length > 0 && (
+          <div className="mt-6 flex justify-center">
+            <CoinsCardsToggle value={line} onChange={setLine} />
+          </div>
+        )}
+
+        <div className="mt-4">
+          <BrandTabs value={brand.id} onChange={setBrand} brands={lineBrands} />
         </div>
       </div>
 
       {/* Brand header (logo / wordmark + tagline) */}
       <BrandHeader brand={brand} />
-
-      {/* Coins/Cards sub-toggle, only for brands that have cards */}
-      {brand.hasCards && (
-        <div className="mb-8 flex justify-center">
-          <CoinsCardsToggle value={effectiveLine} onChange={setLine} />
-        </div>
-      )}
 
       {packs.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

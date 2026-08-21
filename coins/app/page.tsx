@@ -46,7 +46,7 @@ export default function HomePage() {
                   Coin Repacks
                 </Link>
                 <Link
-                  href="/repacks?brand=shackpack&tab=cards"
+                  href="/repacks?brand=shackpack&line=cards"
                   className="rounded-md bg-gold/90 px-5 py-3 font-semibold text-black hover:opacity-90 transition-opacity"
                 >
                   Card Repacks
@@ -157,7 +157,7 @@ export default function HomePage() {
         </div>
         <div className="text-center mt-12">
           <Link
-            href="/repacks?brand=shackpack&tab=cards"
+            href="/repacks?brand=shackpack&line=cards"
             className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
           >
             View all card repacks
