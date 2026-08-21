@@ -136,7 +136,13 @@ export default function HomePage() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {CARD_REPACK_CATALOG.map((pack) => (
+          {/*
+            ShackPack card products only. This section has no brand header, so
+            an unfiltered map would show a customer's products (e.g. Vault Room
+            Breaks) as though they were ours. Per-brand browsing lives on
+            /repacks, which renders its own brand tabs.
+          */}
+          {CARD_REPACK_CATALOG.filter((pack) => pack.brand === 'shackpack').map((pack) => (
             <RepackCard
               key={pack.id}
               id={pack.id}

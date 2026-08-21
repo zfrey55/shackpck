@@ -69,6 +69,41 @@ const FIXTURES: Fixture[] = [
     expected: '2021 Topps deGrom PSA 9',
     note: 'already-correct input passes through unchanged',
   },
+  {
+    input: '2023 topps pedro martinez all aces #aa5 psa 10',
+    expected: '2023 Topps Pedro Martinez All Aces #AA5 PSA 10',
+    note: 'rule (b): #-prefixed card number uppercases',
+  },
+  {
+    input: '2020 merlin chrome ucl cristiano ronaldo refractor #50 psa 10',
+    expected: '2020 Merlin Chrome UCL Cristiano Ronaldo Refractor #50 PSA 10',
+    note: 'UCL dictionary entry; #50 has no letters so it is unchanged',
+  },
+  {
+    input: '2023 panini black dead of night ja morant auto /25',
+    expected: '2023 Panini Black Dead of Night Ja Morant Auto /25',
+    note: 'rule (g): mid-title small word stays lowercase',
+  },
+  {
+    input: '2016 bowman prospects fernando tatis jr yellow #bp17 psa 10',
+    expected: '2016 Bowman Prospects Fernando Tatis Jr Yellow #BP17 PSA 10',
+    note: 'card number with letters; bare "jr" gains no period',
+  },
+  {
+    input: '2023 panini mosaic jahmyr gibbs nfl debut orange /199 psa 10',
+    expected: '2023 Panini Mosaic Jahmyr Gibbs NFL Debut Orange /199 PSA 10',
+    note: '/199 print run must survive the new card-number rule untouched',
+  },
+  {
+    input: 'the ultimate rookie card',
+    expected: 'The Ultimate Rookie Card',
+    note: 'rule (g): a small word in FIRST position is still capitalized',
+  },
+  {
+    input: '2019 panini man of the year #nd-10 psa 9',
+    expected: '2019 Panini Man of the Year #ND-10 PSA 9',
+    note: 'two consecutive small words; hyphenated card number uppercases',
+  },
 ];
 
 let failures = 0;
