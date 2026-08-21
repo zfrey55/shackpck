@@ -1,13 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { BrandId } from '@/lib/brands';
 import {
-  groupCardSeriesByDate,
-  type CardSeriesChecklist,
-} from '@/lib/card-series-checklist';
-import { CardChecklistView } from './CardChecklistView';
+  EXAMPLE_DATE_LABEL,
+  EXAMPLE_SERIES_TYPE,
+  countSeriesForType,
+  getDatesForSeriesType,
+  getSeriesFor,
+  getSeriesTypesForBrand,
+} from '@/lib/card-checklist-model';
+import { CARD_REPACK_CHECKLIST_DISCLAIMER } from '@/lib/card-repack-catalog';
+import { CardSeriesChecklistCard } from './CardSeriesChecklistCard';
 
-const buttonClasses = `
+const groupButtonClasses = `
   relative p-6 rounded-lg border-2 font-semibold transition-all text-left
   bg-slate-800/50 text-slate-300 border-slate-600 hover:border-gold hover:text-gold
 `;
@@ -22,106 +28,191 @@ function formatDisplayDate(isoDate: string): string {
   });
 }
 
-function SeriesSection({ series }: { series: CardSeriesChecklist }) {
-  return (
-    <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 shadow-lg">
-      <div className="mb-4 border-b border-slate-700 pb-3">
-        <h2 className="text-2xl font-bold text-gold">{series.title}</h2>
-        <p className="mt-1 text-sm text-slate-300">
-          {series.subtitle ? <span>{series.subtitle} · </span> : null}
-          <span className="text-slate-400">{series.cards.length} cards</span>
-        </p>
-      </div>
+function shortDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
-      <ol className="space-y-1.5 text-sm text-slate-300">
-        {series.cards.map((card, index) => (
-          <li
-            key={`${series.id}-${index}`}
-            className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-baseline gap-2 border-b border-slate-800/70 py-1.5"
-          >
-            <span className="text-right font-semibold text-slate-500">
-              {index + 1}.
-            </span>
-            <span>{card}</span>
-          </li>
-        ))}
-      </ol>
+/**
+ * The example disclaimer. Rendered ONLY for undated content.
+ *
+ * It used to sit above the whole Cards tab, which meant it also covered the
+ * frozen archive's exact, dated, real checklists — telling customers that a
+ * real published series "will be different from the examples shown". Scoping
+ * it to seriesDate === null is the fix. The string itself is the shared
+ * constant, never a second copy.
+ */
+function ExampleDisclaimer() {
+  return (
+    <div className="mb-5 rounded-md border border-amber-600/60 bg-amber-900/20 p-3 text-sm leading-relaxed text-amber-100">
+      <strong>EXAMPLE CHECKLIST — NOT A FINALIZED SERIES.</strong>{' '}
+      {CARD_REPACK_CHECKLIST_DISCLAIMER}
     </div>
   );
 }
 
-export default function CardSeriesBrowser() {
-  const [selected, setSelected] = useState<'examples' | string | null>(null);
-  const dateGroups = groupCardSeriesByDate();
+/** Date row for one series type. Undated content shows a "Sample" button. */
+function DateButtons({
+  dates,
+  selected,
+  onSelect,
+}: {
+  dates: (string | null)[];
+  selected: string | null;
+  onSelect: (date: string | null) => void;
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap gap-2">
+      {dates.map((date, index) => {
+        const active = date === selected;
+        return (
+          <button
+            key={date ?? 'sample'}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect(date)}
+            className={`relative rounded-lg border-2 px-4 py-2 text-sm font-semibold transition-colors ${
+              active
+                ? 'border-gold bg-gold text-black'
+                : 'border-slate-600 bg-slate-800/50 text-slate-300 hover:border-gold hover:text-gold'
+            }`}
+          >
+            {date === null ? EXAMPLE_DATE_LABEL : shortDate(date)}
+            {date !== null && index === 0 && !active && (
+              <span className="absolute -right-2 -top-2 rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
+                Latest
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-  if (selected === null) {
+/**
+ * Series-type-first card browser: series type -> dates -> checklists.
+ *
+ * Mirrors the coin flow on the checklist page (case type -> dates -> series)
+ * rather than the old date-first grouping. Groups and dates are derived from
+ * the data present for the selected brand, never hardcoded.
+ */
+export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
+  const seriesTypes = useMemo(() => getSeriesTypesForBrand(brandId), [brandId]);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  // Reset the drill-down whenever the brand changes, so switching tabs never
+  // leaves a series type selected that the new brand does not have.
+  useEffect(() => {
+    setSelectedType(null);
+    setSelectedDate(null);
+  }, [brandId]);
+
+  const dates = useMemo(
+    () => (selectedType ? getDatesForSeriesType(brandId, selectedType) : []),
+    [brandId, selectedType]
+  );
+
+  // Keep the selected date valid for the current type; default to the newest.
+  useEffect(() => {
+    if (!selectedType || dates.length === 0) return;
+    setSelectedDate((prev) =>
+      dates.some((d) => d === prev) ? prev : dates[0]
+    );
+  }, [selectedType, dates]);
+
+  const visibleSeries = useMemo(
+    () => (selectedType ? getSeriesFor(brandId, selectedType, selectedDate) : []),
+    [brandId, selectedType, selectedDate]
+  );
+
+  if (seriesTypes.length === 0) {
+    return (
+      <div className="rounded-lg border border-slate-700 bg-slate-900/40 py-12 text-center">
+        <div className="mb-4 text-6xl">🃏</div>
+        <h2 className="mb-2 text-2xl font-bold text-slate-200">
+          Card checklists coming soon
+        </h2>
+        <p className="text-slate-400">
+          No published card series are available for this brand yet.
+        </p>
+      </div>
+    );
+  }
+
+  if (selectedType === null) {
     return (
       <div>
-        <h2 className="text-xl font-semibold text-slate-200 mb-4 text-center">
-          Select a Checklist
+        <h2 className="mb-4 text-center text-xl font-semibold text-slate-200">
+          Select a Series
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button onClick={() => setSelected('examples')} className={buttonClasses}>
-            <div className="text-lg font-bold mb-2">Example Checklists</div>
-            <div className="text-sm opacity-75">
-              Fusion, Nova &amp; Select product examples
-            </div>
-          </button>
-          {dateGroups.map((group, index) => (
-            <button
-              key={group.date}
-              onClick={() => setSelected(group.date)}
-              className={buttonClasses}
-            >
-              <div className="text-lg font-bold mb-2">{formatDisplayDate(group.date)}</div>
-              <div className="text-sm opacity-75">
-                {group.series.length} series checklist{group.series.length !== 1 ? 's' : ''}
-              </div>
-              {index === 0 && (
-                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                  Latest
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {seriesTypes.map((type) => {
+            const count = countSeriesForType(brandId, type);
+            const isExample = type === EXAMPLE_SERIES_TYPE;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setSelectedType(type)}
+                className={groupButtonClasses}
+              >
+                <div className="mb-2 text-lg font-bold">{type}</div>
+                <div className="text-sm opacity-75">
+                  {count} {isExample ? 'example' : 'series'}
+                  {count === 1 ? '' : 's'}
+                </div>
+                {isExample && (
+                  <span className="absolute -right-2 -top-2 rounded-full bg-amber-600 px-2 py-0.5 text-xs text-white">
+                    {EXAMPLE_DATE_LABEL}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     );
   }
 
-  const backButton = (
-    <button
-      onClick={() => setSelected(null)}
-      className="text-gold hover:text-gold/80 transition-colors flex items-center gap-2 mb-6"
-    >
-      ← Back to Checklist Selection
-    </button>
-  );
-
-  if (selected === 'examples') {
-    return (
-      <div>
-        {backButton}
-        <CardChecklistView />
-      </div>
-    );
-  }
-
-  const group = dateGroups.find((g) => g.date === selected);
+  const isExampleGroup = selectedType === EXAMPLE_SERIES_TYPE;
 
   return (
     <div>
-      {backButton}
-      <h2 className="mb-4 text-2xl font-bold text-gold">
-        Series Checklists — {formatDisplayDate(selected)}
-      </h2>
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedType(null);
+          setSelectedDate(null);
+        }}
+        className="mb-6 flex items-center gap-2 text-gold transition-colors hover:text-gold/80"
+      >
+        ← Back to Series Selection
+      </button>
+
+      <h2 className="mb-4 text-2xl font-bold text-gold">{selectedType}</h2>
+
+      <DateButtons dates={dates} selected={selectedDate} onSelect={setSelectedDate} />
+
+      {/* Undated content only. Real dated series never carry this. */}
+      {isExampleGroup && <ExampleDisclaimer />}
+
+      {selectedDate !== null && (
+        <p className="mb-4 text-slate-300">{formatDisplayDate(selectedDate)}</p>
+      )}
+
       <div className="space-y-6">
-        {group ? (
-          group.series.map((series) => (
-            <SeriesSection key={series.id} series={series} />
+        {visibleSeries.length > 0 ? (
+          visibleSeries.map((series) => (
+            <CardSeriesChecklistCard key={series.id} series={series} />
           ))
         ) : (
-          <p className="text-slate-400">No checklists found for this date.</p>
+          <p className="text-slate-400">No checklists found for this selection.</p>
         )}
       </div>
     </div>

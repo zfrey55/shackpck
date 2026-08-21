@@ -16,6 +16,8 @@
  * edited to make a nicer-looking example.
  */
 
+import type { BrandId } from '@/lib/brands';
+
 /**
  * One card in an example checklist.
  *
@@ -32,6 +34,13 @@ export type CardExampleCard = {
 };
 
 export type CardExampleChecklist = {
+  /**
+   * Owning customer brand (see lib/brands.ts). This is what puts an example
+   * under the right brand tab on the Cards line — the nav derives its brand
+   * list from the brands actually present here, so adding an example for a new
+   * brand makes its tab appear with no nav code change.
+   */
+  brandId: BrandId;
   seriesName: string;
   /**
    * Always null. Examples are deliberately undated: an example rendered under
@@ -57,10 +66,11 @@ export type CardExampleChecklist = {
  */
 export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
   {
+    brandId: 'vault-room-breaks',
     seriesName: 'Vault Room Breaks Series 1',
     seriesDate: null,
     cards: [
-      { position: 1, entryName: '2020 panini flawless greats ricky williams patch auto /10' },
+      { position: 1, entryName: '2020 panini limited jalen hurts rookie patch auto /99' },
       { position: 2, entryName: '2016 panini prizm uefa cristiano ronaldo silver prizm #97 psa 9' },
       { position: 3, entryName: '2021 prizm trevor lawrence red white blue prizm #331 psa 10' },
       { position: 4, entryName: '2025 bowman chrome bryce eldridge adios auto gold mini diamond psa 9' },
@@ -73,6 +83,7 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
     ],
   },
   {
+    brandId: 'vault-room-breaks',
     seriesName: 'Vault Room Breaks Series 2-5',
     seriesDate: null,
     cards: [
