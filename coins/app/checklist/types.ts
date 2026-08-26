@@ -77,10 +77,26 @@ export interface CaseTypeInfo {
  * YYYY-MM-DD in Eastern time, matching the coin side's displayDate.
  */
 export interface CardChecklistSeriesSummary {
+  /** Stable identity. Never changes, and is the only safe key for state. */
   seriesId: string;
+  /** Mutable display label. NEVER parse this for grouping or routing. */
   seriesName: string;
   seriesDate: string;
   totalCards: number;
+  /**
+   * GROUPING KEYS — both optional because ShackHQ does not send them yet.
+   *
+   * `seriesType` is the render's group heading (Gauntlet, Nova, ...) and
+   * `customerName` routes the series to a brand tab through the same
+   * attribution path the coin side uses.
+   *
+   * Their ABSENCE IS THE GATE: a series missing either one is excluded from
+   * the render entirely rather than guessed at. Neither is ever derived from
+   * `seriesName`, which is a mutable display label. When ShackHQ starts
+   * sending them the API path lights up on its own, with no redeploy.
+   */
+  seriesType?: string;
+  customerName?: string;
 }
 
 export interface CardChecklistDatesResponse {
@@ -116,10 +132,26 @@ export interface CardChecklistCard {
  */
 export interface CardChecklistSeriesResponse {
   success: boolean;
+  /** Stable identity. Never changes, and is the only safe key for state. */
   seriesId: string;
+  /** Mutable display label. NEVER parse this for grouping or routing. */
   seriesName: string;
   seriesDate: string;
   totalCards: number;
+  /**
+   * GROUPING KEYS — both optional because ShackHQ does not send them yet.
+   *
+   * `seriesType` is the render's group heading (Gauntlet, Nova, ...) and
+   * `customerName` routes the series to a brand tab through the same
+   * attribution path the coin side uses.
+   *
+   * Their ABSENCE IS THE GATE: a series missing either one is excluded from
+   * the render entirely rather than guessed at. Neither is ever derived from
+   * `seriesName`, which is a mutable display label. When ShackHQ starts
+   * sending them the API path lights up on its own, with no redeploy.
+   */
+  seriesType?: string;
+  customerName?: string;
   cards: CardChecklistCard[];
 }
 

@@ -22,35 +22,18 @@ import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { type ProductLine } from "@/components/CoinsCardsToggle";
 import { getBrand, type BrandId } from "@/lib/brands";
-import { getCardBrands } from "@/lib/card-checklist-model";
 import {
   SHACKPACK_SLUG,
   customerLabelFromSlug,
   slugToMatcher,
   type CustomerBucket,
 } from "@/lib/customer-attribution";
-
-/** Brands with card content. Derived from the card model, never hardcoded. */
-const CARD_BRANDS = getCardBrands();
-const DEFAULT_CARD_BRAND: BrandId = CARD_BRANDS[0] ?? "shackpack";
-
-/**
- * URL contract:
- *   ?customer=<slug>  unchanged — the coin-line customer. Existing shareable
- *                     links keep working exactly as before.
- *   ?line=coins|cards NEW. Absent means coins.
- *   ?cardBrand=<id>   NEW. The Cards-line brand. A separate param on purpose:
- *                     ?customer= holds customer slugs and is not repurposed to
- *                     carry brand ids, even though 'shackpack' exists in both.
- */
-function parseLine(raw: string | null | undefined): ProductLine {
-  return raw === "cards" ? "cards" : "coins";
-}
-
-function parseCardBrand(raw: string | null | undefined): BrandId {
-  const found = CARD_BRANDS.find((id) => id === raw);
-  return found ?? DEFAULT_CARD_BRAND;
-}
+import {
+  CARD_BRANDS,
+  DEFAULT_CARD_BRAND,
+  parseCardBrand,
+  parseLine,
+} from "./nav-params";
 
 export function ChecklistClient() {
   const router = useRouter();

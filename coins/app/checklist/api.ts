@@ -16,6 +16,17 @@ const API_BASE_URL = "https://us-central1-coin-inventory-8b79d.cloudfunctions.ne
  */
 const ORG_ID = "coin-shack";
 
+/**
+ * Every request here must hit the network.
+ *
+ * Next 14 defaults server-side `fetch` to `force-cache`, so a series renamed
+ * in ShackHQ would never appear if any of these calls ever ran on the server.
+ * These run in the browser today, where the default is already network-first,
+ * but the endpoints send no Cache-Control, ETag or Expires either — so the
+ * guarantee is stated here rather than inherited from anyone's default.
+ */
+const NO_STORE: RequestInit = { cache: "no-store" };
+
 export async function fetchDailyChecklist(
   displayDate?: string,
   caseType?: string
@@ -31,7 +42,7 @@ export async function fetchDailyChecklist(
     url.searchParams.set("caseType", caseType);
   }
 
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), NO_STORE);
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
@@ -59,7 +70,7 @@ export async function fetchAvailableDates(
     url.searchParams.set("caseType", caseType);
   }
 
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), NO_STORE);
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
@@ -76,7 +87,7 @@ export async function fetchCardChecklistDates(): Promise<CardChecklistDatesRespo
   const url = new URL(`${API_BASE_URL}/getCardChecklistDates`);
   url.searchParams.set("orgId", ORG_ID);
 
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), NO_STORE);
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
@@ -111,7 +122,7 @@ export async function fetchCardChecklistSeries(
   url.searchParams.set("orgId", ORG_ID);
   url.searchParams.set("seriesId", seriesId);
 
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), NO_STORE);
   if (response.status === 404) {
     return null;
   }

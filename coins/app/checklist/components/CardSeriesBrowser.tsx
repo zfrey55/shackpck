@@ -10,6 +10,7 @@ import {
   getSeriesFor,
   getSeriesTypesForBrand,
 } from '@/lib/card-checklist-model';
+import { useCardApiSeries } from '../useCardApiSeries';
 import { CARD_REPACK_CHECKLIST_DISCLAIMER } from '@/lib/card-repack-catalog';
 import { CardSeriesChecklistCard } from './CardSeriesChecklistCard';
 
@@ -102,7 +103,14 @@ function DateButtons({
  * the data present for the selected brand, never hardcoded.
  */
 export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
-  const seriesTypes = useMemo(() => getSeriesTypesForBrand(brandId), [brandId]);
+  // Static archive + examples, with live API series merged on top. Never empty:
+  // an API failure leaves exactly the static list.
+  const { series, loadCardsFor, loadingDates, loadingCards, error } = useCardApiSeries();
+
+  const seriesTypes = useMemo(
+    () => getSeriesTypesForBrand(series, brandId),
+    [series, brandId]
+  );
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -114,8 +122,8 @@ export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
   }, [brandId]);
 
   const dates = useMemo(
-    () => (selectedType ? getDatesForSeriesType(brandId, selectedType) : []),
-    [brandId, selectedType]
+    () => (selectedType ? getDatesForSeriesType(series, brandId, selectedType) : []),
+    [series, brandId, selectedType]
   );
 
   // Keep the selected date valid for the current type; default to the newest.
@@ -127,11 +135,22 @@ export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
   }, [selectedType, dates]);
 
   const visibleSeries = useMemo(
-    () => (selectedType ? getSeriesFor(brandId, selectedType, selectedDate) : []),
-    [brandId, selectedType, selectedDate]
+    () => (selectedType ? getSeriesFor(series, brandId, selectedType, selectedDate) : []),
+    [series, brandId, selectedType, selectedDate]
   );
 
+  // Cards are fetched only for what is actually on screen. No-op for static
+  // series and for anything already loaded or dropped.
+  useEffect(() => {
+    if (visibleSeries.length > 0) void loadCardsFor(visibleSeries.map((s) => s.id));
+  }, [visibleSeries, loadCardsFor]);
+
   if (seriesTypes.length === 0) {
+    if (loadingDates) {
+      return (
+        <p className="py-12 text-center text-slate-400">Loading card checklists...</p>
+      );
+    }
     return (
       <div className="rounded-lg border border-slate-700 bg-slate-900/40 py-12 text-center">
         <div className="mb-4 text-6xl">🃏</div>
@@ -153,7 +172,7 @@ export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {seriesTypes.map((type) => {
-            const count = countSeriesForType(brandId, type);
+            const count = countSeriesForType(series, brandId, type);
             const isExample = type === EXAMPLE_SERIES_TYPE;
             return (
               <button
@@ -198,6 +217,21 @@ export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
       <h2 className="mb-4 text-2xl font-bold text-gold">{selectedType}</h2>
 
       <DateButtons dates={dates} selected={selectedDate} onSelect={setSelectedDate} />
+
+      {/*
+        A live-API failure is reported ABOVE the content, never in place of it:
+        the static archive and examples below are already rendered.
+      */}
+      {error && (
+        <div className="mb-5 rounded-md border border-slate-600 bg-slate-800/50 p-3 text-sm text-slate-300">
+          Live series are temporarily unavailable. Published checklists below are
+          unaffected.
+        </div>
+      )}
+
+      {loadingCards && (
+        <p className="mb-4 text-sm text-slate-400">Loading checklist...</p>
+      )}
 
       {/* Undated content only. Real dated series never carry this. */}
       {isExampleGroup && <ExampleDisclaimer />}

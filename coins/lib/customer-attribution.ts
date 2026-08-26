@@ -306,6 +306,39 @@ export function brandHasPacks(brandId: BrandId): boolean {
   );
 }
 
+/**
+ * Route an inventory `customerName` to the brand that owns it.
+ *
+ * This is the CARD side's brand routing, and it deliberately reuses the coin
+ * side's attribution so both lines agree on who a customer is: the name goes
+ * through resolveCustomerName first, so aliases ('CoinWave, LLC') and the
+ * house spellings fold exactly as they do for coin cases.
+ *
+ * A card-only customer is not on the coin roster (Vault Room Breaks has no
+ * coin cases and no CANONICAL_OTHER_CUSTOMERS entry), so an unresolved name
+ * falls back to a direct slug match rather than to the house bucket — the
+ * nameToSlug default of 'shackpack' would silently file another customer's
+ * cards under ours.
+ *
+ * Returns null when the name maps to no known brand. Callers treat that as a
+ * reason to EXCLUDE the series, never as a reason to guess.
+ */
+export function brandIdForCustomerName(
+  customerName: string | null | undefined
+): BrandId | null {
+  const raw = (customerName ?? '').trim();
+  if (!raw) return null;
+
+  const canonical = resolveCustomerName(raw);
+  if (canonical !== null) {
+    const slug = canonical === CANONICAL_HOUSE ? SHACKPACK_SLUG : slugify(canonical);
+    return CUSTOMER_PACKS[slug]?.brandId ?? null;
+  }
+
+  // Off the coin roster: a card-only brand keyed directly by its own slug.
+  return CUSTOMER_PACKS[slugify(raw)]?.brandId ?? null;
+}
+
 /** Customer slug that owns a brand's packs, for cross-linking packs -> checklist. */
 export function customerSlugForBrand(brandId: BrandId): string | null {
   const found = Object.entries(CUSTOMER_PACKS).find(
