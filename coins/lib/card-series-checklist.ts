@@ -1813,7 +1813,7 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
   {
     id: 'gauntlet-2026-08-26-game-6',
     seriesType: 'Gauntlet',
-    title: 'Gauntlet Game 6',
+    title: 'Gauntlet Live Series 1',
     subtitle: 'Exact 150-card checklist',
     date: '2026-08-26',
     cards: [

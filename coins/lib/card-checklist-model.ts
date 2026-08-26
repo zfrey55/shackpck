@@ -189,3 +189,68 @@ export function getSeriesFor(
 export function countSeriesForType(brandId: BrandId, seriesType: string): number {
   return seriesForBrand(brandId).filter((s) => s.seriesType === seriesType).length;
 }
+
+/**
+ * A base name that already carries its own trailing series number.
+ * Captures the base and the number so an explicit number can seed the counter.
+ */
+const NUMBERED_SUFFIX = /^(.*?)\s+series\s+(\d+)$/i;
+
+/** Lowercased lookup key for counting occurrences of one base name. */
+function numberingKey(name: string): string {
+  return name.toLowerCase();
+}
+
+/**
+ * Turn the base series names sharing ONE date into their display titles.
+ *
+ * ShackHQ is moving the API's seriesName to a plain product name ('Gauntlet
+ * Live') with no number; the site appends the number, scoped to the date.
+ *
+ * NOT WIRED INTO ANY RENDER PATH. Nothing calls this yet — it exists so the
+ * API adapter commit has a tested rule to call rather than inventing one
+ * inline. The static archive keeps its own hand-written titles.
+ *
+ * Pure: takes strings, returns strings. It reads no module state and touches
+ * none of the data above, so one call is one date and the count always
+ * restarts at 1.
+ *
+ * Rules:
+ *  - Counting is PER BASE NAME, so ['Gauntlet Live', 'Nova', 'Gauntlet Live']
+ *    gives Gauntlet Live Series 1 / Nova Series 1 / Gauntlet Live Series 2.
+ *  - Input order is preserved; nothing is sorted.
+ *  - A name that already ends in 'series <digits>' (case-insensitive) is
+ *    returned unchanged rather than being numbered twice.
+ *  - Names are trimmed and internal whitespace collapsed before matching.
+ *
+ * One rule the spec left open: an already-numbered name also SEEDS the counter
+ * for its base, so a mixed date like ['Gauntlet Live Series 1', 'Gauntlet
+ * Live'] yields Series 1 / Series 2 rather than two titles both called
+ * Series 1. Passing it through without seeding would mint a duplicate title on
+ * the same date, which is the one outcome this helper exists to prevent.
+ *
+ * @param baseNames Base seriesNames for one date, in API order.
+ * @returns Display titles, same length and same order as the input.
+ */
+export function numberSeriesForDate(baseNames: string[]): string[] {
+  /** base name key -> highest series number used so far on this date. */
+  const highestUsed = new Map<string, number>();
+
+  return baseNames.map((raw) => {
+    const name = raw.trim().replace(/\s+/g, ' ');
+    if (!name) return name;
+
+    const alreadyNumbered = NUMBERED_SUFFIX.exec(name);
+    if (alreadyNumbered) {
+      const key = numberingKey(alreadyNumbered[1].trim());
+      const explicit = Number(alreadyNumbered[2]);
+      highestUsed.set(key, Math.max(highestUsed.get(key) ?? 0, explicit));
+      return name;
+    }
+
+    const key = numberingKey(name);
+    const next = (highestUsed.get(key) ?? 0) + 1;
+    highestUsed.set(key, next);
+    return `${name} Series ${next}`;
+  });
+}
