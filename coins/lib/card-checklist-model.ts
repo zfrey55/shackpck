@@ -298,6 +298,51 @@ export type ApiSeriesLike = {
 };
 
 /**
+ * API seriesType -> the archive's group heading, for the one product line
+ * whose ShackHQ name differs from its heading here.
+ *
+ * THE ARCHIVE IS THE SOURCE OF GROUP NAMES. lib/card-series-checklist.ts files
+ * 13 series under "Gauntlet"; ShackHQ calls that same product line "Gauntlet
+ * Live". Without this map the nav would show two buttons for one product line,
+ * one frozen and one growing.
+ *
+ * Confirmed with ShackHQ as a ONE-OFF: every other line (Nova, Fusion, Select,
+ * Abyss, Limitless) arrives as its bare name and already matches its heading.
+ *
+ * Matching is EXACT on the whole value, case-insensitively - never a suffix
+ * rule and never a pattern. "Gauntlet Live Extra" and "Live" are not matches
+ * and pass through untouched, so a future product line lands under its own
+ * heading with no code change and an unknown type is never silently rewritten.
+ *
+ * This does NOT affect the gate: a series with no seriesType at all is still
+ * excluded. Normalization only renames a type that is already present.
+ *
+ * Adding a future alias is a one-line edit to this map.
+ */
+export const SERIES_TYPE_ALIASES: Record<string, string> = {
+  'Gauntlet Live': 'Gauntlet',
+};
+
+/** Lowercased alias key -> archive heading, derived from SERIES_TYPE_ALIASES. */
+const SERIES_TYPE_ALIAS_LOOKUP: ReadonlyMap<string, string> = new Map(
+  Object.entries(SERIES_TYPE_ALIASES).map(([from, to]) => [from.toLowerCase(), to]),
+);
+
+/**
+ * Clean an API seriesType and map it onto the archive's group name.
+ *
+ * Trims and collapses internal whitespace, then looks the whole cleaned value
+ * up in SERIES_TYPE_ALIASES. Returns the alias target when it matches, or the
+ * cleaned original when it does not. The alias entry supplies the casing, so
+ * "gauntlet live" and "Gauntlet Live" both yield "Gauntlet".
+ */
+export function normalizeSeriesType(raw: string): string {
+  const cleaned = raw.trim().replace(/\s+/g, ' ');
+  if (!cleaned) return cleaned;
+  return SERIES_TYPE_ALIAS_LOOKUP.get(cleaned.toLowerCase()) ?? cleaned;
+}
+
+/**
  * Adapt one API series into the common shape, or return null to EXCLUDE it.
  *
  * THE GATE. A series is excluded when it lacks `seriesType`, lacks
@@ -311,10 +356,15 @@ export type ApiSeriesLike = {
  * fields, the gate opens, and series start rendering with no redeploy.
  *
  * `seriesName` is display only and is never parsed. `seriesId` is identity.
+ * `seriesType` is normalized onto the archive's group names first - see
+ * SERIES_TYPE_ALIASES above.
  */
 export function adaptApiSeries(input: ApiSeriesLike): CardSeries | null {
-  const seriesType = (input.seriesType ?? '').trim();
-  if (!seriesType) return null;
+  // The gate: absent seriesType excludes the series. Normalization runs after
+  // that check, and only renames a type that is already present.
+  const rawSeriesType = (input.seriesType ?? '').trim();
+  if (!rawSeriesType) return null;
+  const seriesType = normalizeSeriesType(rawSeriesType);
 
   const customerName = (input.customerName ?? '').trim();
   if (!customerName) return null;

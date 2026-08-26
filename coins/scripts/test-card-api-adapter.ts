@@ -12,6 +12,7 @@ import {
   getSeriesFor,
   getSeriesTypesForBrand,
   mergeCardSeries,
+  normalizeSeriesType,
   type ApiSeriesLike,
 } from '../lib/card-checklist-model';
 
@@ -143,6 +144,69 @@ check(
     complete({ seriesId: 'b', seriesName: 'Gauntlet Live' }),
   ]).map((s) => `${s.id}:${s.seriesName}`),
   ['a:Gauntlet Live Series 1', 'b:Gauntlet Live Series 2']
+);
+
+console.log('\n--- seriesType normalization (exact-match alias only) ---\n');
+
+const NORMALIZE_CASES: [string, string, string][] = [
+  ['Gauntlet Live', 'Gauntlet', 'the one-off alias: ShackHQ name -> archive heading'],
+  ['gauntlet live', 'Gauntlet', 'lookup is case-insensitive; alias casing wins'],
+  ['  Gauntlet   Live  ', 'Gauntlet', 'whitespace collapsed before lookup'],
+  ['Gauntlet', 'Gauntlet', 'the archive heading itself is unchanged'],
+  ['Nova', 'Nova', 'other lines already match and pass through'],
+  ['Abyss', 'Abyss', 'other lines already match and pass through'],
+  ['Gauntlet Live Extra', 'Gauntlet Live Extra', 'NOT a match - exact value only, no prefix rule'],
+  ['Live', 'Live', 'NOT a match - no suffix rule'],
+  ['Olivia', 'Olivia', 'NOT a match - proves no substring matching'],
+];
+
+for (const [input, expected, why] of NORMALIZE_CASES) {
+  check(`normalizeSeriesType ${JSON.stringify(input)} (${why})`, normalizeSeriesType(input), expected);
+}
+
+check(
+  'an unknown type is never silently rewritten',
+  adaptApiSeries(complete({ seriesType: 'Some Future Line' }))?.seriesType,
+  'Some Future Line'
+);
+
+check(
+  'normalization does not open the gate: absent seriesType still excluded',
+  adaptApiSeries(complete({ seriesType: undefined })),
+  null
+);
+
+console.log('\n--- end-to-end: aliased series joins the existing Gauntlet group ---\n');
+
+const aliased = adaptApiSeriesList([
+  complete({
+    seriesId: 'api-gauntlet-live',
+    seriesName: 'Gauntlet Live',
+    seriesType: 'Gauntlet Live',
+    seriesDate: '2026-09-05',
+  }),
+]);
+check(
+  'API "Gauntlet Live" adapts to seriesType "Gauntlet"',
+  aliased.map((s) => s.seriesType),
+  ['Gauntlet']
+);
+
+const mergedAlias = mergeCardSeries(STATIC_CARD_SERIES, aliased);
+check(
+  'merged group list is UNCHANGED from static - no new button',
+  getSeriesTypesForBrand(mergedAlias, 'shackpack'),
+  getSeriesTypesForBrand(STATIC_CARD_SERIES, 'shackpack')
+);
+check(
+  'no "Gauntlet Live" heading exists on the merged list',
+  getSeriesTypesForBrand(mergedAlias, 'shackpack').includes('Gauntlet Live'),
+  false
+);
+check(
+  'the aliased series is reachable under the existing Gauntlet group',
+  getSeriesFor(mergedAlias, 'shackpack', 'Gauntlet', '2026-09-05').map((s) => s.id),
+  ['api-gauntlet-live']
 );
 
 console.log('\n--- merge with static ---\n');
