@@ -4,6 +4,9 @@
 // No test framework on purpose - the adapter is pure, so a plain assertion
 // script keeps it runnable without adding a dependency. Same shape as
 // scripts/test-clean-entry-name.ts.
+//
+// Shapes here match the LIVE ShackHQ contract: seriesId, seriesDate,
+// totalCards, seriesType, customerName, submittedAt. There is no seriesName.
 
 import {
   STATIC_CARD_SERIES,
@@ -15,6 +18,7 @@ import {
   normalizeSeriesType,
   type ApiSeriesLike,
 } from '../lib/card-checklist-model';
+import { brandIdForCustomerName } from '../lib/customer-attribution';
 
 let failures = 0;
 
@@ -32,18 +36,22 @@ function check(name: string, actual: unknown, expected: unknown) {
   }
 }
 
-/** A complete API series: both grouping fields present. */
+/** A complete API series in the live shape: both grouping fields present. */
 function complete(over: Partial<ApiSeriesLike> = {}): ApiSeriesLike {
   return {
     seriesId: 'api-1',
-    seriesName: 'Gauntlet Live',
     seriesDate: '2026-09-01',
+    submittedAt: '2026-09-01T10:00:00.000Z',
     seriesType: 'Gauntlet',
-    customerName: 'The Coin Shack',
+    customerName: 'ShackPack',
     cards: [{ position: 1, entryName: '2020 topps mike trout psa 10' }],
     ...over,
   };
 }
+
+/** Order-independent view of a list: id -> title, sorted by id. */
+const byId = (list: { id: string; seriesName: string }[]) =>
+  list.map((s) => `${s.id}:${s.seriesName}`).sort();
 
 console.log('\n--- the gate ---\n');
 
@@ -59,91 +67,70 @@ check(
   { id: 'api-1', brandId: 'shackpack', seriesType: 'Gauntlet', cards: 1 }
 );
 
+check('MISSING seriesType -> excluded', adaptApiSeries(complete({ seriesType: undefined })), null);
+check('MISSING customerName -> excluded', adaptApiSeries(complete({ customerName: undefined })), null);
 check(
-  'MISSING seriesType -> excluded (null)',
-  adaptApiSeries(complete({ seriesType: undefined })),
-  null
-);
-
-check(
-  'MISSING customerName -> excluded (null)',
-  adaptApiSeries(complete({ customerName: undefined })),
-  null
-);
-
-check(
-  'BOTH absent -> excluded (null)',
+  'BOTH absent -> excluded',
   adaptApiSeries(complete({ seriesType: undefined, customerName: undefined })),
   null
 );
-
 check(
   'EMPTY-STRING seriesType -> excluded, no "Uncategorized" bucket',
   adaptApiSeries(complete({ seriesType: '   ' })),
   null
 );
-
 check(
   'UNROUTABLE customerName -> excluded rather than defaulted to ShackPack',
   adaptApiSeries(complete({ customerName: 'Some Brand We Do Not Know' })),
   null
 );
 
-console.log('\n--- brand routing shares the coin attribution path ---\n');
+console.log('\n--- brand routing (live contract sends customerName "ShackPack") ---\n');
 
+check("brandIdForCustomerName('ShackPack') -> 'shackpack'", brandIdForCustomerName('ShackPack'), 'shackpack');
+check(
+  'the live customerName routes the series to the ShackPack brand',
+  adaptApiSeries(complete({ customerName: 'ShackPack' }))?.brandId,
+  'shackpack'
+);
+check(
+  "the coin side's house spelling still routes the same way",
+  brandIdForCustomerName('The Coin Shack'),
+  'shackpack'
+);
 check(
   'alias folds like a coin case: "CoinWave, LLC" -> coinwave',
   adaptApiSeries(complete({ customerName: 'CoinWave, LLC' }))?.brandId,
   'coinwave'
 );
-
 check(
   'card-only customer routes to its own brand, not the house',
   adaptApiSeries(complete({ customerName: 'Vault Room Breaks' }))?.brandId,
   'vault-room-breaks'
 );
 
-console.log('\n--- numbering, per (brand, seriesType, date) ---\n');
+console.log('\n--- seriesType yields TWO values: group heading vs title base ---\n');
 
-const twoSameGroup = adaptApiSeriesList([
-  complete({ seriesId: 'a', seriesName: 'Gauntlet Live' }),
-  complete({ seriesId: 'b', seriesName: 'Gauntlet Live' }),
+const gl = adaptApiSeriesList([
+  complete({ seriesId: 'gl', seriesType: 'Gauntlet Live' }),
 ]);
 check(
-  'two API series, same date + type -> Series 1 / Series 2',
-  twoSameGroup.map((s) => s.seriesName),
-  ['Gauntlet Live Series 1', 'Gauntlet Live Series 2']
+  'seriesType "Gauntlet Live" -> group "Gauntlet", title "Gauntlet Live Series 1"',
+  gl.map((s) => ({ seriesType: s.seriesType, seriesName: s.seriesName })),
+  [{ seriesType: 'Gauntlet', seriesName: 'Gauntlet Live Series 1' }]
 );
-
-const differentTypes = adaptApiSeriesList([
-  complete({ seriesId: 'a', seriesName: 'Gauntlet Live' }),
-  complete({ seriesId: 'b', seriesName: 'Nova', seriesType: 'Nova' }),
-  complete({ seriesId: 'c', seriesName: 'Gauntlet Live' }),
-]);
 check(
-  'numbering is per group: Nova restarts at 1',
-  differentTypes.map((s) => s.seriesName),
-  ['Gauntlet Live Series 1', 'Nova Series 1', 'Gauntlet Live Series 2']
+  'the group heading is NOT the title base - they are not collapsed',
+  gl[0].seriesType !== gl[0].seriesName,
+  true
 );
-
-const differentDates = adaptApiSeriesList([
-  complete({ seriesId: 'a', seriesName: 'Gauntlet Live', seriesDate: '2026-09-01' }),
-  complete({ seriesId: 'b', seriesName: 'Gauntlet Live', seriesDate: '2026-09-02' }),
-]);
 check(
-  'numbering restarts on a different date',
-  differentDates.map((s) => s.seriesName),
-  ['Gauntlet Live Series 1', 'Gauntlet Live Series 1']
-);
-
-check(
-  'gated-out series are dropped from the list, survivors still numbered',
-  adaptApiSeriesList([
-    complete({ seriesId: 'a', seriesName: 'Gauntlet Live' }),
-    complete({ seriesId: 'skip', seriesType: undefined }),
-    complete({ seriesId: 'b', seriesName: 'Gauntlet Live' }),
-  ]).map((s) => `${s.id}:${s.seriesName}`),
-  ['a:Gauntlet Live Series 1', 'b:Gauntlet Live Series 2']
+  'a non-aliased type uses one value for both group and title base',
+  adaptApiSeriesList([complete({ seriesId: 'n', seriesType: 'Nova' })]).map((s) => ({
+    seriesType: s.seriesType,
+    seriesName: s.seriesName,
+  })),
+  [{ seriesType: 'Nova', seriesName: 'Nova Series 1' }]
 );
 
 console.log('\n--- seriesType normalization (exact-match alias only) ---\n');
@@ -159,81 +146,125 @@ const NORMALIZE_CASES: [string, string, string][] = [
   ['Live', 'Live', 'NOT a match - no suffix rule'],
   ['Olivia', 'Olivia', 'NOT a match - proves no substring matching'],
 ];
-
 for (const [input, expected, why] of NORMALIZE_CASES) {
   check(`normalizeSeriesType ${JSON.stringify(input)} (${why})`, normalizeSeriesType(input), expected);
 }
-
 check(
   'an unknown type is never silently rewritten',
   adaptApiSeries(complete({ seriesType: 'Some Future Line' }))?.seriesType,
   'Some Future Line'
 );
 
+console.log('\n--- numbering is by submittedAt, never array position ---\n');
+
 check(
-  'normalization does not open the gate: absent seriesType still excluded',
-  adaptApiSeries(complete({ seriesType: undefined })),
-  null
+  'two in one group, given in REVERSE submittedAt order, still number by time',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'later', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T18:00:00.000Z' }),
+      complete({ seriesId: 'earlier', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+    ])
+  ),
+  ['earlier:Gauntlet Live Series 1', 'later:Gauntlet Live Series 2']
 );
 
-console.log('\n--- end-to-end: aliased series joins the existing Gauntlet group ---\n');
-
-const aliased = adaptApiSeriesList([
-  complete({
-    seriesId: 'api-gauntlet-live',
-    seriesName: 'Gauntlet Live',
-    seriesType: 'Gauntlet Live',
-    seriesDate: '2026-09-05',
-  }),
-]);
 check(
-  'API "Gauntlet Live" adapts to seriesType "Gauntlet"',
-  aliased.map((s) => s.seriesType),
-  ['Gauntlet']
+  'the same two in forward order produce identical numbering',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'earlier', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+      complete({ seriesId: 'later', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T18:00:00.000Z' }),
+    ])
+  ),
+  ['earlier:Gauntlet Live Series 1', 'later:Gauntlet Live Series 2']
 );
 
-const mergedAlias = mergeCardSeries(STATIC_CARD_SERIES, aliased);
 check(
-  'merged group list is UNCHANGED from static - no new button',
-  getSeriesTypesForBrand(mergedAlias, 'shackpack'),
-  getSeriesTypesForBrand(STATIC_CARD_SERIES, 'shackpack')
+  'identical submittedAt -> deterministic tiebreak on seriesId ascending',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'zzz', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T12:00:00.000Z' }),
+      complete({ seriesId: 'aaa', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T12:00:00.000Z' }),
+    ])
+  ),
+  ['aaa:Gauntlet Live Series 1', 'zzz:Gauntlet Live Series 2']
 );
+
 check(
-  'no "Gauntlet Live" heading exists on the merged list',
-  getSeriesTypesForBrand(mergedAlias, 'shackpack').includes('Gauntlet Live'),
-  false
+  'numbering is per group: a different type restarts at 1',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'g1', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+      complete({ seriesId: 'n1', seriesType: 'Nova', submittedAt: '2026-09-01T10:00:00.000Z' }),
+      complete({ seriesId: 'g2', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T11:00:00.000Z' }),
+    ])
+  ),
+  ['g1:Gauntlet Live Series 1', 'g2:Gauntlet Live Series 2', 'n1:Nova Series 1']
 );
+
 check(
-  'the aliased series is reachable under the existing Gauntlet group',
-  getSeriesFor(mergedAlias, 'shackpack', 'Gauntlet', '2026-09-05').map((s) => s.id),
-  ['api-gauntlet-live']
+  'same date and type but DIFFERENT customerName -> each is Series 1',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'sp', seriesType: 'Gauntlet Live', customerName: 'ShackPack' }),
+      complete({ seriesId: 'vrb', seriesType: 'Gauntlet Live', customerName: 'Vault Room Breaks' }),
+    ])
+  ),
+  ['sp:Gauntlet Live Series 1', 'vrb:Gauntlet Live Series 1']
+);
+
+check(
+  'numbering restarts on a different date',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'd1', seriesType: 'Gauntlet Live', seriesDate: '2026-09-01' }),
+      complete({ seriesId: 'd2', seriesType: 'Gauntlet Live', seriesDate: '2026-09-02' }),
+    ])
+  ),
+  ['d1:Gauntlet Live Series 1', 'd2:Gauntlet Live Series 1']
+);
+
+check(
+  'gated-out series are dropped, survivors still number contiguously',
+  byId(
+    adaptApiSeriesList([
+      complete({ seriesId: 'a', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+      complete({ seriesId: 'skip', seriesType: undefined }),
+      complete({ seriesId: 'b', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T10:00:00.000Z' }),
+    ])
+  ),
+  ['a:Gauntlet Live Series 1', 'b:Gauntlet Live Series 2']
 );
 
 console.log('\n--- merge with static ---\n');
 
 const staticCount = STATIC_CARD_SERIES.length;
-const staticGauntlet = getSeriesFor(
-  STATIC_CARD_SERIES,
-  'shackpack',
-  'Gauntlet',
-  '2026-08-26'
-).map((s) => s.seriesName);
-
+const twoSameGroup = adaptApiSeriesList([
+  complete({ seriesId: 'a', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+  complete({ seriesId: 'b', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T10:00:00.000Z' }),
+]);
 const merged = mergeCardSeries(STATIC_CARD_SERIES, twoSameGroup);
-check(
-  'merge: static count + API count, both present',
-  merged.length,
-  staticCount + 2
-);
+
+check('merge: static count + API count, both present', merged.length, staticCount + 2);
 check(
   'merge: the API series appear',
-  merged.filter((s) => s.id === 'a' || s.id === 'b').map((s) => s.id),
+  merged.filter((s) => s.id === 'a' || s.id === 'b').map((s) => s.id).sort(),
   ['a', 'b']
 );
 check(
-  'merge: static series are unaffected (Gauntlet 2026-08-26 unchanged)',
-  getSeriesFor(merged, 'shackpack', 'Gauntlet', '2026-08-26').map((s) => s.seriesName),
-  staticGauntlet
+  'merge: aliased API series adds NO new group button',
+  getSeriesTypesForBrand(merged, 'shackpack'),
+  getSeriesTypesForBrand(STATIC_CARD_SERIES, 'shackpack')
+);
+check(
+  'merge: no "Gauntlet Live" heading exists',
+  getSeriesTypesForBrand(merged, 'shackpack').includes('Gauntlet Live'),
+  false
+);
+check(
+  'merge: the API series are reachable under the existing Gauntlet group',
+  getSeriesFor(merged, 'shackpack', 'Gauntlet', '2026-09-01').map((s) => s.id).sort(),
+  ['a', 'b']
 );
 
 console.log('\n--- API outage / empty response ---\n');
@@ -257,20 +288,12 @@ check(
   staticCount
 );
 
-console.log('\n--- seriesName is display only ---\n');
+console.log('\n--- identity ---\n');
 
 check(
-  'a rename does not change identity or grouping',
-  (() => {
-    const before = adaptApiSeries(complete({ seriesName: 'Gauntlet Live' }));
-    const after = adaptApiSeries(complete({ seriesName: 'Totally Different Name' }));
-    return {
-      sameId: before?.id === after?.id,
-      sameType: before?.seriesType === after?.seriesType,
-      sameBrand: before?.brandId === after?.brandId,
-    };
-  })(),
-  { sameId: true, sameType: true, sameBrand: true }
+  'seriesId is identity: it is never derived and never rewritten',
+  adaptApiSeries(complete({ seriesId: 'gauntlet-live_20260826_c7353522' }))?.id,
+  'gauntlet-live_20260826_c7353522'
 );
 
 if (failures > 0) {

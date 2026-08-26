@@ -281,18 +281,25 @@ export function numberSeriesForDate(baseNames: string[]): string[] {
 // ---------------------------------------------------------------------------
 
 /**
- * The API fields this adapter reads. Structurally satisfied by both
- * CardChecklistSeriesSummary (nav, no cards) and CardChecklistSeriesResponse
- * (full, with cards), so one adapter serves both without importing app types
- * into lib.
+ * The API fields this adapter reads, per the live ShackHQ contract:
+ * seriesId, seriesDate, totalCards, seriesType, customerName, submittedAt.
+ *
+ * There is NO seriesName on the wire. The title is derived from seriesType
+ * plus a per-date number - see adaptApiSeries.
+ *
+ * Structurally satisfied by both CardChecklistSeriesSummary (nav, no cards)
+ * and CardChecklistSeriesResponse (full, with cards), so one adapter serves
+ * both without importing app types into lib.
  */
 export type ApiSeriesLike = {
+  /** Stable identity, and the only safe key for state. */
   seriesId: string;
-  seriesName: string;
   seriesDate: string;
-  /** Grouping key. ABSENT TODAY - its absence excludes the series. */
+  /** ISO timestamp. Sole ordering key for series numbering - see below. */
+  submittedAt: string;
+  /** Grouping key. Its absence excludes the series. */
   seriesType?: string;
-  /** Brand routing key. ABSENT TODAY - its absence excludes the series. */
+  /** Brand routing key. Its absence excludes the series. */
   customerName?: string;
   cards?: CardEntry[];
 };
@@ -347,22 +354,29 @@ export function normalizeSeriesType(raw: string): string {
  *
  * THE GATE. A series is excluded when it lacks `seriesType`, lacks
  * `customerName`, or carries a customerName that routes to no known brand.
- * There is deliberately no fallback: no guessing a type from `seriesName`, no
- * "Uncategorized" bucket, no defaulting the brand to ShackPack. A series we
- * cannot place is not shown, because showing it in the wrong place is worse
- * than not showing it, and the static archive still covers today's content.
+ * There is deliberately no fallback: no guessing, no "Uncategorized" bucket,
+ * no defaulting the brand to ShackPack. A series we cannot place is not shown,
+ * because showing it in the wrong place is worse than not showing it.
  *
- * This is what lets the API path light up on its own: ShackHQ adds the two
- * fields, the gate opens, and series start rendering with no redeploy.
+ * TWO DIFFERENT VALUES COME OUT OF seriesType. Do not collapse them:
  *
- * `seriesName` is display only and is never parsed. `seriesId` is identity.
- * `seriesType` is normalized onto the archive's group names first - see
- * SERIES_TYPE_ALIASES above.
+ *   GROUP heading = normalizeSeriesType(raw) -> "Gauntlet"
+ *   TITLE base    = the RAW seriesType       -> "Gauntlet Live"
+ *
+ * So a "Gauntlet Live" series files under the archive's existing Gauntlet
+ * group button, while its own title still reads "Gauntlet Live Series 1".
+ * Normalizing the title too would rename the product line in the customer's
+ * face; grouping on the raw value would split one line across two buttons.
+ * `seriesType` on the result is the NORMALIZED value; `seriesName` here is the
+ * UNNUMBERED title base, which adaptApiSeriesList replaces with the numbered
+ * title.
+ *
+ * `seriesId` is identity and is never derived from anything.
  */
 export function adaptApiSeries(input: ApiSeriesLike): CardSeries | null {
   // The gate: absent seriesType excludes the series. Normalization runs after
   // that check, and only renames a type that is already present.
-  const rawSeriesType = (input.seriesType ?? '').trim();
+  const rawSeriesType = (input.seriesType ?? '').trim().replace(/\s+/g, ' ');
   if (!rawSeriesType) return null;
   const seriesType = normalizeSeriesType(rawSeriesType);
 
@@ -376,45 +390,70 @@ export function adaptApiSeries(input: ApiSeriesLike): CardSeries | null {
     id: input.seriesId,
     brandId,
     seriesType,
-    seriesName: input.seriesName,
+    // Title base, not the group heading. Numbered by adaptApiSeriesList.
+    seriesName: rawSeriesType,
     seriesDate: input.seriesDate,
     cards: input.cards ?? [],
   };
 }
 
-/** Group key for numbering: one (brand, type, date) bucket. */
+/** Group key for numbering: one (brand, normalized type, date) bucket. */
 function groupKey(series: CardSeries): string {
-  return `${series.brandId} ${series.seriesType} ${series.seriesDate ?? ''}`;
+  return `${series.brandId} ${series.seriesType} ${series.seriesDate ?? ''}`;
 }
 
 /**
- * Adapt a whole API list, dropping every gated-out series, then apply
- * numberSeriesForDate within each (brand, seriesType, date) group.
+ * Adapt a whole API list, dropping every gated-out series, then number each
+ * (brandId, normalized seriesType, seriesDate) group.
  *
- * Numbering runs per group and in API order, so two series sharing a date and
- * type become "Series 1" and "Series 2". Static series are NOT passed through
- * here - they carry hand-written titles.
+ * ORDERING IS BY submittedAt, NEVER BY ARRAY POSITION. Within a group the
+ * series sort by submittedAt ascending, with seriesId ascending as a
+ * deterministic tiebreak, and are numbered 1..N in that order.
+ *
+ * This matters because a series number becomes public the moment it renders:
+ * customers screenshot and link to "Gauntlet Live Series 2". The API makes no
+ * promise about array order, so numbering by array position could silently
+ * renumber an already-published series on the next fetch. submittedAt is
+ * immutable per series, so the number assigned today is the number forever.
+ *
+ * The returned array is fully sorted (by group key, then by the in-group
+ * order above) so the output does not depend on input order at all.
+ *
+ * Numbering runs on the RAW seriesType - the title base - so titles read
+ * "Gauntlet Live Series 1" while the group heading stays "Gauntlet". Static
+ * archive series are NOT passed through here; they carry hand-written titles.
  */
 export function adaptApiSeriesList(inputs: ApiSeriesLike[]): CardSeries[] {
   const adapted = inputs
-    .map(adaptApiSeries)
-    .filter((s): s is CardSeries => s !== null);
+    .map((input) => ({ input, series: adaptApiSeries(input) }))
+    .filter(
+      (pair): pair is { input: ApiSeriesLike; series: CardSeries } =>
+        pair.series !== null
+    );
 
-  const byGroup = new Map<string, CardSeries[]>();
-  for (const series of adapted) {
-    const key = groupKey(series);
+  const byGroup = new Map<string, typeof adapted>();
+  for (const pair of adapted) {
+    const key = groupKey(pair.series);
     const bucket = byGroup.get(key);
-    if (bucket) bucket.push(series);
-    else byGroup.set(key, [series]);
+    if (bucket) bucket.push(pair);
+    else byGroup.set(key, [pair]);
   }
 
-  const titles = new Map<string, string>();
-  for (const bucket of byGroup.values()) {
-    const numbered = numberSeriesForDate(bucket.map((s) => s.seriesName));
-    bucket.forEach((s, i) => titles.set(s.id, numbered[i]));
+  const out: CardSeries[] = [];
+  for (const key of Array.from(byGroup.keys()).sort()) {
+    const bucket = byGroup.get(key)!;
+    bucket.sort((a, b) => {
+      const byTime = (a.input.submittedAt ?? '').localeCompare(b.input.submittedAt ?? '');
+      if (byTime !== 0) return byTime;
+      return a.input.seriesId.localeCompare(b.input.seriesId);
+    });
+
+    // seriesName on each adapted series is the raw seriesType (title base).
+    const titles = numberSeriesForDate(bucket.map((pair) => pair.series.seriesName));
+    bucket.forEach((pair, i) => out.push({ ...pair.series, seriesName: titles[i] }));
   }
 
-  return adapted.map((s) => ({ ...s, seriesName: titles.get(s.id) ?? s.seriesName }));
+  return out;
 }
 
 /**

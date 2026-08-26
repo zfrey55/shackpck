@@ -75,28 +75,33 @@ export interface CaseTypeInfo {
 /**
  * One card series as listed by getCardChecklistDates. `seriesDate` is
  * YYYY-MM-DD in Eastern time, matching the coin side's displayDate.
+ *
+ * There is NO seriesName in the live contract. The display title is derived
+ * from seriesType plus a per-date number - see adaptApiSeries in
+ * lib/card-checklist-model.
  */
 export interface CardChecklistSeriesSummary {
   /** Stable identity. Never changes, and is the only safe key for state. */
   seriesId: string;
-  /** Mutable display label. NEVER parse this for grouping or routing. */
-  seriesName: string;
   seriesDate: string;
   totalCards: number;
   /**
-   * GROUPING KEYS — both optional because ShackHQ does not send them yet.
+   * GROUPING KEYS. Optional in the type, though the live contract now sends
+   * both: their ABSENCE IS THE GATE, and a series missing either one is
+   * excluded from the render rather than guessed at.
    *
-   * `seriesType` is the render's group heading (Gauntlet, Nova, ...) and
-   * `customerName` routes the series to a brand tab through the same
-   * attribution path the coin side uses.
-   *
-   * Their ABSENCE IS THE GATE: a series missing either one is excluded from
-   * the render entirely rather than guessed at. Neither is ever derived from
-   * `seriesName`, which is a mutable display label. When ShackHQ starts
-   * sending them the API path lights up on its own, with no redeploy.
+   * `seriesType` yields TWO values downstream - the normalized group heading
+   * ("Gauntlet") and the raw title base ("Gauntlet Live"). See adaptApiSeries.
+   * `customerName` routes to a brand tab through the coin side's attribution.
    */
   seriesType?: string;
   customerName?: string;
+  /**
+   * ISO timestamp of submission. The sole ordering key for series numbering
+   * within a date - never array position, so a published series number is
+   * stable across fetches.
+   */
+  submittedAt: string;
 }
 
 export interface CardChecklistDatesResponse {
@@ -134,24 +139,25 @@ export interface CardChecklistSeriesResponse {
   success: boolean;
   /** Stable identity. Never changes, and is the only safe key for state. */
   seriesId: string;
-  /** Mutable display label. NEVER parse this for grouping or routing. */
-  seriesName: string;
   seriesDate: string;
   totalCards: number;
   /**
-   * GROUPING KEYS — both optional because ShackHQ does not send them yet.
+   * GROUPING KEYS. Optional in the type, though the live contract now sends
+   * both: their ABSENCE IS THE GATE, and a series missing either one is
+   * excluded from the render rather than guessed at.
    *
-   * `seriesType` is the render's group heading (Gauntlet, Nova, ...) and
-   * `customerName` routes the series to a brand tab through the same
-   * attribution path the coin side uses.
-   *
-   * Their ABSENCE IS THE GATE: a series missing either one is excluded from
-   * the render entirely rather than guessed at. Neither is ever derived from
-   * `seriesName`, which is a mutable display label. When ShackHQ starts
-   * sending them the API path lights up on its own, with no redeploy.
+   * `seriesType` yields TWO values downstream - the normalized group heading
+   * ("Gauntlet") and the raw title base ("Gauntlet Live"). See adaptApiSeries.
+   * `customerName` routes to a brand tab through the coin side's attribution.
    */
   seriesType?: string;
   customerName?: string;
+  /**
+   * ISO timestamp of submission. The sole ordering key for series numbering
+   * within a date - never array position, so a published series number is
+   * stable across fetches.
+   */
+  submittedAt: string;
   cards: CardChecklistCard[];
 }
 
