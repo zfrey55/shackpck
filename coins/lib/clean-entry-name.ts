@@ -9,11 +9,12 @@
  * Per-token rules are applied in order, first match wins:
  *   (a) EXACT_CASE dictionary hit
  *   (b) '#'-prefixed card number -> uppercased whole ("#bp17" -> "#BP17")
- *   (c) contains a digit -> left completely alone (serials, years, grades)
- *   (d) already has an internal capital -> left alone (source cased it)
- *   (e) Mc-prefixed surname
- *   (f) hyphen / apostrophe name, capitalized per segment
- *   (g) ordinary word, with small words lowercased when not in first position
+ *   (c) dotted initials -> uppercased whole ("c.j." -> "C.J.")
+ *   (d) contains a digit -> left completely alone (serials, years, grades)
+ *   (e) already has an internal capital -> left alone (source cased it)
+ *   (f) Mc-prefixed surname
+ *   (g) hyphen / apostrophe name, capitalized per segment
+ *   (h) ordinary word, with small words lowercased when not in first position
  *
  * It therefore CANNOT fix typos. "cheome" stays "Cheome" and a misspelled
  * player name stays misspelled, just re-cased. Those are source-data problems
@@ -164,6 +165,16 @@ const JAMMED_GRADE = /\b(psa|bgs|sgc|cgc|csg|hga)(\d+(?:\.\d+)?)/gi;
 const CARD_NUMBER = /^#[A-Za-z0-9-]+$/;
 
 /**
+ * Dotted initials: one or more single letters each followed by a period.
+ * "c.j.", "a.j.", "t.j.", "j.j.", "u.s.a.".
+ *
+ * Deliberately requires EVERY letter to be followed by its own period, so
+ * ordinary abbreviations keep their normal casing — "sign.", "coll.", "refr."
+ * and "nat." all fail the match and fall through to the ordinary-word rule.
+ */
+const DOTTED_INITIALS = /^(?:[A-Za-z]\.)+$/;
+
+/**
  * Words that stay lowercase inside a title, but never in first position.
  * Kept small on purpose — these are the ones that actually show up in set and
  * insert names ("dead of night", "man of the year").
@@ -194,7 +205,7 @@ function capitalize(word: string): string {
  * Format a single whitespace-delimited token. First matching rule wins.
  *
  * @param token The raw token.
- * @param index Its 0-based position in the entry. Only rule (g) uses it: a
+ * @param index Its 0-based position in the entry. Only rule (h) uses it: a
  *   small word is lowercased mid-title but never in first position.
  */
 function formatToken(token: string, index: number): string {
@@ -215,6 +226,18 @@ function formatToken(token: string, index: number): string {
     return '#' + token.slice(1).toUpperCase();
   }
 
+  // (c) Dotted initials uppercase whole: "c.j." -> "C.J.". Tested on the raw
+  // token, before punctuation is peeled, because the trailing period is part
+  // of the pattern — peeling it first would leave "c.j", which the
+  // ordinary-word rule would title-case to "C.j".
+  //
+  // This runs AFTER the dictionary so a suffix like "Jr." keeps its entry's
+  // casing; "jr." could not match here anyway, since the pattern requires a
+  // period after every single letter.
+  if (DOTTED_INITIALS.test(token)) {
+    return token.toUpperCase();
+  }
+
   // Peel leading/trailing punctuation for lookup, but keep it for output.
   const lead = token.match(/^[^A-Za-z0-9]+/)?.[0] ?? '';
   const trail = token.slice(lead.length).match(/[^A-Za-z0-9]+$/)?.[0] ?? '';
@@ -227,24 +250,24 @@ function formatToken(token: string, index: number): string {
   const coreHit = LOOKUP.get(core.toLowerCase());
   if (coreHit !== undefined) return lead + coreHit + trail;
 
-  // (c) Anything with a digit is left completely alone. This is what protects
+  // (d) Anything with a digit is left completely alone. This is what protects
   // serials and print runs (1/1, /99), years (1983), seasons (2023-24) and
-  // grades (9.5). Card numbers already returned at (b).
+  // grades (9.5). Card numbers and dotted initials already returned at (b) and (c).
   if (/[0-9]/.test(core)) return token;
 
-  // (d) The source already capitalized something past the first character, so
+  // (e) The source already capitalized something past the first character, so
   // it was cased deliberately ("deGrom", "McGwire"). Do not second-guess it.
-  // This is what makes rules (e), (f) and (g) idempotent — and it deliberately
+  // This is what makes rules (f), (g) and (h) idempotent — and it deliberately
   // wins over the small-word rule, so an already-correct string is stable.
   if (/[A-Z]/.test(core.slice(1))) return token;
 
-  // (e) Mc-prefixed surnames. Safe as a blanket rule because English has no
+  // (f) Mc-prefixed surnames. Safe as a blanket rule because English has no
   // common lowercase "mc..." word. Mac- names are dictionary-only, see above.
   if (/^mc[a-z]{2,}$/i.test(core)) {
     return lead + 'Mc' + capitalize(core.slice(2)) + trail;
   }
 
-  // (f) Hyphenated and apostrophized names: capitalize each segment. A
+  // (g) Hyphenated and apostrophized names: capitalize each segment. A
   // trailing one-character segment is left alone so possessives stay
   // possessive ("shaq's" -> "Shaq's", never "Shaq'S") while real names still
   // work ("o'neill" -> "O'Neill", "smith-schuster" -> "Smith-Schuster").
@@ -259,7 +282,7 @@ function formatToken(token: string, index: number): string {
     return lead + cased.join('') + trail;
   }
 
-  // (g) Ordinary word. Small words stay lowercase mid-title ("dead of night"
+  // (h) Ordinary word. Small words stay lowercase mid-title ("dead of night"
   // -> "Dead of Night") but are capitalized in first position, where they open
   // the name ("the ultimate rookie card" -> "The Ultimate Rookie Card").
   if (index > 0 && SMALL_WORDS.has(core.toLowerCase())) {

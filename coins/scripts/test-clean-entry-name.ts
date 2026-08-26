@@ -100,6 +100,21 @@ const FIXTURES: Fixture[] = [
     note: 'rule (g): a small word in FIRST position is still capitalized',
   },
   {
+    input: '2023 panini prizm c.j. stroud silver prizm rookie',
+    expected: '2023 Panini Prizm C.J. Stroud Silver Prizm Rookie',
+    note: 'rule (c): dotted initials uppercase whole, not "C.j."',
+  },
+  {
+    input: '2019 topps a.j. brown rc',
+    expected: '2019 Topps A.J. Brown RC',
+    note: 'rule (c) again, alongside a dictionary jargon token',
+  },
+  {
+    input: '2014 panini nba hoops hot sign. auto /25 elvin hayes',
+    expected: '2014 Panini NBA Hoops Hot Sign. Auto /25 Elvin Hayes',
+    note: 'an ordinary abbreviation must NOT be caught by the dotted rule',
+  },
+  {
     input: '2019 panini man of the year #nd-10 psa 9',
     expected: '2019 Panini Man of the Year #ND-10 PSA 9',
     note: 'two consecutive small words; hyphenated card number uppercases',
