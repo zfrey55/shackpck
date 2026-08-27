@@ -56,6 +56,19 @@ function ExampleDisclaimer() {
   );
 }
 
+/**
+ * Subtitle text for a group button: "13 series", "1 series", "3 examples".
+ *
+ * "series" is INVARIANT — singular and plural are the same word — so it is
+ * never suffixed, at any count. The old shared `count === 1 ? '' : 's'` tail
+ * pluralized both nouns and rendered "2 seriess". "example" does inflect, so
+ * it keeps its plural.
+ */
+export function groupCountLabel(count: number, isExample: boolean): string {
+  if (!isExample) return `${count} series`;
+  return `${count} ${count === 1 ? 'example' : 'examples'}`;
+}
+
 /** Date row for one series type. Undated content shows a "Sample" button. */
 function DateButtons({
   dates,
@@ -183,8 +196,7 @@ export default function CardSeriesBrowser({ brandId }: { brandId: BrandId }) {
               >
                 <div className="mb-2 text-lg font-bold">{type}</div>
                 <div className="text-sm opacity-75">
-                  {count} {isExample ? 'example' : 'series'}
-                  {count === 1 ? '' : 's'}
+                  {groupCountLabel(count, isExample)}
                 </div>
                 {isExample && (
                   <span className="absolute -right-2 -top-2 rounded-full bg-amber-600 px-2 py-0.5 text-xs text-white">
