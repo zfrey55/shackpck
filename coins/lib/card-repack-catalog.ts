@@ -1,34 +1,30 @@
-import type { RepackCatalogItem } from '@/lib/repack-catalog';
+import { REPACK_CHECKLIST_DISCLAIMER, type RepackCatalogItem } from '@/lib/repack-catalog';
 
 /**
- * Card-side disclaimer, shared by every card pack tile.
+ * Card pack tiles.
  *
- * It used to call the published checklist an EXAMPLE. That is no longer true:
- * these tiles link to the Cards line of /checklist, which serves the frozen
- * archive in lib/card-series-checklist.ts — real, dated, exact published
- * series that its own header states are NOT subject to a contents-may-vary
- * caveat. Calling those examples contradicted the data.
+ * TILE COPY IS THE SHARED DISCLAIMER AND NOTHING ELSE, exactly as the coin
+ * catalog does it. Every entry's description is `D` — no per-pack body.
  *
- * The wording now MATCHES the coin-side REPACK_CHECKLIST_DISCLAIMER verbatim.
- * The two used to differ because the card tiles carried their own contents
- * claims (a per-series card count and a show-format badge) that the coin tiles
- * did not; with those removed, no tile on either side claims contents, so
- * there is nothing left for the two strings to say differently.
+ * These tiles used to wrap a descriptive body around the disclaimer through a
+ * `d()` helper: sports covered, set names, grading companies, graded-vs-raw
+ * mix. Every one of those was a contents claim, which is the thing tile copy
+ * is not allowed to make. The bodies are gone and `d()` with them.
  *
- * The value is duplicated rather than imported ON PURPOSE for now — see the
- * note on the constant below. Example-only content still carries its own
- * caveat at the point of render, in the checklist's CardSeriesBrowser.
+ * There is no card-specific disclaimer constant any more either. The card and
+ * coin strings had already converged on identical text once the tiles stopped
+ * carrying counts and format badges, so this file now imports the coin-side
+ * REPACK_CHECKLIST_DISCLAIMER rather than defining a second copy of it.
  *
- * NOTE: this constant is now character-identical to REPACK_CHECKLIST_DISCLAIMER
- * in lib/repack-catalog.ts. That makes one of the two redundant. Consolidating
- * is deliberately NOT done here — it would change an exported symbol used by
- * app/checklist/components/CardSeriesBrowser.tsx, which is unrelated to
- * removing contents claims from tiles. Worth its own commit.
+ * The EXAMPLE-checklist caveat is a different string for a different job and
+ * lives with its render, in app/checklist/components/CardSeriesBrowser.tsx.
+ * It is a warning about one checklist being illustrative — not tile copy —
+ * and reusing the tile disclaimer for it produced "see checklist for more
+ * details" addressed to someone already reading the checklist.
  */
-export const CARD_REPACK_CHECKLIST_DISCLAIMER =
-  'Contents vary by series — see checklist for more details.';
 
-const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`;
+/** Convenience alias used throughout this file to keep entries terse. */
+const D = REPACK_CHECKLIST_DISCLAIMER;
 
 /**
  * Multi-sport card repacks. Product lines:
@@ -40,10 +36,11 @@ const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`
  *   Limitless  — Multi-Sport, Multi-Show
  *   Blitz      — Multi-Sport, Multi-Show
  *
- * Products span Football, Basketball and Baseball and may include a mix of
- * professionally graded and raw cards. Per-series contents — including how
- * many cards a series holds — are stated only by the published checklist,
- * never by a tile.
+ * Those line characteristics are recorded HERE, in a comment, deliberately —
+ * they describe the product line for whoever maintains this file. They are
+ * not rendered, because a tile states no contents. Per-series contents are
+ * stated only by the published checklist.
+ *
  * Abyss/Equinox/Limitless/Blitz are tiles only for now — no example checklist
  * on the /checklist Cards tab yet.
  */
@@ -51,9 +48,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-fusion',
     name: 'ShackPack Fusion',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern Panini Prizm, Topps Chrome, and Bowman Chrome. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-fusion.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -61,9 +56,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-nova',
     name: 'ShackPack Nova',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — sold and opened within a single show. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-nova.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -71,9 +64,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-select',
     name: 'ShackPack Select',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — sold and opened within a single show. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-select.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -81,9 +72,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-abyss',
     name: 'ShackPack Abyss',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-abyss.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -91,9 +80,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-equinox',
     name: 'ShackPack Equinox',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-equinox.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -101,9 +88,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-limitless',
     name: 'ShackPack Limitless',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-limitless.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -111,9 +96,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'shackpack-blitz',
     name: 'ShackPack Blitz',
-    description: d(
-      'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
-    ),
+    description: D,
     image: '/images/packs/shackpack-blitz.png',
     category: 'Sports Cards',
     brand: 'shackpack',
@@ -121,14 +104,12 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
 
   // ----- Vault Room Breaks -----
   // Card products, per the pack art ("Premium Sports Card Breaks", graded
-  // slabs). Same disclaimer wrapper as the ShackPack card tiles — the copy
-  // never claims specific contents and defers to the published checklist.
+  // slabs). Same bare disclaimer as every other tile — the slab and grading
+  // detail on the artwork is deliberately NOT restated as copy.
   {
     id: 'vaultroombreaks-breach',
     name: 'Vault Room Breaks Breach',
-    description: d(
-      'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
-    ),
+    description: D,
     image: '/images/packs/vaultroombreaks-breach.png',
     category: 'Sports Cards',
     brand: 'vault-room-breaks',
@@ -136,9 +117,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'vaultroombreaks-heist',
     name: 'Vault Room Breaks Heist',
-    description: d(
-      'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
-    ),
+    description: D,
     image: '/images/packs/vaultroombreaks-heist.png',
     category: 'Sports Cards',
     brand: 'vault-room-breaks',
@@ -146,9 +125,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   {
     id: 'vaultroombreaks-seize',
     name: 'Vault Room Breaks Seize',
-    description: d(
-      'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
-    ),
+    description: D,
     image: '/images/packs/vaultroombreaks-seize.png',
     category: 'Sports Cards',
     brand: 'vault-room-breaks',

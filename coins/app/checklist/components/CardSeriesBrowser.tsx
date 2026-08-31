@@ -11,7 +11,6 @@ import {
   getSeriesTypesForBrand,
 } from '@/lib/card-checklist-model';
 import { useCardApiSeries } from '../useCardApiSeries';
-import { CARD_REPACK_CHECKLIST_DISCLAIMER } from '@/lib/card-repack-catalog';
 import { CardSeriesChecklistCard } from './CardSeriesChecklistCard';
 
 const groupButtonClasses = `
@@ -39,19 +38,38 @@ function shortDate(isoDate: string): string {
 }
 
 /**
+ * The caveat shown above an EXAMPLE checklist.
+ *
+ * This is a render-time warning about the list on screen, NOT tile copy, which
+ * is why it lives here beside its render rather than in a catalog.
+ *
+ * It deliberately does not tell the reader to consult the checklist: they are
+ * reading it. That was the flaw in reusing the tile disclaimer here — a tile
+ * says "see checklist for more details" to send someone to this page, and
+ * repeating it on the page sent them nowhere.
+ *
+ * What it must do instead is say the list is illustrative and that a real pack
+ * will hold different cards. Both halves matter: "illustrative" alone leaves a
+ * buyer free to expect these exact cards.
+ */
+const EXAMPLE_CHECKLIST_CAVEAT =
+  'The cards below illustrate what a series in this line can look like. ' +
+  'No pack was built from this list, and a produced series will contain ' +
+  'different cards.';
+
+/**
  * The example disclaimer. Rendered ONLY for undated content.
  *
  * It used to sit above the whole Cards tab, which meant it also covered the
  * frozen archive's exact, dated, real checklists — telling customers that a
  * real published series "will be different from the examples shown". Scoping
- * it to seriesDate === null is the fix. The string itself is the shared
- * constant, never a second copy.
+ * it to seriesDate === null is the fix.
  */
 function ExampleDisclaimer() {
   return (
     <div className="mb-5 rounded-md border border-amber-600/60 bg-amber-900/20 p-3 text-sm leading-relaxed text-amber-100">
       <strong>EXAMPLE CHECKLIST — NOT A FINALIZED SERIES.</strong>{' '}
-      {CARD_REPACK_CHECKLIST_DISCLAIMER}
+      {EXAMPLE_CHECKLIST_CAVEAT}
     </div>
   );
 }
