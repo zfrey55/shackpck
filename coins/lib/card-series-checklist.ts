@@ -1857,7 +1857,11 @@ export const CARD_SERIES_CHECKLISTS: CardSeriesChecklist[] = [
     brandId: 'komodo-rips',
     finalizedOn: '2026-08-31',
     verbatimEntries: true,
-    packSize: 8,
+    // NO packSize, deliberately. Stating "N packs of M" is a claim about how
+    // the series is broken up for sale, and Komodo series do not make it. The
+    // structure line falls back to the total alone. The field and its render
+    // branch both stay — a future series that does want to state structure
+    // sets it and gets the fuller line with no code change.
     cards: [
       '2005 Pokemon Ex Delta Species 39 Ditto [pikachu]-Reverse Foil | PSA 8 | Cert 142155429',
       '2025 Pokemon Pre En-Prismatic Evolutions 155 Espeon Ex Special Illustration Rare | PSA 10 | Cert 106345601',

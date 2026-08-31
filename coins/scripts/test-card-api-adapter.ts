@@ -657,6 +657,17 @@ check(
   [6, 2, 19]
 );
 
+/**
+ * The structure line the card renders above a finalized list. Mirrors the
+ * branch in CardSeriesChecklistCard so the fixture pins the exact string, not
+ * just the field that feeds it. Every number is derived from the list.
+ */
+function structureLineFor(s: { cards: unknown[]; seriesDate: string | null; packSize?: number }): string {
+  const n = s.cards.length;
+  if (s.seriesDate === null) return `Example checklist. ${n} cards per pack.`;
+  return s.packSize ? `${n / s.packSize} packs of ${s.packSize} cards. ${n} cards total.` : `${n} cards total.`;
+}
+
 console.log('\n--- Komodo Rips "Legend Series 1": the first real TCG series ---\n');
 
 const legend = STATIC_CARD_SERIES.find((s) => s.seriesName === 'Legend Series 1');
@@ -684,16 +695,13 @@ check(
 );
 check('rendered verbatim - PSA label text must match the slabs', legend?.verbatimEntries, true);
 check('finalized, so it shows the statement and never the banner', exampleNoticeFor(legend!), 'finalized');
-check('packSize 8', legend?.packSize, 8);
+// NO packSize: Komodo series do not state how the run is broken into packs,
+// so the structure line falls back to the total alone. The field and its
+// render branch remain valid for a future series that does state it.
 check(
-  'packSize divides the list exactly - the structure line cannot be fractional',
-  legend!.cards.length % legend!.packSize! === 0,
-  true
-);
-check(
-  'which yields 15 packs of 8',
-  `${legend!.cards.length / legend!.packSize!} packs of ${legend!.packSize}`,
-  '15 packs of 8'
+  'states NO pack structure, so the header is the total alone',
+  [legend?.packSize, structureLineFor(legend!)],
+  [undefined, '120 cards total.']
 );
 check(
   'first and last rows survive byte-for-byte',
