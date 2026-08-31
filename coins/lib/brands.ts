@@ -148,7 +148,37 @@ export const BRANDS: Brand[] = [
     id: 'bullion-bureau',
     name: 'Bullion Bureau',
     tagline: 'Premium certified coin repacks',
-    caseTypePrefixes: ['bullionbureau', 'bullion-bureau'],
+    // The eight product-named caseTypes are Bullion Bureau's OWN line and
+    // carry no brand name, same pattern as 'golden-girl' (Blue Collar
+    // Bullion), 'silver-egg' (Golden Emu) and the '*-squeeze' entries
+    // (Juicebox). Hyphenated because normalizeChecklistCaseTypeKey turns
+    // "gold marshal" into "gold-marshal".
+    //
+    // Bullion Bureau also BUYS ShackPack product in volume — flex, aura,
+    // expo, currencyclash, ignite, summit, unleashed, deluxe, pinnacle,
+    // eclipse, radiant, ascension, 973 cases of it. Those caseTypes are
+    // deliberately NOT listed: they are ShackPack products that Bullion
+    // Bureau happens to have bought, and they must keep grouping under
+    // ShackPack. Only the eight below are theirs to own.
+    //
+    // 'classified' is the risky one. Prefix matching is startsWith, so a
+    // future product named "Classified <anything>" from ANY brand without an
+    // earlier-matching prefix would be captured here. Verified against all
+    // 289 available dates at the time of writing: no caseType in the
+    // inventory starts with it, or with six of the other seven — only
+    // 'gold marshal' (28 cases, all Bullion Bureau) matches today.
+    caseTypePrefixes: [
+      'bullionbureau',
+      'bullion-bureau',
+      'classified',
+      'directors-vault',
+      'executive-reserve',
+      'gold-marshal',
+      'noble-bureau',
+      'platinum-command',
+      'silver-sheriff',
+      'treasury-reserve',
+    ],
   },
   {
     id: 'let-it-ride',
