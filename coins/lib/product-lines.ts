@@ -18,7 +18,9 @@ import { CARD_REPACK_CATALOG } from '@/lib/card-repack-catalog';
 export type ProductLine = 'coins' | 'sports' | 'pokemon';
 
 export const PRODUCT_LINES: { id: ProductLine; label: string }[] = [
-  { id: 'coins', label: 'Coins' },
+  // The id stays 'coins' — it is the ?line= value, the default line and the
+  // key every derivation switches on. Only the LABEL is customer-facing.
+  { id: 'coins', label: 'Coins and Bullion' },
   { id: 'sports', label: 'Sports Cards' },
   { id: 'pokemon', label: 'Pokemon Cards' },
 ];

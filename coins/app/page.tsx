@@ -6,7 +6,6 @@ import { RepackCard } from '@/components/RepackCard';
 import { FeaturedSeriesSection } from '@/components/FeaturedSeriesSection';
 import { getHomeFeaturedPacks } from '@/lib/repack-catalog';
 import { CARD_REPACK_CATALOG } from '@/lib/card-repack-catalog';
-import { BRANDS } from '@/lib/brands';
 
 export default function HomePage() {
   return (
@@ -33,23 +32,29 @@ export default function HomePage() {
                 Shackpack
               </h1>
               <p className="mt-4 text-2xl text-white/90 drop-shadow-md">
-                Premium Coin & Card Repacks
+                Premium Coin, Bullion and Card Repacks
               </p>
               <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
-                Graded coins and multi-sport cards — American Eagles, Morgan Dollars, NFL, NBA &amp; MLB rookies, all with published checklists
+                Coins and bullion, sports cards and Pokemon cards — every series backed by a published checklist. Contents vary by series.
               </p>
               <div className="mt-8 flex flex-wrap gap-3 justify-center">
                 <Link
                   href="/repacks?brand=shackpack"
                   className="rounded-md bg-gold px-5 py-3 font-semibold text-black hover:opacity-90 transition-opacity"
                 >
-                  Coin Repacks
+                  Coins and Bullion
                 </Link>
                 <Link
-                  href="/repacks?brand=shackpack&line=cards"
+                  href="/repacks?brand=shackpack&line=sports"
                   className="rounded-md bg-gold/90 px-5 py-3 font-semibold text-black hover:opacity-90 transition-opacity"
                 >
-                  Card Repacks
+                  Sports Cards
+                </Link>
+                <Link
+                  href="/repacks?line=pokemon"
+                  className="rounded-md bg-gold/90 px-5 py-3 font-semibold text-black hover:opacity-90 transition-opacity"
+                >
+                  Pokemon Cards
                 </Link>
                 <Link 
                   href="/checklist" 
@@ -69,36 +74,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Shop by brand */}
-      <section className="container py-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-semibold">Shop by Brand</h2>
-          <p className="mt-3 text-lg text-slate-400">
-            Each customer has their own branded packs and checklists
-          </p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-3">
-          {BRANDS.map((brand) => (
-            <Link
-              key={brand.id}
-              href={`/repacks?brand=${brand.id}`}
-              className="rounded-full border border-slate-700 bg-slate-900/60 px-6 py-3 font-semibold text-slate-200 transition-colors hover:border-gold/60 hover:text-gold"
-            >
-              {brand.name}
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* Featured Series Section */}
       <FeaturedSeriesSection />
 
-      {/* Coin Repacks — featured (unchanged catalog) */}
+      {/* Coins and Bullion — featured (unchanged catalog) */}
       <section className="container py-16">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-semibold">Coin Repacks</h2>
+          <h2 className="text-3xl font-semibold">Coins and Bullion</h2>
           <p className="mt-3 text-lg text-slate-400">
-            Featured graded coin repack collections
+            Featured certified coin and bullion repacks
           </p>
         </div>
         
@@ -121,18 +105,18 @@ export default function HomePage() {
             href="/repacks?brand=shackpack"
             className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
           >
-            View all coin repacks
+            View all coin and bullion repacks
             <span>→</span>
           </Link>
         </div>
       </section>
 
-      {/* Card Repacks */}
+      {/* Sports Cards */}
       <section className="container pb-16 pt-0">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-semibold">Card Repacks</h2>
+          <h2 className="text-3xl font-semibold">Sports Cards</h2>
           <p className="mt-3 text-lg text-slate-400">
-            Multi-sport card series — Fusion, Nova &amp; Select. 10 cards per product.
+            Featured sports card repacks — every series backed by a published checklist
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -157,10 +141,10 @@ export default function HomePage() {
         </div>
         <div className="text-center mt-12">
           <Link
-            href="/repacks?brand=shackpack&line=cards"
+            href="/repacks?brand=shackpack&line=sports"
             className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
           >
-            View all card repacks
+            View all sports card repacks
             <span>→</span>
           </Link>
         </div>
@@ -178,7 +162,7 @@ export default function HomePage() {
               <div className="text-5xl mb-4">🔍</div>
               <h3 className="font-semibold text-xl text-gold mb-2">Expert Curation</h3>
               <p className="text-slate-400">
-                Each pack is carefully assembled with hand-picked coins and graded cards selected by experienced specialists
+                Each pack is assembled by experienced specialists
               </p>
             </div>
             <div className="text-center">
@@ -192,7 +176,7 @@ export default function HomePage() {
               <div className="text-5xl mb-4">📋</div>
               <h3 className="font-semibold text-xl text-gold mb-2">Published Checklists</h3>
               <p className="text-slate-400">
-                Every ShackPack is a professionally sealed, graded coin or card product with a fully published checklist. Know what&apos;s possible before you buy — then open and see what you get.
+                Every ShackPack is a professionally sealed product with a fully published checklist. Know what&apos;s possible before you buy — then open and see what you get.
               </p>
             </div>
           </div>
