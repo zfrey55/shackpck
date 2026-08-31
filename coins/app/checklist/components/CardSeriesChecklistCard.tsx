@@ -1,5 +1,16 @@
 import type { CardEntry, CardSeries } from '@/lib/card-checklist-model';
 import { cleanEntryName } from '@/lib/clean-entry-name';
+import { seriesFinalizedStatement } from '@/lib/repack-catalog';
+
+/** Finalization dates are stored ISO and shown long-form. */
+function formatFinalizedOn(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
 /**
  * The copy above the cabinet sections on a grouped day.
@@ -29,7 +40,16 @@ function byPosition(cards: CardEntry[]): CardEntry[] {
  * Every entryName goes through cleanEntryName so the archive, the examples and
  * the live API are all formatted by one code path.
  */
-function CardList({ cards, idPrefix }: { cards: CardEntry[]; idPrefix: string }) {
+function CardList({
+  cards,
+  idPrefix,
+  verbatim = false,
+}: {
+  cards: CardEntry[];
+  idPrefix: string;
+  /** Skip cleanEntryName. Only the TCG examples set this — see CardSeries. */
+  verbatim?: boolean;
+}) {
   return (
     <ol className="space-y-1.5 text-sm text-slate-300">
       {cards.map((card) => (
@@ -40,7 +60,7 @@ function CardList({ cards, idPrefix }: { cards: CardEntry[]; idPrefix: string })
           <span className="text-right font-semibold text-slate-500">
             {card.position}.
           </span>
-          <span>{cleanEntryName(card.entryName)}</span>
+          <span>{verbatim ? card.entryName : cleanEntryName(card.entryName)}</span>
         </li>
       ))}
     </ol>
@@ -55,7 +75,13 @@ function CardList({ cards, idPrefix }: { cards: CardEntry[]; idPrefix: string })
  * data. Cabinets are never numbered: they consume no sequence number, so
  * `seriesName` is not shown.
  */
-function CabinetSection({ cabinet }: { cabinet: CardSeries }) {
+function CabinetSection({
+  cabinet,
+  verbatim = false,
+}: {
+  cabinet: CardSeries;
+  verbatim?: boolean;
+}) {
   const cards = byPosition(cabinet.cards);
 
   return (
@@ -66,7 +92,7 @@ function CabinetSection({ cabinet }: { cabinet: CardSeries }) {
           {cards.length} card{cards.length === 1 ? '' : 's'}
         </span>
       </div>
-      <CardList cards={cards} idPrefix={cabinet.id} />
+      <CardList cards={cards} idPrefix={cabinet.id} verbatim={verbatim} />
     </section>
   );
 }
@@ -86,6 +112,7 @@ function CabinetSection({ cabinet }: { cabinet: CardSeries }) {
 export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
   const cards = byPosition(series.cards);
   const hasCabinets = series.cabinets.length > 0;
+  const verbatim = series.verbatimEntries === true;
 
   return (
     <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 shadow-lg">
@@ -99,7 +126,24 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
         </p>
       </div>
 
-      <CardList cards={cards} idPrefix={series.id} />
+      {/*
+        Pack size is DERIVED from the list, never stored, so the stated count
+        and the rows below it cannot drift apart. Shown only for a finalized
+        example, where the count is a settled fact rather than a claim.
+      */}
+      {series.finalizedOn && (
+        <p className="mb-3 text-sm text-slate-400">
+          Example checklist. {cards.length} cards per pack.
+        </p>
+      )}
+
+      <CardList cards={cards} idPrefix={series.id} verbatim={verbatim} />
+
+      {series.finalizedOn && (
+        <p className="mt-4 border-t border-slate-800 pt-3 text-sm leading-relaxed text-slate-400">
+          {seriesFinalizedStatement(formatFinalizedOn(series.finalizedOn))}
+        </p>
+      )}
 
       {hasCabinets && (
         <div className="mt-8 border-t border-slate-700 pt-6">
@@ -108,7 +152,7 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
           </p>
           <div className="space-y-4">
             {series.cabinets.map((cabinet) => (
-              <CabinetSection key={cabinet.id} cabinet={cabinet} />
+              <CabinetSection key={cabinet.id} cabinet={cabinet} verbatim={verbatim} />
             ))}
           </div>
         </div>

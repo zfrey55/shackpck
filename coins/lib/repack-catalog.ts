@@ -39,6 +39,27 @@ export type RepackCatalogItem = {
 export const REPACK_CHECKLIST_DISCLAIMER =
   'Contents vary by series — see checklist for more details.';
 
+/**
+ * Statement shown under a FINALIZED example checklist.
+ *
+ * Sits beside the disclaimer above because it is the same kind of statement —
+ * standing copy about a checklist, defined once and never inlined. It is the
+ * one thing on the site that narrows the disclaimer: "contents vary by series"
+ * remains true across series, while this says THIS series is closed.
+ *
+ * Rendered only for an example that carries `finalizedOn` (see
+ * lib/card-example-checklists), so an example without a finalization date
+ * shows nothing rather than an empty or guessed claim.
+ *
+ * @param date Human-readable finalization date, already formatted.
+ */
+export function seriesFinalizedStatement(date: string): string {
+  return (
+    `As of ${date}, this series has been finalized. The number of packs and ` +
+    'the number of items in the series will not change.'
+  );
+}
+
 /** Convenience alias used throughout this file to keep entries terse. */
 const D = REPACK_CHECKLIST_DISCLAIMER;
 

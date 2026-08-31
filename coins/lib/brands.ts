@@ -197,7 +197,12 @@ export const BRANDS: Brand[] = [
     name: 'Komodo Rips',
     tagline: 'Premium trading card repacks',
     hasCards: true,
-    caseTypePrefixes: ['komodo', 'komodo-rips'],
+    // 'bcb' is listed alongside the komodo prefixes because the pack art
+    // arrived under that prefix and ShackHQ may stamp a future live series
+    // either way. Neither prefix matches any caseType in the inventory today
+    // (checked across all 289 available dates), so both are inert until one
+    // does.
+    caseTypePrefixes: ['komodo', 'komodo-rips', 'bcb'],
   },
   {
     // COMING SOON — no artwork, so no pack tiles and no /repacks tab yet. The

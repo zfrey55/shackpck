@@ -53,6 +53,26 @@ export type CardExampleChecklist = {
    */
   seriesDate: null;
   cards: CardExampleCard[];
+  /**
+   * ISO date this series was finalized, or absent when it was not.
+   *
+   * Present ONLY on a checklist whose contents are closed. The render layer
+   * shows the finalized statement for it and shows nothing for an example
+   * without one, so a series is never implied to be closed by omission.
+   */
+  finalizedOn?: string;
+  /**
+   * Render `entryName` EXACTLY as written, skipping cleanEntryName.
+   *
+   * The default is off, and it should stay off for anything in raw Sortly
+   * form. It exists for names that are already canonical and that the
+   * formatter would actively damage: TCG card names carry a lowercase `ex`
+   * suffix ("Mega Lucario ex") that rule (h) title-cases to "Ex", and an
+   * uppercase "EX" elsewhere in the same list means the EXACT_CASE dictionary
+   * cannot fix both — one token, one canonical casing. Verified: 4 of the 8
+   * Purity names change under cleanEntryName.
+   */
+  verbatimEntries?: true;
 };
 
 /**
@@ -153,6 +173,51 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
       { position: 8, entryName: '2013 panini prizm football travis kelce silver prizm rookie psa 10' },
       { position: 9, entryName: '2019 panini prizm basketball ja morant silver prizm rookie raw mint' },
       { position: 10, entryName: '2014 topps chrome update baseball mookie betts refractor rookie raw near mint' },
+    ],
+  },
+  // ----- Komodo Rips (TCG) -----
+  // The ONLY examples stored pre-formatted. Every other entry above is raw
+  // Sortly text that cleanEntryName cases at render time; these names arrived
+  // already canonical and are marked verbatimEntries so the formatter leaves
+  // them alone — see the note on that field.
+  //
+  // Grade is appended after a pipe, matching how the frozen archive carries
+  // grades inside the entry string. Certificate numbers are deliberately NOT
+  // stored: the shape has no field for them, and a cert identifies one
+  // specific physical card, which is exactly the claim an EXAMPLE must not
+  // make.
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Purity',
+    seriesDate: null,
+    finalizedOn: '2026-08-31',
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2025 Mega Evolution #179 Mega Lucario ex, Special Illustration Rare | PSA 10' },
+      { position: 2, entryName: '2023 Scarlet & Violet 151 #173 Pikachu, Illustration Rare | PSA 10' },
+      { position: 3, entryName: '2025 Destined Rivals #209 Ethan\'s Ho-Oh ex, Ultra Rare | PSA 10' },
+      { position: 4, entryName: '2025 Phantasmal Flames #099 Yamper, Illustration Rare | PSA 10' },
+      { position: 5, entryName: '2024 Japanese Terastal Fest ex #224 Eevee ex, Special Art Rare | PSA 10' },
+      { position: 6, entryName: '2022 Lost Origin #TG06 Gengar, Trainer Gallery Full Art | PSA 9' },
+      { position: 7, entryName: '2016 XY Evolutions #13 M Charizard EX | PSA 9' },
+      { position: 8, entryName: '1999 Base Set #58 Pikachu, E3 Stamp, Yellow Cheeks | PSA 5' },
+    ],
+  },
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Legend',
+    seriesDate: null,
+    finalizedOn: '2026-08-31',
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2024 Paldean Fates #234 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 2, entryName: '2025 SV Black Star Promo #176 Umbreon ex, Prismatic Evolutions Premium Figure Collection | PSA 10' },
+      { position: 3, entryName: '2023 Scarlet & Violet 151 #200 Blastoise ex, Special Illustration Rare | PSA 9' },
+      { position: 4, entryName: '2024 Surging Sparks #219 Pikachu ex, Ultra Rare | PSA 10' },
+      { position: 5, entryName: '2026 ME Black Star Promo #038 Charmander, First Partner Illustration Collection Series 1 | PSA 10' },
+      { position: 6, entryName: '2023 Japanese Pokemon Card 151 #080 Slowbro | PSA 10' },
+      { position: 7, entryName: '2019 Hidden Fates #SV54 Articuno GX, Shiny Vault Full Art | PSA 10' },
+      { position: 8, entryName: '2000 Team Rocket #21 Dark Charizard, Holo | PSA 8' },
     ],
   },
 ];

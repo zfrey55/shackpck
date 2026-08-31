@@ -65,6 +65,18 @@ export type CardSeries = {
    * anywhere else.
    */
   cabinets: CardSeries[];
+  /**
+   * ISO date this series was finalized. EXAMPLES ONLY, and only those that
+   * are actually closed — see CardExampleChecklist.finalizedOn. Absent
+   * everywhere else, including the frozen archive and every API series.
+   */
+  finalizedOn?: string;
+  /**
+   * Render entryName verbatim instead of through cleanEntryName. Set only by
+   * the TCG examples, whose names are already canonical and which the
+   * formatter would damage. Everything else formats at render time.
+   */
+  verbatimEntries?: boolean;
 };
 
 /** Group heading used for all undated example content. */
@@ -123,6 +135,8 @@ function fromExamples(): CardSeries[] {
       entryName: card.entryName,
     })),
     cabinets: [],
+    finalizedOn: example.finalizedOn,
+    verbatimEntries: example.verbatimEntries,
   }));
 }
 

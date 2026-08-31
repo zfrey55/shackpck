@@ -133,10 +133,19 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
 
   // ----- Komodo Rips -----
   // Trading cards, not sports cards — a separate category from the tiles
-  // above. Same bare disclaimer; the tile states no contents.
+  // above, which is what routes them to their own product line. Same bare
+  // disclaimer; the tile states no contents.
+  //
+  // Tile names are the bare product name, not "<Brand> <Product>" like the
+  // sports tiles: the brand wordmark already sits directly above the grid,
+  // and these two only ever render under it.
+  //
+  // The image filenames keep their original bcb- ... komodo- history: the art
+  // was delivered as BCB-*.png and renamed to komodo-*.png before it was
+  // committed. Do not rename them again — these paths are what ships.
   {
     id: 'komodo-legend',
-    name: 'Komodo Rips Legend',
+    name: 'Legend',
     description: D,
     image: '/images/packs/komodo-legend.png',
     category: 'Trading Cards',
@@ -144,7 +153,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   },
   {
     id: 'komodo-purity',
-    name: 'Komodo Rips Purity',
+    name: 'Purity',
     description: D,
     image: '/images/packs/komodo-purity.png',
     category: 'Trading Cards',

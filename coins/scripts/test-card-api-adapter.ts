@@ -9,6 +9,7 @@
 // totalCards, seriesType, customerName, submittedAt. There is no seriesName.
 
 import {
+  EXAMPLE_SERIES_TYPE,
   STATIC_CARD_SERIES,
   adaptApiSeries,
   adaptApiSeriesList,
@@ -20,6 +21,8 @@ import {
   type ApiSeriesLike,
 } from '../lib/card-checklist-model';
 import { brandIdForCustomerName } from '../lib/customer-attribution';
+import { cardLineForBrand } from '../lib/product-lines';
+import { cardBrandsForLine } from '../app/checklist/nav-params';
 
 let failures = 0;
 
@@ -515,6 +518,86 @@ check(
   'merge: a grouped day adds ONE row to the merged list, not three',
   groupedMerged.length,
   STATIC_CARD_SERIES.length + 1
+);
+
+console.log('\n--- TCG line: Komodo Rips examples and cardType routing ---\n');
+
+const tcgExamples = STATIC_CARD_SERIES.filter((s) => s.brandId === 'komodo-rips');
+const byName = (n: string) => tcgExamples.find((s) => s.seriesName === n);
+
+check('two Komodo Rips example checklists exist', tcgExamples.length, 2);
+check(
+  'both are undated EXAMPLES, never dated series',
+  tcgExamples.every((s) => s.seriesDate === null && s.seriesType === EXAMPLE_SERIES_TYPE),
+  true
+);
+check(
+  'Purity has 8 rows, positions 1-8 contiguous',
+  byName('Purity')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8]
+);
+check(
+  'Legend has 8 rows, positions 1-8 contiguous',
+  byName('Legend')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8]
+);
+check(
+  'both are marked verbatim so cleanEntryName never runs on them',
+  tcgExamples.every((s) => s.verbatimEntries === true),
+  true
+);
+check(
+  'both carry a finalization date',
+  tcgExamples.map((s) => s.finalizedOn),
+  ['2026-08-31', '2026-08-31']
+);
+check(
+  'no cert number leaked into any entry - an example names no specific card',
+  tcgExamples.some((s) => s.cards.some((c) => /cert|\b\d{8,}\b/i.test(c.entryName))),
+  false
+);
+check(
+  'the lowercase TCG "ex" suffix survives verbatim - cleanEntryName would title-case it',
+  byName('Purity')?.cards[0].entryName,
+  '2025 Mega Evolution #179 Mega Lucario ex, Special Illustration Rare | PSA 10'
+);
+check(
+  'uppercase "EX" in the same list is equally untouched',
+  byName('Purity')?.cards[6].entryName,
+  '2016 XY Evolutions #13 M Charizard EX | PSA 9'
+);
+
+console.log('\n--- product-line routing: sports vs tcg ---\n');
+
+check(
+  'Komodo Rips routes to the pokemon/TCG line, from its catalog category',
+  cardLineForBrand('komodo-rips'),
+  'pokemon'
+);
+check(
+  'ShackPack and Vault Room Breaks stay on the sports line',
+  ['shackpack', 'vault-room-breaks'].map((b) => cardLineForBrand(b as never)),
+  ['sports', 'sports']
+);
+check(
+  'the TCG line lists Komodo Rips only',
+  cardBrandsForLine('pokemon'),
+  ['komodo-rips']
+);
+check(
+  'the sports line is unchanged by the TCG addition',
+  cardBrandsForLine('sports'),
+  ['shackpack', 'vault-room-breaks']
+);
+check(
+  'the coin line has no card brands',
+  cardBrandsForLine('coins'),
+  []
+);
+check(
+  'a live API series still routes by customerName, not by line',
+  adaptApiSeries(complete({ customerName: 'ShackPack' }))?.brandId,
+  'shackpack'
 );
 
 if (failures > 0) {
