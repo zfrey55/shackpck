@@ -39,7 +39,14 @@ export function RepackCard({
               src={image}
               alt={name}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              /*
+                The last arm is a FIXED width, not a vw fraction. .container
+                caps at 1536px, so a 3-column tile never exceeds ~475 CSS px
+                however wide the viewport gets — but `33vw` kept scaling with
+                it and asked for 845px on a 2560px screen. 480px is the real
+                ceiling, so the optimizer stops sending pixels nothing renders.
+              */
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
               className="object-cover transition-transform duration-500 will-change-transform group-hover:scale-[1.03]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

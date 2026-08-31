@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-/** Branded placeholder matching RepackCard image area (4:3). */
+/** Branded placeholder matching RepackCard image area (2:3 portrait). */
 export function PackImagePlaceholder({ label = 'Pack Image Coming Soon' }: { label?: string }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-slate-950 to-black">

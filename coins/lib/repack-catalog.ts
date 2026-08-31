@@ -136,7 +136,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     id: 'shackpack-pinnacle',
     name: 'Pinnacle by Shackpack',
     description: D,
-    image: '/images/packs/shackpack-pinnacle.jpeg',
+    image: '/images/packs/shackpack-pinnacle.png',
     category: 'Coins',
     brand: 'shackpack',
   },
