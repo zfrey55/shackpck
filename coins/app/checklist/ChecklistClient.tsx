@@ -12,38 +12,41 @@ import {
   EmptyState,
   LoadingState,
   ErrorState,
-  CardSeriesBrowser,
   FeaturedSeriesPanel,
   ProductLineNav,
+  CardChecklistPanel,
+  cardLineHeading,
 } from "./components";
 import { useCustomerIndex } from "./useCustomerIndex";
 import { sortCasesForDisplay } from "./sorting";
 import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
-import { type ProductLine } from "@/components/CoinsCardsToggle";
-import { getBrand, type BrandId } from "@/lib/brands";
+import { writeLineParam, type ProductLine } from "@/lib/product-lines";
+import { type BrandId } from "@/lib/brands";
 import {
   SHACKPACK_SLUG,
   customerLabelFromSlug,
   slugToMatcher,
   type CustomerBucket,
 } from "@/lib/customer-attribution";
-import {
-  CARD_BRANDS,
-  DEFAULT_CARD_BRAND,
-  parseCardBrand,
-  parseLine,
-} from "./nav-params";
+import { cardBrandsForLine, parseCardBrand } from "./nav-params";
+import { parseProductLine } from "@/lib/product-lines";
 
 export function ChecklistClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // ?line= accepts coins|sports|pokemon, and the legacy 'cards' still means
+  // sports. See parseProductLine in lib/product-lines.
   const [productLine, setProductLine] = useState<ProductLine>(() =>
-    parseLine(searchParams?.get("line"))
+    parseProductLine(searchParams?.get("line"))
   );
-  const [cardBrand, setCardBrand] = useState<BrandId>(() =>
-    parseCardBrand(searchParams?.get("cardBrand"))
+  // null when the selected line has no checklist content (Pokemon today).
+  const [cardBrand, setCardBrand] = useState<BrandId | null>(() =>
+    parseCardBrand(
+      searchParams?.get("cardBrand"),
+      parseProductLine(searchParams?.get("line"))
+    )
   );
 
   const [customerBucketId, setCustomerBucketId] = useState<CustomerBucket>(() => {
@@ -129,22 +132,25 @@ export function ChecklistClient() {
   const syncUrl = (next: {
     line?: ProductLine;
     customer?: string | null;
-    cardBrand?: BrandId;
+    cardBrand?: BrandId | null;
   }) => {
     const p = new URLSearchParams(searchParams?.toString());
     p.delete("brand"); // legacy param, dropped outright as before
 
     const line = next.line ?? productLine;
-    if (line === "cards") p.set("line", "cards");
-    else p.delete("line");
+    // Writes the canonical value ('sports'), never the legacy 'cards' alias.
+    writeLineParam(p, line);
 
     if (next.customer !== undefined) {
       if (next.customer) p.set("customer", next.customer);
       else p.delete("customer");
     }
 
-    const brand = next.cardBrand ?? cardBrand;
-    if (line === "cards" && brand !== DEFAULT_CARD_BRAND) p.set("cardBrand", brand);
+    const brand = next.cardBrand !== undefined ? next.cardBrand : cardBrand;
+    // Only pinned when it is not the line's own default, so the common case
+    // keeps the short URL it has always had.
+    const isDefault = brand === null || brand === cardBrandsForLine(line)[0];
+    if (line !== "coins" && brand && !isDefault) p.set("cardBrand", brand);
     else p.delete("cardBrand");
 
     const query = p.toString();
@@ -160,7 +166,11 @@ export function ChecklistClient() {
   const handleLineChange = (next: ProductLine) => {
     setProductLine(next);
     setShowSpecializedSeries(false);
-    syncUrl({ line: next });
+    // Keep the current brand if it has content on the target line, else fall
+    // to that line's first brand (null when the line has none at all).
+    const resolved = parseCardBrand(cardBrand, next);
+    setCardBrand(resolved);
+    syncUrl({ line: next, cardBrand: resolved });
   };
 
   const handleCardBrandChange = (next: BrandId) => {
@@ -251,14 +261,17 @@ export function ChecklistClient() {
     [filteredCases]
   );
 
-  /** Coins/Cards is the OUTER tier; brand tabs sit under it, scoped to it. */
+  /**
+   * TIER 1 product line, TIER 2 brand/customer. Tier 3 (case type -> dates on
+   * coins, series type -> dates on cards) renders below, unchanged.
+   */
   const nav = (
     <div className="space-y-4">
       <ProductLineNav
         line={productLine}
         onLineChange={handleLineChange}
-        cardBrands={CARD_BRANDS}
-        activeCardBrand={cardBrand}
+        cardBrands={cardBrandsForLine(productLine)}
+        activeCardBrand={cardBrand ?? ("shackpack" as BrandId)}
         onCardBrandChange={handleCardBrandChange}
       />
       {productLine === "coins" && (
@@ -273,42 +286,20 @@ export function ChecklistClient() {
     </div>
   );
 
-  if (productLine === "cards") {
-    const brand = getBrand(cardBrand);
+  if (productLine !== "coins") {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4 space-y-6">
           <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold mb-2 text-gold">{brand.name} Card Checklists</h1>
+            <h1 className="text-4xl font-bold mb-2 text-gold">
+              {cardLineHeading(productLine, cardBrand)}
+            </h1>
             <p className="text-lg text-slate-400">
-              Graded trading card series — published checklists
+              Published series checklists
             </p>
           </div>
           {nav}
-
-          {/*
-            ShackPack product context. Scoped to the ShackPack brand because it
-            describes ShackPack's own products. The "these are all EXAMPLES"
-            paragraph that used to live here was REMOVED — it rendered above
-            every card checklist including the frozen archive's real, exact,
-            dated series. The example caveat now lives inside CardSeriesBrowser
-            and shows only for undated content.
-          */}
-          {cardBrand === "shackpack" && (
-            <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-sm leading-relaxed text-slate-300">
-              <p className="text-slate-200">
-                <strong className="text-gold">About ShackPack Card Products.</strong> ShackPack produces sealed
-                multi-sport card products covering Football, Basketball, and Baseball.
-              </p>
-              <p>
-                Manufacturer: G&amp;J Packaging LLLP, identified on the front of every product. Products may include a
-                mix of professionally graded cards (PSA, BGS, or SGC) and raw / ungraded cards. Single-show products are
-                clearly designated as &ldquo;Single Show Series&rdquo; on the front of the sealed packaging.
-              </p>
-            </div>
-          )}
-
-          <CardSeriesBrowser brandId={cardBrand} />
+          <CardChecklistPanel line={productLine} brandId={cardBrand} />
         </div>
       </main>
     );
@@ -367,7 +358,7 @@ export function ChecklistClient() {
         <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
           <p className="text-sm text-amber-200 text-center">
             <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
-            Please refer to the checklist for the most up-to-date information on each series. For card series, use the Cards tab.
+            Please refer to the checklist for the most up-to-date information on each series. For card series, use the Sports Cards or Pokemon Cards tabs.
           </p>
         </div>
 

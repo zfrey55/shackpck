@@ -1,55 +1,14 @@
 'use client';
 
+/**
+ * The BrandTabs tab bar that used to live here was removed with the
+ * three-tier nav: /repacks now renders its brand tier through the shared
+ * BucketedTabs, the same component /checklist uses. BrandHeader is the only
+ * surviving export and is still rendered under the brand tier.
+ */
+
 import Image from 'next/image';
-import { BRANDS, type Brand, type BrandId } from '@/lib/brands';
-
-type BrandTabsProps = {
-  value: BrandId;
-  onChange: (next: BrandId) => void;
-  className?: string;
-  /**
-   * Brands to render. Defaults to every brand; the packs tab passes a list
-   * filtered to customers flagged hasPacks so a checklist-only customer never
-   * shows a pack tab.
-   */
-  brands?: Brand[];
-};
-
-/** Horizontal, scrollable customer-brand tab bar. ShackPack is first/default. */
-export function BrandTabs({
-  value,
-  onChange,
-  className = '',
-  brands = BRANDS,
-}: BrandTabsProps) {
-  return (
-    <div
-      role="tablist"
-      aria-label="Customer brand"
-      className={`flex flex-wrap items-center justify-center gap-2 ${className}`}
-    >
-      {brands.map((brand) => {
-        const active = brand.id === value;
-        return (
-          <button
-            key={brand.id}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            onClick={() => onChange(brand.id)}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-              active
-                ? 'bg-gold text-black'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            {brand.name}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+import type { Brand } from '@/lib/brands';
 
 /** Logo (or text wordmark fallback) + name + tagline header for a brand. */
 export function BrandHeader({ brand }: { brand: Brand }) {

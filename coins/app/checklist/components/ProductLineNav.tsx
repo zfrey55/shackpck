@@ -1,14 +1,17 @@
 'use client';
 
 import { getBrand, type BrandId } from '@/lib/brands';
-import { CoinsCardsToggle, type ProductLine } from '@/components/CoinsCardsToggle';
+import { ProductLineTabs } from '@/components/ProductLineTabs';
+import { BucketedTabs, type BucketTab } from '@/components/BucketedTabs';
+import type { ProductLine } from '@/lib/product-lines';
 
 type ProductLineNavProps = {
   line: ProductLine;
   onLineChange: (next: ProductLine) => void;
   /**
-   * Brands with card content, derived from the card model. Only rendered on
-   * the Cards line; the Coins line uses CustomerNav underneath instead.
+   * Brands with checklist content on the CURRENT card line, derived from the
+   * card model. Empty is legitimate — the Pokemon line has no checklists yet —
+   * and renders as a message rather than a hidden tier.
    */
   cardBrands: BrandId[];
   activeCardBrand: BrandId;
@@ -16,12 +19,15 @@ type ProductLineNavProps = {
 };
 
 /**
- * Top-tier product-line nav: Coins / Cards.
+ * TIER 1 (product line) plus TIER 2 for the two CARD lines.
  *
- * Coins and Cards used to be a toggle nested inside the ShackPack customer
- * tab, which meant a customer's card content had nowhere to live. The product
- * line is now the OUTER tier and brand tabs sit underneath it, scoped to the
- * selected line — customer tabs for coins, card brands for cards.
+ * The coin line's tier 2 is CustomerNav instead — customers, not brands — so
+ * it is rendered by the caller alongside this. Both use BucketedTabs
+ * underneath, so the two rows look identical whichever line is selected.
+ *
+ * A card line with exactly one brand still shows its tab, unlike the previous
+ * `length > 1` rule: with three lines the row is now the only thing telling
+ * you which brand you are looking at.
  */
 export function ProductLineNav({
   line,
@@ -30,38 +36,24 @@ export function ProductLineNav({
   activeCardBrand,
   onCardBrandChange,
 }: ProductLineNavProps) {
+  const primary: BucketTab[] = cardBrands.map((id) => ({
+    id,
+    label: getBrand(id).name,
+  }));
+
   return (
     <div className="space-y-4">
       <div className="flex justify-center">
-        <CoinsCardsToggle value={line} onChange={onLineChange} />
+        <ProductLineTabs value={line} onChange={onLineChange} />
       </div>
 
-      {line === 'cards' && cardBrands.length > 1 && (
-        <div
-          role="tablist"
-          aria-label="Card brand"
-          className="flex flex-wrap items-center justify-center gap-2"
-        >
-          {cardBrands.map((brandId) => {
-            const active = brandId === activeCardBrand;
-            return (
-              <button
-                key={brandId}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => onCardBrandChange(brandId)}
-                className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-                  active
-                    ? 'bg-gold text-black'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {getBrand(brandId).name}
-              </button>
-            );
-          })}
-        </div>
+      {line !== 'coins' && primary.length > 0 && (
+        <BucketedTabs
+          ariaLabel="Card brand"
+          primary={primary}
+          activePrimary={activeCardBrand}
+          onPrimary={(id) => onCardBrandChange(id as BrandId)}
+        />
       )}
     </div>
   );

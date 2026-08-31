@@ -9,3 +9,4 @@ export { default as CardSeriesBrowser } from "./CardSeriesBrowser";
 export { CardSeriesChecklistCard } from "./CardSeriesChecklistCard";
 export { FeaturedSeriesPanel } from "./FeaturedSeriesPanel";
 export { ProductLineNav } from "./ProductLineNav";
+export { CardChecklistPanel, cardLineHeading } from "./CardChecklistPanel";

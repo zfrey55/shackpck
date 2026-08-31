@@ -3,98 +3,85 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RepackCard } from '@/components/RepackCard';
-import { BrandTabs, BrandHeader } from '@/components/BrandTabs';
-import { getCoinPacksForBrand } from '@/lib/repack-catalog';
-import { CARD_REPACK_CATALOG } from '@/lib/card-repack-catalog';
-import { CoinsCardsToggle, type ProductLine } from '@/components/CoinsCardsToggle';
-import { BRANDS, getBrand, toBrandId, type BrandId } from '@/lib/brands';
+import { BrandHeader } from '@/components/BrandTabs';
+import { ProductLineTabs } from '@/components/ProductLineTabs';
+import { BucketedTabs, type BucketTab } from '@/components/BucketedTabs';
+import { getBrand, type BrandId } from '@/lib/brands';
+import { checklistHrefForBrand } from '@/lib/customer-attribution';
 import {
-  brandHasPacks,
-  checklistHrefForBrand,
-} from '@/lib/customer-attribution';
+  packsForLineAndBrand,
+  parseProductLine,
+  writeLineParam,
+  PRODUCT_LINES,
+  type ProductLine,
+} from '@/lib/product-lines';
+import { brandsForLine, bucketForBrand, resolveBrandForLine } from './repacks-nav';
 
 /**
- * Brands with COIN pack tiles.
+ * /repacks, three tiers: product line -> brand -> pack grid.
  *
- * Same derivation as before — customers flagged hasPacks in CUSTOMER_PACKS —
- * with the added requirement that the brand actually has coin packs. That
- * requirement only excludes card-only brands (Vault Room Breaks), which would
- * otherwise land on an empty coin grid. Every brand that had a coin tab keeps
- * one.
- */
-const COIN_BRANDS = BRANDS.filter(
-  (brand) => brandHasPacks(brand.id) && getCoinPacksForBrand(brand.id).length > 0
-);
-
-/**
- * Brands with CARD pack tiles, derived from the catalog's own entries rather
- * than a list or the `hasCards` flag — a brand appears here only if it really
- * has card tiles, so the tab can never open on an empty grid.
- */
-const CARD_BRAND_IDS = new Set(CARD_REPACK_CATALOG.map((pack) => pack.brand));
-const CARD_BRANDS = BRANDS.filter((brand) => CARD_BRAND_IDS.has(brand.id));
-
-function brandsForLine(line: ProductLine) {
-  return line === 'cards' ? CARD_BRANDS : COIN_BRANDS;
-}
-
-/**
- * Product line from the URL.
+ * Tier 1 and tier 2 are the same components /checklist uses (ProductLineTabs
+ * and BucketedTabs), reading the same `?line=` param with the same semantics,
+ * so a visitor moving between the pages sees one nav rather than two.
  *
- * `?line=` matches /checklist exactly, so the two pages read the same param
- * with the same semantics (absent means coins). `?tab=` is the parameter this
- * page used before and is still honored, so older links keep working; it is
- * never written back.
+ * Tier 2 on the coin line is bucketed — ShackPack / Bullion Bureau / Other,
+ * with Other revealing the rest — exactly as the checklist's customer nav
+ * behaves. The card lines have few enough brands to list flat.
+ *
+ * URL contract, unchanged where it already existed:
+ *   ?brand=<id>  the selected brand.
+ *   ?tab=        legacy alias for ?line=, still read, never written.
+ *   ?line=       coins|sports|pokemon; 'cards' still resolves to sports.
  */
-function lineFromSearch(params: URLSearchParams | null): ProductLine {
-  const line = params?.get('line') ?? params?.get('tab');
-  return line === 'cards' ? 'cards' : 'coins';
+
+/** Human label for a line, from the single PRODUCT_LINES source. */
+function lineLabel(line: ProductLine): string {
+  return PRODUCT_LINES.find((l) => l.id === line)?.label ?? 'Packs';
 }
 
 export function RepacksClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const requestedLine = lineFromSearch(searchParams);
-  // Fall back to coins if the cards line has no brands at all.
-  const line: ProductLine = CARD_BRANDS.length > 0 ? requestedLine : 'coins';
-  const lineBrands = brandsForLine(line);
+  // `?tab=` predates `?line=` and is still honored for older links; it is read
+  // here and never written back.
+  const line = parseProductLine(
+    searchParams?.get('line') ?? searchParams?.get('tab')
+  );
 
-  // ?brand= is unchanged: same param, same toBrandId resolution as before. It
-  // is only clamped when the brand has no tiles on the CURRENT line, so that
-  // switching lines can never strand the grid on an empty brand.
-  const requestedBrandId = toBrandId(searchParams?.get('brand'));
-  const brandId: BrandId = lineBrands.some((b) => b.id === requestedBrandId)
-    ? requestedBrandId
-    : lineBrands[0]?.id ?? requestedBrandId;
-  const brand = getBrand(brandId);
-
-  const packs =
-    line === 'cards'
-      ? CARD_REPACK_CATALOG.filter((p) => p.brand === brand.id)
-      : getCoinPacksForBrand(brand.id);
+  const { featured, other, hasOther } = brandsForLine(line);
+  const brandId = resolveBrandForLine(line, searchParams?.get('brand') as BrandId | null);
+  const brand = brandId ? getBrand(brandId) : null;
+  const packs = brandId ? packsForLineAndBrand(line, brandId) : [];
 
   // Null for a brand with pack tiles but no checklist content of any kind.
-  const checklistHref = checklistHrefForBrand(brand.id);
+  const checklistHref = brandId ? checklistHrefForBrand(brandId) : null;
 
-  const pushState = (nextLine: ProductLine, nextBrand: BrandId) => {
+  const pushState = (nextLine: ProductLine, nextBrand: BrandId | null) => {
     const p = new URLSearchParams(searchParams?.toString());
     p.delete('tab'); // legacy param: read for back-compat, never written
-    if (nextLine === 'cards') p.set('line', 'cards');
-    else p.delete('line');
-    p.set('brand', nextBrand);
-    router.push(`/repacks?${p.toString()}`);
+    writeLineParam(p, nextLine);
+    if (nextBrand) p.set('brand', nextBrand);
+    else p.delete('brand');
+    const query = p.toString();
+    router.push(query ? `/repacks?${query}` : '/repacks');
   };
+
+  const setLine = (next: ProductLine) =>
+    // Keep the current brand if it has tiles on the target line; otherwise
+    // land on that line's first brand.
+    pushState(next, resolveBrandForLine(next, brandId));
 
   const setBrand = (next: BrandId) => pushState(line, next);
 
-  const setLine = (next: ProductLine) => {
-    // Keep the current brand if it has tiles on the target line; otherwise
-    // land on that line's first brand.
-    const target = brandsForLine(next);
-    const keep = target.some((b) => b.id === brand.id) ? brand.id : target[0]?.id;
-    pushState(next, keep ?? brand.id);
-  };
+  // TIER 2. The coin line buckets its long tail behind "Other"; the card lines
+  // list their handful of brands flat. Both render through BucketedTabs.
+  const primary: BucketTab[] = [
+    ...featured.map((b) => ({ id: b.id, label: b.name })),
+    ...(hasOther ? [{ id: 'other', label: 'Other' }] : []),
+  ];
+  const secondary: BucketTab[] = other.map((b) => ({ id: b.id, label: b.name }));
+  const activePrimary = brandId ? bucketForBrand(line, brandId) : '';
 
   return (
     <>
@@ -104,44 +91,73 @@ export function RepacksClient() {
           Browse repacks by brand — every series is backed by a published checklist.
         </p>
 
-        {/* Product line is the OUTER tier; brand tabs sit under it, scoped to it. */}
-        {CARD_BRANDS.length > 0 && (
-          <div className="mt-6 flex justify-center">
-            <CoinsCardsToggle value={line} onChange={setLine} />
+        {/* TIER 1 — product line. Always all three, even an empty one. */}
+        <div className="mt-6 flex justify-center">
+          <ProductLineTabs value={line} onChange={setLine} />
+        </div>
+
+        {/* TIER 2 — brand, scoped to the selected line. */}
+        {primary.length > 0 && (
+          <div className="mt-4">
+            <BucketedTabs
+              ariaLabel="Brand"
+              primary={primary}
+              activePrimary={activePrimary}
+              onPrimary={(id) => {
+                if (id === 'other') setBrand(other[0]?.id ?? (brandId as BrandId));
+                else setBrand(id as BrandId);
+              }}
+              bucketId="other"
+              secondary={secondary}
+              activeSecondary={brandId}
+              onSecondary={(id) => setBrand(id as BrandId)}
+              emptyLabel="No other brands on this line."
+            />
           </div>
         )}
-
-        <div className="mt-4">
-          <BrandTabs value={brand.id} onChange={setBrand} brands={lineBrands} />
-        </div>
       </div>
 
-      {/* Brand header (logo / wordmark + tagline) */}
-      <BrandHeader brand={brand} />
-
-      {packs.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {packs.map((repack) => (
-            <RepackCard key={repack.id} {...repack} />
-          ))}
+      {/* A line with no packs at all stays selectable and says so. */}
+      {brand === null ? (
+        <div className="rounded-lg border border-slate-700 bg-slate-900/40 py-16 text-center">
+          <div className="mb-4 text-6xl">🃏</div>
+          <h2 className="mb-2 text-2xl font-bold text-slate-200">
+            {lineLabel(line)} coming soon
+          </h2>
+          <p className="text-slate-400">
+            No {lineLabel(line).toLowerCase()} packs are available yet — check back soon.
+          </p>
         </div>
       ) : (
-        <div className="text-center text-slate-400 py-16">
-          No packs to show for {brand.name} yet — check back soon.
-        </div>
-      )}
+        <>
+          {/* Brand header (logo / wordmark + tagline) */}
+          <BrandHeader brand={brand} />
 
-      {/* Checklist link for this brand, omitted when it has no checklist. */}
-      {checklistHref && (
-        <div className="mt-10 text-center">
-          <Link
-            href={checklistHref}
-            className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
-          >
-            View {brand.name} checklists
-            <span>→</span>
-          </Link>
-        </div>
+          {packs.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {packs.map((repack) => (
+                <RepackCard key={repack.id} {...repack} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-slate-400 py-16">
+              No packs to show for {brand.name} yet — check back soon.
+            </div>
+          )}
+
+          {/* Checklist link for this brand, omitted when it has no checklist. */}
+          {checklistHref && (
+            <div className="mt-10 text-center">
+              <Link
+                href={checklistHref}
+                className="inline-flex items-center gap-2 text-gold hover:underline font-medium"
+              >
+                View {brand.name} checklists
+                <span>→</span>
+              </Link>
+            </div>
+          )}
+        </>
       )}
 
       <div className="mt-16 text-center">
