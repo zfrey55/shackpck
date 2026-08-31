@@ -12,6 +12,7 @@ import {
   STATIC_CARD_SERIES,
   adaptApiSeries,
   adaptApiSeriesList,
+  countSeriesForType,
   getSeriesFor,
   getSeriesTypesForBrand,
   mergeCardSeries,
@@ -294,6 +295,226 @@ check(
   'seriesId is identity: it is never derived and never rewritten',
   adaptApiSeries(complete({ seriesId: 'gauntlet-live_20260826_c7353522' }))?.id,
   'gauntlet-live_20260826_c7353522'
+);
+
+console.log('\n--- GROUPED DAYS: parentSeriesId is inert while it is null ---\n');
+
+/**
+ * Today's live shape: the field is PRESENT and NULL on every series. Before
+ * this change the field did not exist at all, so present-and-null must be
+ * indistinguishable from absent. That equality IS the inertness proof.
+ */
+const LIVE_SHAPE: ApiSeriesLike[] = [
+  complete({ seriesId: 'gauntlet-live_20260827_b84851a8', seriesType: 'Gauntlet Live', seriesDate: '2026-08-27', submittedAt: '2026-08-27T21:33:30.030Z', parentSeriesId: null }),
+  complete({ seriesId: 'select-8-27_20260827_ac9cd0e9', seriesType: 'Select', seriesDate: '2026-08-27', submittedAt: '2026-08-27T21:34:56.755Z', parentSeriesId: null }),
+  complete({ seriesId: 'fucion-8-27_20260827_63d6086e', seriesType: 'Fusion', seriesDate: '2026-08-27', submittedAt: '2026-08-27T21:35:19.704Z', parentSeriesId: null }),
+  complete({ seriesId: 'nova-8-27_20260827_7dfb33f4', seriesType: 'Nova', seriesDate: '2026-08-27', submittedAt: '2026-08-27T21:35:43.929Z', parentSeriesId: null }),
+];
+/** The same four with the field removed entirely - the pre-change payload. */
+const PRE_CHANGE_SHAPE: ApiSeriesLike[] = LIVE_SHAPE.map((s) => {
+  const { parentSeriesId, ...rest } = s;
+  return rest;
+});
+
+check(
+  'INERTNESS: all-null parentSeriesId adapts identically to the field being absent',
+  adaptApiSeriesList(LIVE_SHAPE),
+  adaptApiSeriesList(PRE_CHANGE_SHAPE)
+);
+check(
+  'INERTNESS: all four stay top-level, numbered exactly as before',
+  byId(adaptApiSeriesList(LIVE_SHAPE)),
+  [
+    'fucion-8-27_20260827_63d6086e:Fusion Series 1',
+    'gauntlet-live_20260827_b84851a8:Gauntlet Live Series 1',
+    'nova-8-27_20260827_7dfb33f4:Nova Series 1',
+    'select-8-27_20260827_ac9cd0e9:Select Series 1',
+  ]
+);
+check(
+  'INERTNESS: no series acquires a cabinet',
+  adaptApiSeriesList(LIVE_SHAPE).every((s) => s.cabinets.length === 0),
+  true
+);
+check(
+  'INERTNESS: the static base is flat too - every archive series and example',
+  STATIC_CARD_SERIES.every((s) => s.cabinets.length === 0),
+  true
+);
+
+console.log('\n--- GROUPED DAYS: umbrella / cabinet assembly ---\n');
+
+/** Compact tree view: top-level titles, each with its cabinet seriesTypes. */
+const tree = (list: { id: string; seriesName: string; cabinets: { id: string }[] }[]) =>
+  list
+    .map((s) => `${s.id}:${s.seriesName}[${s.cabinets.map((c) => c.id).join(',')}]`)
+    .sort();
+
+const GROUP_DAY: ApiSeriesLike[] = [
+  complete({ seriesId: 'umb', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+  complete({ seriesId: 'cabA', seriesType: 'Nova', submittedAt: '2026-09-01T09:30:00.000Z', parentSeriesId: 'umb' }),
+  complete({ seriesId: 'cabB', seriesType: 'Abyss', submittedAt: '2026-09-01T09:45:00.000Z', parentSeriesId: 'umb' }),
+];
+const grouped = adaptApiSeriesList(GROUP_DAY);
+
+check('umbrella + 2 cabinets -> exactly ONE top-level entry', grouped.length, 1);
+check('the umbrella is the survivor, and it is numbered', tree(grouped), ['umb:Gauntlet Live Series 1[cabA,cabB]']);
+check('the umbrella carries 2 cabinets', grouped[0].cabinets.length, 2);
+check(
+  'cabinets are ABSENT from the top level',
+  grouped.map((s) => s.id).filter((id) => id === 'cabA' || id === 'cabB'),
+  []
+);
+check(
+  'a cabinet is never itself a parent - two levels, always',
+  grouped[0].cabinets.every((c) => c.cabinets.length === 0),
+  true
+);
+check(
+  'cabinets keep their own seriesType, which is the section heading',
+  grouped[0].cabinets.map((c) => c.seriesType),
+  ['Nova', 'Abyss']
+);
+check(
+  'cabinets are NOT numbered - seriesName stays the bare title base',
+  grouped[0].cabinets.map((c) => c.seriesName),
+  ['Nova', 'Abyss']
+);
+
+console.log('\n--- GROUPED DAYS: cabinets consume no sequence numbers ---\n');
+
+check(
+  'grouped day + a flat series, same date and type -> umbrella 1, flat 2',
+  byId(
+    adaptApiSeriesList([
+      ...GROUP_DAY,
+      complete({ seriesId: 'flat', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T12:00:00.000Z' }),
+    ])
+  ),
+  ['flat:Gauntlet Live Series 2', 'umb:Gauntlet Live Series 1']
+);
+check(
+  'the two cabinets did NOT take Series 2 and 3 from the flat series',
+  adaptApiSeriesList([
+    ...GROUP_DAY,
+    complete({ seriesId: 'flat', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T12:00:00.000Z' }),
+  ]).find((s) => s.id === 'flat')?.seriesName,
+  'Gauntlet Live Series 2'
+);
+
+console.log('\n--- GROUPED DAYS: cabinet ordering ---\n');
+
+check(
+  'cabinets sort by submittedAt ascending, whatever the input order',
+  adaptApiSeriesList([
+    complete({ seriesId: 'u', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+    complete({ seriesId: 'late', seriesType: 'Nova', submittedAt: '2026-09-01T18:00:00.000Z', parentSeriesId: 'u' }),
+    complete({ seriesId: 'early', seriesType: 'Abyss', submittedAt: '2026-09-01T10:00:00.000Z', parentSeriesId: 'u' }),
+    complete({ seriesId: 'mid', seriesType: 'Select', submittedAt: '2026-09-01T14:00:00.000Z', parentSeriesId: 'u' }),
+  ])[0].cabinets.map((c) => c.id),
+  ['early', 'mid', 'late']
+);
+check(
+  'identical submittedAt -> deterministic tiebreak on seriesId ascending',
+  adaptApiSeriesList([
+    complete({ seriesId: 'u', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+    complete({ seriesId: 'zzz', seriesType: 'Nova', submittedAt: '2026-09-01T12:00:00.000Z', parentSeriesId: 'u' }),
+    complete({ seriesId: 'aaa', seriesType: 'Abyss', submittedAt: '2026-09-01T12:00:00.000Z', parentSeriesId: 'u' }),
+  ])[0].cabinets.map((c) => c.id),
+  ['aaa', 'zzz']
+);
+
+console.log('\n--- GROUPED DAYS: orphans (contract says impossible; handled anyway) ---\n');
+
+check(
+  'parentSeriesId names a MISSING id -> renders flat, top-level, numbered',
+  tree(
+    adaptApiSeriesList([
+      complete({ seriesId: 'lonely', seriesType: 'Gauntlet Live', parentSeriesId: 'no-such-series' }),
+    ])
+  ),
+  ['lonely:Gauntlet Live Series 1[]']
+);
+check(
+  'CROSS-DATE parent reference -> orphan; groups never join across dates',
+  tree(
+    adaptApiSeriesList([
+      complete({ seriesId: 'p', seriesType: 'Gauntlet Live', seriesDate: '2026-09-01' }),
+      complete({ seriesId: 'c', seriesType: 'Nova', seriesDate: '2026-09-02', parentSeriesId: 'p' }),
+    ])
+  ),
+  ['c:Nova Series 1[]', 'p:Gauntlet Live Series 1[]']
+);
+check(
+  'THREE LEVELS a<-b<-c -> b is a cabinet of a, c is an orphan, no recursion',
+  tree(
+    adaptApiSeriesList([
+      complete({ seriesId: 'a', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z' }),
+      complete({ seriesId: 'b', seriesType: 'Nova', submittedAt: '2026-09-01T10:00:00.000Z', parentSeriesId: 'a' }),
+      complete({ seriesId: 'c', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T11:00:00.000Z', parentSeriesId: 'b' }),
+    ])
+  ),
+  ['a:Gauntlet Live Series 1[b]', 'c:Gauntlet Live Series 2[]']
+);
+check(
+  'a SELF-REFERENCING parentSeriesId -> orphan, and terminates',
+  tree(
+    adaptApiSeriesList([
+      complete({ seriesId: 'self', seriesType: 'Gauntlet Live', parentSeriesId: 'self' }),
+    ])
+  ),
+  ['self:Gauntlet Live Series 1[]']
+);
+check(
+  'a two-series CYCLE -> both orphans, and terminates',
+  tree(
+    adaptApiSeriesList([
+      complete({ seriesId: 'x', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T09:00:00.000Z', parentSeriesId: 'y' }),
+      complete({ seriesId: 'y', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T10:00:00.000Z', parentSeriesId: 'x' }),
+    ])
+  ),
+  ['x:Gauntlet Live Series 1[]', 'y:Gauntlet Live Series 2[]']
+);
+check(
+  'GATED-OUT umbrella -> its cabinets become orphans and render flat, not lost',
+  tree(
+    adaptApiSeriesList([
+      complete({ seriesId: 'gone', seriesType: undefined, submittedAt: '2026-09-01T09:00:00.000Z' }),
+      complete({ seriesId: 'c1', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T10:00:00.000Z', parentSeriesId: 'gone' }),
+      complete({ seriesId: 'c2', seriesType: 'Gauntlet Live', submittedAt: '2026-09-01T11:00:00.000Z', parentSeriesId: 'gone' }),
+    ])
+  ),
+  ['c1:Gauntlet Live Series 1[]', 'c2:Gauntlet Live Series 2[]']
+);
+
+console.log('\n--- GROUPED DAYS: nav and counts see the umbrella only ---\n');
+
+const groupedMerged = mergeCardSeries(STATIC_CARD_SERIES, adaptApiSeriesList(GROUP_DAY));
+
+check(
+  'a grouped day adds NO new group button - Nova and Abyss cabinets are invisible to the nav',
+  getSeriesTypesForBrand(groupedMerged, 'shackpack'),
+  getSeriesTypesForBrand(STATIC_CARD_SERIES, 'shackpack')
+);
+check(
+  'countSeriesForType counts the umbrella only, never its cabinets',
+  countSeriesForType(groupedMerged, 'shackpack', 'Gauntlet'),
+  countSeriesForType(STATIC_CARD_SERIES, 'shackpack', 'Gauntlet') + 1
+);
+check(
+  'the cabinets add nothing to the counts of THEIR own seriesTypes either',
+  ['Nova', 'Abyss'].map((t) => countSeriesForType(groupedMerged, 'shackpack', t)),
+  ['Nova', 'Abyss'].map((t) => countSeriesForType(STATIC_CARD_SERIES, 'shackpack', t))
+);
+check(
+  'the date lists exactly one series, the umbrella, with its cabinets nested',
+  tree(getSeriesFor(groupedMerged, 'shackpack', 'Gauntlet', '2026-09-01')),
+  ['umb:Gauntlet Live Series 1[cabA,cabB]']
+);
+check(
+  'merge: a grouped day adds ONE row to the merged list, not three',
+  groupedMerged.length,
+  STATIC_CARD_SERIES.length + 1
 );
 
 if (failures > 0) {

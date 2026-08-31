@@ -97,6 +97,15 @@ export interface CardChecklistSeriesSummary {
   seriesType?: string;
   customerName?: string;
   /**
+   * GROUP LINK. `null` (or absent) means this series is FLAT or an UMBRELLA;
+   * a string means it is a CABINET and names its umbrella's seriesId.
+   *
+   * There is no separate umbrella marker: an umbrella is any series whose
+   * seriesId appears here on another series WITH THE SAME seriesDate. The
+   * contract is exactly two levels, so a cabinet is never itself a parent.
+   */
+  parentSeriesId?: string | null;
+  /**
    * ISO timestamp of submission. The sole ordering key for series numbering
    * within a date - never array position, so a published series number is
    * stable across fetches.
@@ -152,6 +161,15 @@ export interface CardChecklistSeriesResponse {
    */
   seriesType?: string;
   customerName?: string;
+  /**
+   * GROUP LINK. `null` (or absent) means this series is FLAT or an UMBRELLA;
+   * a string means it is a CABINET and names its umbrella's seriesId.
+   *
+   * There is no separate umbrella marker: an umbrella is any series whose
+   * seriesId appears here on another series WITH THE SAME seriesDate. The
+   * contract is exactly two levels, so a cabinet is never itself a parent.
+   */
+  parentSeriesId?: string | null;
   /**
    * ISO timestamp of submission. The sole ordering key for series numbering
    * within a date - never array position, so a published series number is
