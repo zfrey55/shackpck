@@ -20,7 +20,10 @@ export type RepackCatalogItem = {
   description: string;
   image: string;
   coinCount?: string;
-  /** Badge / pill next to coin count (metal tier + graded). */
+  /**
+   * Product-line badge on the tile. Deliberately NOT a contents claim —
+   * it names the line ('Coins', 'Sports Cards'), never what is inside.
+   */
   category: string;
   /** Owning customer brand. */
   brand: BrandId;
@@ -46,8 +49,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Reign by Shackpack',
     description: D,
     image: '/images/packs/shackpack-reign.png',
-    coinCount: '10 coins',
-    category: 'Pre-33 Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -55,8 +57,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Prominence by Shackpack',
     description: D,
     image: '/images/packs/shackpack-prominence.png',
-    coinCount: '10 coins',
-    category: 'Pre-33 Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -64,8 +65,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Apex by Shackpack',
     description: D,
     image: '/images/packs/shackpack-apex.png',
-    coinCount: '10 coins',
-    category: 'Pre-33 5x Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -73,8 +73,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack',
     description: D,
     image: '/images/packs/Shackpack-starter.png',
-    coinCount: '10 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -82,8 +81,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Deluxe',
     description: D,
     image: '/images/packs/shackpack-deluxe.png',
-    coinCount: '10 coins',
-    category: '2x Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -91,8 +89,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Xtreme',
     description: D,
     image: '/images/packs/shackpack-xtreme.png',
-    coinCount: '10 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -100,8 +97,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Unleashed',
     description: D,
     image: '/images/packs/shackpack-unleashed.png',
-    coinCount: '10 coins',
-    category: '2x Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -109,8 +105,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Resurgence',
     description: D,
     image: '/images/packs/shackpack-resurgence.png',
-    coinCount: '10 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -118,8 +113,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Transcendent',
     description: D,
     image: '/images/packs/shackpack-transcendent.png',
-    coinCount: '10 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -127,8 +121,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Transcendent Transformed',
     description: D,
     image: '/images/packs/shackpack-transcscendenttransformed.png',
-    coinCount: '10 coins',
-    category: '2x Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -136,8 +129,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Aura by Shackpack',
     description: D,
     image: '/images/packs/shackpack-aura.png',
-    coinCount: '10 coins',
-    category: 'Pre-33 Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -145,8 +137,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Pinnacle by Shackpack',
     description: D,
     image: '/images/packs/shackpack-pinnacle.jpeg',
-    coinCount: '10 coins',
-    category: 'Pre-33 2x Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -154,8 +145,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Ascension by Shackpack',
     description: D,
     image: '/images/packs/shackpack-ascension.png',
-    coinCount: '10 coins',
-    category: 'Pre-33 2x Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -163,8 +153,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Summit by Shackpack',
     description: D,
     image: '/images/packs/shackpack-summit.png',
-    coinCount: '10 coins',
-    category: 'Pre-33 Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -172,8 +161,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Ignite',
     description: D,
     image: '/images/packs/shackpack-ignite.PNG',
-    coinCount: '10 coins',
-    category: 'Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -181,8 +169,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Radiant',
     description: D,
     image: '/images/packs/shackpack-radiant.PNG',
-    coinCount: '10 coins',
-    category: 'Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -190,8 +177,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Eclipse',
     description: D,
     image: '/images/packs/shackpack-eclipse.PNG',
-    coinCount: '10 coins',
-    category: 'Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -199,8 +185,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Flex',
     description: D,
     image: '/images/packs/shackpack-flex.png',
-    coinCount: 'Custom',
-    category: 'Custom Series',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -208,8 +193,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack Expo',
     description: D,
     image: '/images/packs/shackpack-expo.png',
-    coinCount: 'Custom',
-    category: 'Custom Series',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -217,8 +201,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Currency Clash by Shackpack',
     description: D,
     image: '/images/packs/shackpack-currencyclash.png',
-    coinCount: 'Custom',
-    category: 'Custom Series',
+    category: 'Coins',
     brand: 'shackpack',
   },
   {
@@ -226,7 +209,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'ShackPack 67',
     description: D,
     image: '/images/packs/shackpack-67.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'shackpack',
   },
 
@@ -236,8 +219,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Gold Mine',
     description: D,
     image: '/images/packs/coinwave-goldmine.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -245,8 +227,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave The Mine',
     description: D,
     image: '/images/packs/coinwave-themine.png',
-    coinCount: '20 coins',
-    category: 'Gold, Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -254,8 +235,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Platinum Drill',
     description: D,
     image: '/images/packs/coinwave-platinumdrill.png',
-    coinCount: '20 coins',
-    category: 'Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -263,8 +243,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Gold Pan',
     description: D,
     image: '/images/packs/coinwave-goldpan.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -272,8 +251,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Barrel',
     description: D,
     image: '/images/packs/coinwave-barrel.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -281,8 +259,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Big Kahunas',
     description: D,
     image: '/images/packs/coinwave-big-kahuna.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -290,8 +267,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Splash',
     description: D,
     image: '/images/packs/coinwave-splash.png',
-    coinCount: '20 coins',
-    category: 'Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -299,8 +275,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Tsunami',
     description: D,
     image: '/images/packs/coinwave-tsunami.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -308,8 +283,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Megalodon',
     description: D,
     image: '/images/packs/coinwave-megalodon.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -317,8 +291,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Platinum Marlin',
     description: D,
     image: '/images/packs/coinwave-platinum-marlin.png',
-    coinCount: '20 coins',
-    category: 'Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -326,8 +299,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Golden Tuna',
     description: D,
     image: '/images/packs/coinwave-golden-tuna.png',
-    coinCount: '20 coins',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -335,7 +307,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Orca',
     description: D,
     image: '/images/packs/coinwave-orca.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
   {
@@ -343,7 +315,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Coinwave Kraken',
     description: D,
     image: '/images/packs/coinwave-kraken.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'coinwave',
   },
 
@@ -353,7 +325,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Fortune Forge Gold Quest',
     description: D,
     image: '/images/packs/fortuneforge-goldquest.png',
-    category: 'Gold & Silver | Graded',
+    category: 'Coins',
     brand: 'fortune-forge',
   },
   {
@@ -361,7 +333,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Fortune Forge Platinum Pursuit',
     description: D,
     image: '/images/packs/fortuneforge-platinumpursuit.png',
-    category: 'Platinum & Silver | Graded',
+    category: 'Coins',
     brand: 'fortune-forge',
   },
 
@@ -371,7 +343,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Bald Bunny Black Label',
     description: D,
     image: '/images/packs/baldbunny-blacklabel.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'bald-bunny',
   },
   {
@@ -379,7 +351,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Bald Bunny Pink Diamond',
     description: D,
     image: '/images/packs/baldbunny-pinkdiamond.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'bald-bunny',
   },
 
@@ -389,7 +361,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Lincoln Reserve Banger Bags',
     description: D,
     image: '/images/packs/lincolnreserve-bangerbags.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'lincoln-reserve',
   },
 
@@ -399,7 +371,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Blue Collar Bullion Golden Girl',
     description: D,
     image: '/images/packs/bluecollarbullion-goldengirl.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'blue-collar-bullion',
   },
 
@@ -409,7 +381,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Cobra Coin Shadow',
     description: D,
     image: '/images/packs/cobracoin-shadow.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'cobra-coin',
   },
   {
@@ -417,7 +389,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Cobra Coin Venom',
     description: D,
     image: '/images/packs/cobracoin-venom.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'cobra-coin',
   },
   {
@@ -425,7 +397,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Cobra Coin Strike',
     description: D,
     image: '/images/packs/cobracoin-strike.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'cobra-coin',
   },
 
@@ -435,7 +407,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Golden Emu Silver Egg',
     description: D,
     image: '/images/packs/goldenemu-silveregg.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'golden-emu',
   },
 
@@ -445,7 +417,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Juicebox Bullion Single Squeeze',
     description: D,
     image: '/images/packs/juicebox-singlesqueeze.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'juicebox-bullion',
   },
   {
@@ -453,7 +425,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Juicebox Bullion Double Squeeze',
     description: D,
     image: '/images/packs/juicebox-doublesqueeze.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'juicebox-bullion',
   },
   {
@@ -461,7 +433,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Juicebox Bullion Full Squeeze',
     description: D,
     image: '/images/packs/juicebox-fullsqueeze.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'juicebox-bullion',
   },
 
@@ -471,7 +443,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'One Nasty Coin Mystery Pack',
     description: D,
     image: '/images/packs/onenastycoin-mysterypack.png',
-    category: 'Graded',
+    category: 'Coins',
     brand: 'one-nasty-coin',
   },
 ];

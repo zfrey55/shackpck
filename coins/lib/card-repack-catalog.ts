@@ -9,15 +9,24 @@ import type { RepackCatalogItem } from '@/lib/repack-catalog';
  * series that its own header states are NOT subject to a contents-may-vary
  * caveat. Calling those examples contradicted the data.
  *
- * The wording now defers to the published checklist without characterizing
- * what it contains, so it stays true whether the series behind it is a real
- * archived checklist or an undated example. Per the compliance policy in
- * lib/repack-catalog.ts, the tile itself still makes no specific-contents
- * claim. Example-only content carries its own caveat at the point of render,
- * in the checklist's CardSeriesBrowser.
+ * The wording now MATCHES the coin-side REPACK_CHECKLIST_DISCLAIMER verbatim.
+ * The two used to differ because the card tiles carried their own contents
+ * claims (a per-series card count and a show-format badge) that the coin tiles
+ * did not; with those removed, no tile on either side claims contents, so
+ * there is nothing left for the two strings to say differently.
+ *
+ * The value is duplicated rather than imported ON PURPOSE for now — see the
+ * note on the constant below. Example-only content still carries its own
+ * caveat at the point of render, in the checklist's CardSeriesBrowser.
+ *
+ * NOTE: this constant is now character-identical to REPACK_CHECKLIST_DISCLAIMER
+ * in lib/repack-catalog.ts. That makes one of the two redundant. Consolidating
+ * is deliberately NOT done here — it would change an exported symbol used by
+ * app/checklist/components/CardSeriesBrowser.tsx, which is unrelated to
+ * removing contents claims from tiles. Worth its own commit.
  */
 export const CARD_REPACK_CHECKLIST_DISCLAIMER =
-  'See the published checklist for each series — contents vary by series.';
+  'Contents vary by series — see checklist for more details.';
 
 const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`;
 
@@ -31,8 +40,10 @@ const d = (body: string) => `${body.trim()} ${CARD_REPACK_CHECKLIST_DISCLAIMER}`
  *   Limitless  — Multi-Sport, Multi-Show
  *   Blitz      — Multi-Sport, Multi-Show
  *
- * Every product is a sealed 10-card series spanning Football, Basketball, and
- * Baseball. Products may include a mix of professionally graded and raw cards.
+ * Products span Football, Basketball and Baseball and may include a mix of
+ * professionally graded and raw cards. Per-series contents — including how
+ * many cards a series holds — are stated only by the published checklist,
+ * never by a tile.
  * Abyss/Equinox/Limitless/Blitz are tiles only for now — no example checklist
  * on the /checklist Cards tab yet.
  */
@@ -44,8 +55,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern Panini Prizm, Topps Chrome, and Bowman Chrome. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-fusion.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Multi-Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
   {
@@ -55,8 +65,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — sold and opened within a single show. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-nova.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Single Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
   {
@@ -66,8 +75,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — sold and opened within a single show. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-select.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Single Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
   {
@@ -77,8 +85,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-abyss.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Multi-Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
   {
@@ -88,8 +95,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-equinox.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Multi-Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
   {
@@ -99,8 +105,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-limitless.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Multi-Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
   {
@@ -110,8 +115,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Multi-sport cards spanning Football, Basketball, and Baseball — vintage rookies through modern releases. May include a mix of graded (PSA, BGS, SGC) and raw cards.'
     ),
     image: '/images/packs/shackpack-blitz.png',
-    coinCount: '10 cards per series',
-    category: 'Multi-Sport · Multi-Show Series',
+    category: 'Sports Cards',
     brand: 'shackpack',
   },
 
@@ -126,7 +130,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
     ),
     image: '/images/packs/vaultroombreaks-breach.png',
-    category: 'Multi-Sport · Graded Slabs',
+    category: 'Sports Cards',
     brand: 'vault-room-breaks',
   },
   {
@@ -136,7 +140,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
     ),
     image: '/images/packs/vaultroombreaks-heist.png',
-    category: 'Multi-Sport · Graded Slabs',
+    category: 'Sports Cards',
     brand: 'vault-room-breaks',
   },
   {
@@ -146,7 +150,7 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
       'Curated multi-sport sports card break — graded slabs from PSA, BGS, and SGC.'
     ),
     image: '/images/packs/vaultroombreaks-seize.png',
-    category: 'Multi-Sport · Graded Slabs',
+    category: 'Sports Cards',
     brand: 'vault-room-breaks',
   },
 ];

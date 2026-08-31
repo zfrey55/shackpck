@@ -51,8 +51,11 @@ export function RepackCard({
         <div className="mb-3">
           <h3 className="text-xl font-semibold text-slate-200 mb-2">{name}</h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-400">
-            {/* Show the count badge only when a pack specifies one; packs
-                without a coinCount (e.g. new brands) show just the category. */}
+            {/* NO pack sets coinCount today — tiles never claim contents, they
+                defer to the published checklist — so this renders the category
+                alone. The bullet lives INSIDE the conditional on purpose: it is
+                a separator, and without a left-hand side it must not appear.
+                The field is kept so a future pack could opt back in. */}
             {coinCount && (
               <>
                 <span>{coinCount}</span>
