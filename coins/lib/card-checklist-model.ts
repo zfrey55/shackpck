@@ -79,6 +79,39 @@ export type CardSeries = {
   verbatimEntries?: boolean;
 };
 
+/**
+ * Which of the two example notices a series carries.
+ *
+ * THE INVARIANT, and the reason this is a function rather than two unrelated
+ * conditionals in the render layer: a series shows EXACTLY ONE of these. Never
+ * both, and never neither for an example.
+ *
+ *   'illustrative' — the amber banner. This list is a sample; no pack was
+ *                    built from it and a produced series will differ.
+ *   'finalized'    — the finalized statement. This series is closed; the pack
+ *                    count and item count will not change.
+ *   'none'         — not an example. A dated series (the frozen archive, or a
+ *                    live API series) is a real published run and states
+ *                    neither.
+ *
+ * The two are contradictory by construction — "no pack was built from this
+ * list" against "this series has been finalized" — so rendering both on one
+ * series tells a customer two opposite things about the same checklist. That
+ * happened: the banner was a GROUP-level slot above every example card while
+ * the finalized statement was per-card, so a finalized example got both.
+ * Deciding here, per series, is what makes that unrepresentable.
+ *
+ * `finalizedOn` is checked FIRST so a finalized series always states it, even
+ * if it ever carries a date.
+ */
+export type ExampleNotice = 'illustrative' | 'finalized' | 'none';
+
+export function exampleNoticeFor(series: CardSeries): ExampleNotice {
+  if (series.finalizedOn) return 'finalized';
+  if (series.seriesDate === null) return 'illustrative';
+  return 'none';
+}
+
 /** Group heading used for all undated example content. */
 export const EXAMPLE_SERIES_TYPE = 'Example Checklists';
 

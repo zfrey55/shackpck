@@ -1,4 +1,4 @@
-import type { CardEntry, CardSeries } from '@/lib/card-checklist-model';
+import { exampleNoticeFor, type CardEntry, type CardSeries } from '@/lib/card-checklist-model';
 import { cleanEntryName } from '@/lib/clean-entry-name';
 import { seriesFinalizedStatement } from '@/lib/repack-catalog';
 
@@ -23,6 +23,38 @@ function formatFinalizedOn(isoDate: string): string {
 const CABINET_SECTIONS_NOTE =
   'Each section below is a slice of the full checklist above. A card that ' +
   'appears in both places is the same card listed twice — not an extra one.';
+
+/**
+ * The ILLUSTRATIVE notice — one of the two mutually exclusive example notices
+ * (see exampleNoticeFor in lib/card-checklist-model).
+ *
+ * It deliberately does not tell the reader to consult the checklist: they are
+ * reading it. What it must do is say the list is a sample and that a real pack
+ * will hold different cards. Both halves matter — "illustrative" alone leaves
+ * a buyer free to expect these exact cards.
+ *
+ * THIS USED TO BE A GROUP-LEVEL BANNER in CardSeriesBrowser, rendered once
+ * above every card in the examples group. It moved here so that it and the
+ * finalized statement are decided in one place, for one series, by one
+ * function. At group level the two could both apply to a finalized example,
+ * which said "no pack was built from this list" directly above "this series
+ * has been finalized". It also means a group holding both kinds of example —
+ * which no brand has today, but nothing prevents — is handled with no extra
+ * code path.
+ */
+const EXAMPLE_CHECKLIST_CAVEAT =
+  'The cards below illustrate what a series in this line can look like. ' +
+  'No pack was built from this list, and a produced series will contain ' +
+  'different cards.';
+
+function IllustrativeNotice() {
+  return (
+    <div className="mb-4 rounded-md border border-amber-600/60 bg-amber-900/20 p-3 text-sm leading-relaxed text-amber-100">
+      <strong>EXAMPLE CHECKLIST — NOT A FINALIZED SERIES.</strong>{' '}
+      {EXAMPLE_CHECKLIST_CAVEAT}
+    </div>
+  );
+}
 
 /** Cards sorted by value rank, most valuable first. */
 function byPosition(cards: CardEntry[]): CardEntry[] {
@@ -113,6 +145,8 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
   const cards = byPosition(series.cards);
   const hasCabinets = series.cabinets.length > 0;
   const verbatim = series.verbatimEntries === true;
+  // EXACTLY ONE of the two notices, never both — see exampleNoticeFor.
+  const notice = exampleNoticeFor(series);
 
   return (
     <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-6 shadow-lg">
@@ -126,12 +160,14 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
         </p>
       </div>
 
+      {notice === 'illustrative' && <IllustrativeNotice />}
+
       {/*
         Pack size is DERIVED from the list, never stored, so the stated count
         and the rows below it cannot drift apart. Shown only for a finalized
         example, where the count is a settled fact rather than a claim.
       */}
-      {series.finalizedOn && (
+      {notice === 'finalized' && (
         <p className="mb-3 text-sm text-slate-400">
           Example checklist. {cards.length} cards per pack.
         </p>
@@ -139,7 +175,7 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
 
       <CardList cards={cards} idPrefix={series.id} verbatim={verbatim} />
 
-      {series.finalizedOn && (
+      {notice === 'finalized' && series.finalizedOn && (
         <p className="mt-4 border-t border-slate-800 pt-3 text-sm leading-relaxed text-slate-400">
           {seriesFinalizedStatement(formatFinalizedOn(series.finalizedOn))}
         </p>

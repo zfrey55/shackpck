@@ -11,6 +11,7 @@
 import {
   EXAMPLE_SERIES_TYPE,
   STATIC_CARD_SERIES,
+  exampleNoticeFor,
   adaptApiSeries,
   adaptApiSeriesList,
   countSeriesForType,
@@ -598,6 +599,48 @@ check(
   'a live API series still routes by customerName, not by line',
   adaptApiSeries(complete({ customerName: 'ShackPack' }))?.brandId,
   'shackpack'
+);
+
+console.log('\n--- example notices: banner XOR finalized statement, never both ---\n');
+
+const noticeFor = (name: string) =>
+  exampleNoticeFor(STATIC_CARD_SERIES.find((s) => s.seriesName === name)!);
+
+check("Komodo 'Purity' -> finalized statement, NO banner", noticeFor('Purity'), 'finalized');
+check("Komodo 'Legend' -> finalized statement, NO banner", noticeFor('Legend'), 'finalized');
+check("'ShackPack Fusion' -> banner, NO finalized statement", noticeFor('ShackPack Fusion'), 'illustrative');
+check("'ShackPack Nova' -> banner", noticeFor('ShackPack Nova'), 'illustrative');
+check("'ShackPack Select' -> banner", noticeFor('ShackPack Select'), 'illustrative');
+check("'Vault Room Breaks Series 1' -> banner", noticeFor('Vault Room Breaks Series 1'), 'illustrative');
+
+check(
+  'THE INVARIANT: every example gets exactly one notice, never none',
+  STATIC_CARD_SERIES.filter((s) => s.seriesDate === null)
+    .every((s) => exampleNoticeFor(s) === 'illustrative' || exampleNoticeFor(s) === 'finalized'),
+  true
+);
+check(
+  'THE INVARIANT: no example is both - finalized implies not illustrative',
+  STATIC_CARD_SERIES.filter((s) => s.seriesDate === null)
+    .some((s) => Boolean(s.finalizedOn) && exampleNoticeFor(s) === 'illustrative'),
+  false
+);
+check(
+  'a DATED archive series states neither notice',
+  STATIC_CARD_SERIES.filter((s) => s.seriesDate !== null).every((s) => exampleNoticeFor(s) === 'none'),
+  true
+);
+check(
+  'a live API series states neither notice',
+  exampleNoticeFor(adaptApiSeries(complete())!),
+  'none'
+);
+check(
+  'notice split across all static content',
+  ['illustrative', 'finalized', 'none'].map(
+    (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
+  ),
+  [5, 2, 19]
 );
 
 if (failures > 0) {
