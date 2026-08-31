@@ -25,7 +25,12 @@ export type BrandId =
   | 'golden-emu'
   | 'juicebox-bullion'
   | 'one-nasty-coin'
-  | 'vault-room-breaks';
+  | 'vault-room-breaks'
+  | 'bullion-bureau'
+  | 'let-it-ride'
+  | 'black-mountain'
+  | 'komodo-rips'
+  | 'pop1-pokeshop';
 
 export type Brand = {
   id: BrandId;
@@ -55,7 +60,7 @@ export const BRANDS: Brand[] = [
   {
     id: 'shackpack',
     name: 'ShackPack',
-    tagline: 'Premium graded coin & card repacks — every series backed by a published checklist.',
+    tagline: 'Premium certified coin & sports card repacks',
     isDefault: true,
     hasCards: true,
     caseTypePrefixes: [],
@@ -63,31 +68,31 @@ export const BRANDS: Brand[] = [
   {
     id: 'coinwave',
     name: 'Coinwave',
-    tagline: 'Graded gold, platinum & silver repacks — 20 coins per series.',
+    tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['coinwave'],
   },
   {
     id: 'fortune-forge',
     name: 'Fortune Forge',
-    tagline: 'Forged for the hunt — graded gold & platinum repacks.',
+    tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['fortuneforge', 'fortune-forge'],
   },
   {
     id: 'bald-bunny',
     name: 'Bald Bunny',
-    tagline: 'Bold, premium graded coin repacks.',
+    tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['baldbunny', 'bald-bunny'],
   },
   {
     id: 'lincoln-reserve',
     name: 'Lincoln Reserve',
-    tagline: 'Reserve-grade graded coin repacks.',
+    tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['lincolnreserve', 'lincoln-reserve'],
   },
   {
     id: 'blue-collar-bullion',
     name: 'Blue Collar Bullion',
-    tagline: 'Hard-working graded coin repacks — every series backed by a published checklist.',
+    tagline: 'Premium certified coin repacks',
     // 'golden-girl' is the product-named caseType (e.g. "Golden Girl") that
     // belongs to this brand even though it doesn't carry the brand name.
     caseTypePrefixes: ['bluecollarbullion', 'blue-collar-bullion', 'golden-girl', 'goldengirl'],
@@ -95,13 +100,13 @@ export const BRANDS: Brand[] = [
   {
     id: 'cobra-coin',
     name: 'Cobra Coin',
-    tagline: 'Strike-ready graded coin repacks — every series backed by a published checklist.',
+    tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['cobracoin', 'cobra-coin'],
   },
   {
     id: 'golden-emu',
     name: 'Golden Emu',
-    tagline: 'Graded coin repacks with a golden touch — every series backed by a published checklist.',
+    tagline: 'Premium certified coin repacks',
     // 'silver-egg...' is the product-named caseType (e.g. "Silver Egg Surprise
     // Pack") that belongs to this brand even though it doesn't carry the name.
     caseTypePrefixes: ['goldenemu', 'golden-emu', 'silver-egg', 'silveregg'],
@@ -109,7 +114,7 @@ export const BRANDS: Brand[] = [
   {
     id: 'juicebox-bullion',
     name: 'Juicebox Bullion',
-    tagline: 'Squeeze more from every pack — graded coin repacks backed by a published checklist.',
+    tagline: 'Premium certified coin repacks',
     // The '*-squeeze' entries are product-named caseTypes (e.g. "Full Squeeze")
     // that belong to this brand even though they don't carry the brand name —
     // same pattern as 'golden-girl' / 'silver-egg' above. Hyphenated because
@@ -126,18 +131,53 @@ export const BRANDS: Brand[] = [
   {
     id: 'one-nasty-coin',
     name: 'One Nasty Coin',
-    tagline: 'Graded coin repacks with attitude — every series backed by a published checklist.',
+    tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['onenastycoin', 'one-nasty-coin'],
   },
   {
     id: 'vault-room-breaks',
     name: 'Vault Room Breaks',
-    tagline: 'Premium sports card breaks — curated graded slabs, straight from the vault.',
+    tagline: 'Premium sports card repacks',
     // The only non-ShackPack brand with card products; its prefixes are listed
     // for parity with the coin brands, but no vaultroombreaks-* coin caseType
     // exists in the inventory today.
     hasCards: true,
     caseTypePrefixes: ['vaultroombreaks', 'vault-room-breaks'],
+  },
+  {
+    id: 'bullion-bureau',
+    name: 'Bullion Bureau',
+    tagline: 'Premium certified coin repacks',
+    caseTypePrefixes: ['bullionbureau', 'bullion-bureau'],
+  },
+  {
+    id: 'let-it-ride',
+    name: 'Let It Ride',
+    tagline: 'Premium certified coin repacks',
+    caseTypePrefixes: ['letitride', 'let-it-ride'],
+  },
+  {
+    id: 'black-mountain',
+    name: 'Black Mountain Coins & Stamps',
+    tagline: 'Premium certified coin repacks',
+    caseTypePrefixes: ['blackmountain', 'black-mountain'],
+  },
+  {
+    id: 'komodo-rips',
+    name: 'Komodo Rips',
+    tagline: 'Premium trading card repacks',
+    hasCards: true,
+    caseTypePrefixes: ['komodo', 'komodo-rips'],
+  },
+  {
+    // COMING SOON — no artwork, so no pack tiles and no /repacks tab yet. The
+    // brand is defined so the id is reserved and card series stamped with this
+    // customer can route the moment tiles land.
+    id: 'pop1-pokeshop',
+    name: 'Pop1 Pokeshop',
+    tagline: 'Premium trading card repacks',
+    hasCards: true,
+    caseTypePrefixes: ['pop1', 'pop1-pokeshop'],
   },
 ];
 

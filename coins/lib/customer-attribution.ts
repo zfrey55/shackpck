@@ -260,8 +260,10 @@ export type CustomerPacksConfig = {
 export const CUSTOMER_PACKS: Record<string, CustomerPacksConfig> = {
   // House brand: the largest pack catalog on the site.
   [SHACKPACK_SLUG]: { hasPacks: true, brandId: 'shackpack' },
-  // Flagged ahead of its tiles landing, so no brandId yet.
-  'bullion-bureau': { hasPacks: true },
+  // 1001 coin cases in the inventory across 2026-07-22..2026-08-28, second
+  // only to the house — so it keeps the DEFAULT checklist link. Its tiles
+  // landed with the brand, so it now carries a brandId.
+  'bullion-bureau': { hasPacks: true, brandId: 'bullion-bureau' },
   'bald-bunny': { hasPacks: true, brandId: 'bald-bunny' },
   'blue-collar-bullion': { hasPacks: true, brandId: 'blue-collar-bullion' },
   'cobra-coin': { hasPacks: true, brandId: 'cobra-coin' },
@@ -287,6 +289,32 @@ export const CUSTOMER_PACKS: Record<string, CustomerPacksConfig> = {
     brandId: 'one-nasty-coin',
     checklistHref: null,
   },
+  // New brands, tiles only. getAvailableDates carries no case for any of them
+  // under any customerName or caseType, and none is on the canonical roster,
+  // so the default /checklist?customer= link would land on an empty page.
+  // Explicit null suppresses it rather than shipping a dead link.
+  'let-it-ride': {
+    hasPacks: true,
+    brandId: 'let-it-ride',
+    checklistHref: null,
+  },
+  'black-mountain-coins-stamps': {
+    hasPacks: true,
+    brandId: 'black-mountain',
+    checklistHref: null,
+  },
+  // Card-only, like Vault Room Breaks — but with no card series on the Cards
+  // line either (getCardChecklistDates returns ShackPack only), so there is
+  // not even a ?line=cards destination to point at yet.
+  'komodo-rips': {
+    hasPacks: true,
+    brandId: 'komodo-rips',
+    checklistHref: null,
+  },
+  // Pop1 Pokeshop is deliberately ABSENT: it has no artwork and no tiles, and
+  // this map means "has branded pack designs". An entry would claim packs it
+  // does not have, and would still produce no tab, since /repacks derives its
+  // tabs from catalog entries.
 };
 
 /** True when this customer has branded pack designs. Packs tab only. */

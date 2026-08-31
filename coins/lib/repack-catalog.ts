@@ -318,6 +318,14 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Coins',
     brand: 'coinwave',
   },
+  {
+    id: 'coinwave-silver-hook',
+    name: 'Coinwave Silver Hook',
+    description: D,
+    image: '/images/packs/coinwave-silverhook.png',
+    category: 'Coins',
+    brand: 'coinwave',
+  },
 
   // ----- Fortune Forge -----
   {
@@ -333,6 +341,14 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     name: 'Fortune Forge Platinum Pursuit',
     description: D,
     image: '/images/packs/fortuneforge-platinumpursuit.png',
+    category: 'Coins',
+    brand: 'fortune-forge',
+  },
+  {
+    id: 'fortuneforge-goldconquest',
+    name: 'Fortune Forge Gold Conquest',
+    description: D,
+    image: '/images/packs/fortuneforge-goldconquest.png',
     category: 'Coins',
     brand: 'fortune-forge',
   },
@@ -410,6 +426,14 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Coins',
     brand: 'golden-emu',
   },
+  {
+    id: 'goldenemu-nesteggtreasurepack',
+    name: 'Golden Emu Nest Egg Treasure Pack',
+    description: D,
+    image: '/images/packs/goldenemu-nesteggtreasurepack.png',
+    category: 'Coins',
+    brand: 'golden-emu',
+  },
 
   // ----- Juicebox Bullion -----
   {
@@ -445,6 +469,102 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     image: '/images/packs/onenastycoin-mysterypack.png',
     category: 'Coins',
     brand: 'one-nasty-coin',
+  },
+
+  // ----- Bullion Bureau -----
+  {
+    id: 'bullionbureau-classified',
+    name: 'Bullion Bureau Classified',
+    description: D,
+    image: '/images/packs/bullionbureau-classified.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-directorsvault',
+    name: 'Bullion Bureau Director\'s Vault',
+    description: D,
+    image: '/images/packs/bullionbureau-directorsvault.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-executivereserve',
+    name: 'Bullion Bureau Executive Reserve',
+    description: D,
+    image: '/images/packs/bullionbureau-executivereserve.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-goldmarshal',
+    name: 'Bullion Bureau Gold Marshal',
+    description: D,
+    image: '/images/packs/bullionbureau-goldmarshal.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-noblebureau',
+    name: 'Bullion Bureau Noble Bureau',
+    description: D,
+    image: '/images/packs/bullionbureau-noblebureau.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-platinumcommand',
+    name: 'Bullion Bureau Platinum Command',
+    description: D,
+    image: '/images/packs/bullionbureau-platinumcommand.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-silversheriff',
+    name: 'Bullion Bureau Silver Sheriff',
+    description: D,
+    image: '/images/packs/bullionbureau-silversheriff.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+  {
+    id: 'bullionbureau-treasuryreserve',
+    name: 'Bullion Bureau Treasury Reserve',
+    description: D,
+    image: '/images/packs/bullionbureau-treasuryreserve.png',
+    category: 'Coins',
+    brand: 'bullion-bureau',
+  },
+
+  // ----- Let It Ride -----
+  {
+    id: 'letitride-fullyinvolved',
+    name: 'Let It Ride Fully Involved',
+    description: D,
+    image: '/images/packs/letitride-fullyinvolved.png',
+    category: 'Coins',
+    brand: 'let-it-ride',
+  },
+  {
+    id: 'letitride-jobtown',
+    name: 'Let It Ride Job Town',
+    description: D,
+    image: '/images/packs/letitride-jobtown.png',
+    category: 'Coins',
+    brand: 'let-it-ride',
+  },
+
+  // ----- Black Mountain Coins & Stamps -----
+  // Tile name uses the short brand name; the full wordmark already
+  // appears in the brand header above the grid.
+  {
+    id: 'blackmountain-starter',
+    name: 'Black Mountain Starter',
+    description: D,
+    image: '/images/packs/blackmountain-starter.png',
+    category: 'Coins',
+    brand: 'black-mountain',
   },
 ];
 

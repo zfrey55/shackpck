@@ -130,4 +130,24 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Sports Cards',
     brand: 'vault-room-breaks',
   },
+
+  // ----- Komodo Rips -----
+  // Trading cards, not sports cards — a separate category from the tiles
+  // above. Same bare disclaimer; the tile states no contents.
+  {
+    id: 'komodo-legend',
+    name: 'Komodo Rips Legend',
+    description: D,
+    image: '/images/packs/komodo-legend.png',
+    category: 'Trading Cards',
+    brand: 'komodo-rips',
+  },
+  {
+    id: 'komodo-purity',
+    name: 'Komodo Rips Purity',
+    description: D,
+    image: '/images/packs/komodo-purity.png',
+    category: 'Trading Cards',
+    brand: 'komodo-rips',
+  },
 ];
