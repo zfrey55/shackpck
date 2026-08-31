@@ -207,7 +207,10 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
     brandId: 'komodo-rips',
     seriesName: 'Legend',
     seriesDate: null,
-    finalizedOn: '2026-08-31',
+    // No finalizedOn: the REAL finalized Legend series now lives in the frozen
+    // archive as 'Legend Series 1'. This entry reverts to what it always was —
+    // an illustrative sample of the line — so the two never both claim to be
+    // the closed one. Purity keeps its finalizedOn; it has no archive series.
     verbatimEntries: true,
     cards: [
       { position: 1, entryName: '2024 Paldean Fates #234 Charizard ex, Special Illustration Rare | PSA 10' },

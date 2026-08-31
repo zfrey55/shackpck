@@ -163,13 +163,24 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
       {notice === 'illustrative' && <IllustrativeNotice />}
 
       {/*
-        Pack size is DERIVED from the list, never stored, so the stated count
-        and the rows below it cannot drift apart. Shown only for a finalized
-        example, where the count is a settled fact rather than a claim.
+        The structure line. Every number in it is DERIVED from the list, never
+        stored, so the stated counts and the rows below cannot drift apart.
+        Shown only for a finalized series, where the counts are settled facts
+        rather than claims.
+
+        An UNDATED series is an example: one sample pack's worth of cards, so
+        it states the pack size only. A DATED series is a real produced run:
+        the whole series is listed, so it states how that total divides into
+        packs. `packSize` divides `cards.length` exactly — asserted in the
+        fixtures, not here, because a render is the wrong place to throw.
       */}
       {notice === 'finalized' && (
         <p className="mb-3 text-sm text-slate-400">
-          Example checklist. {cards.length} cards per pack.
+          {series.seriesDate === null
+            ? `Example checklist. ${cards.length} cards per pack.`
+            : series.packSize
+              ? `${cards.length / series.packSize} packs of ${series.packSize} cards. ${cards.length} cards total.`
+              : `${cards.length} cards total.`}
         </p>
       )}
 

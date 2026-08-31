@@ -77,6 +77,12 @@ export type CardSeries = {
    * formatter would damage. Everything else formats at render time.
    */
   verbatimEntries?: boolean;
+  /**
+   * Cards per sealed pack, when the series states one. Drives the pack
+   * structure line; the pack COUNT is derived at render from
+   * cards.length / packSize and is never stored.
+   */
+  packSize?: number;
 };
 
 /**
@@ -119,9 +125,12 @@ export const EXAMPLE_SERIES_TYPE = 'Example Checklists';
 export const EXAMPLE_DATE_LABEL = 'Sample';
 
 /**
- * The archive belongs to ShackPack — those are ShackPack's own produced
- * series. It carries no brand field of its own (and must not be edited to add
- * one), so ownership is asserted here, in the adapter.
+ * DEFAULT owner for an archive entry that names no brand.
+ *
+ * The archive was ShackPack-only, so ownership was asserted here rather than
+ * stored per entry. Komodo Rips then produced a series, so CardSeriesChecklist
+ * gained an OPTIONAL brandId and this became the fallback. Every pre-existing
+ * entry omits it and still resolves to ShackPack, so none of them was touched.
  */
 const ARCHIVE_BRAND_ID: BrandId = 'shackpack';
 
@@ -138,7 +147,7 @@ function stripTrailingDate(title: string): string {
 function fromArchive(): CardSeries[] {
   return CARD_SERIES_CHECKLISTS.map((series) => ({
     id: series.id,
-    brandId: ARCHIVE_BRAND_ID,
+    brandId: series.brandId ?? ARCHIVE_BRAND_ID,
     seriesType: series.seriesType,
     // Titles in the archive sometimes embed their own date. The date is shown
     // by the selected button, so it is stripped from the title here rather
@@ -152,6 +161,9 @@ function fromArchive(): CardSeries[] {
     })),
     // The archive is flat by construction; grouping is a live-API concept.
     cabinets: [],
+    finalizedOn: series.finalizedOn,
+    verbatimEntries: series.verbatimEntries,
+    packSize: series.packSize,
   }));
 }
 
