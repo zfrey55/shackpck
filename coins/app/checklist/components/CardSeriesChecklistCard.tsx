@@ -1,4 +1,5 @@
 import { exampleNoticeFor, type CardEntry, type CardSeries } from '@/lib/card-checklist-model';
+import type { BrandId } from '@/lib/brands';
 import { cleanEntryName } from '@/lib/clean-entry-name';
 import { seriesFinalizedStatement } from '@/lib/repack-catalog';
 
@@ -47,11 +48,39 @@ const EXAMPLE_CHECKLIST_CAVEAT =
   'No pack was built from this list, and a produced series will contain ' +
   'different cards.';
 
-function IllustrativeNotice() {
+/**
+ * Per-brand overrides of the caveat above.
+ *
+ * A brand ABSENT from this map gets EXAMPLE_CHECKLIST_CAVEAT — the default is
+ * the copy, not a fallback, so adding a brand here is the only way its wording
+ * differs and removing it restores the shared text. The component itself is
+ * not forked: one notice, one render path, the string chosen by brand.
+ *
+ * Vault Room Breaks sells through Whatnot, whose policy requires the sample to
+ * be named as illustrative and to carry an explicit no-financial-advice line.
+ * That is a platform obligation on one customer's listings, not a change of
+ * house voice, which is why it is scoped to the brand rather than applied to
+ * everyone.
+ */
+const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
+  'vault-room-breaks':
+    'Please note: The example checklist for the single show products above is ' +
+    'for illustrative purposes only. It reflects the types of multi-sport ' +
+    'cards you may hit within each single show brand, not the exact cards ' +
+    'included in any specific product. Card values are subjective in nature ' +
+    'and may fluctuate significantly. This is not financial advice.',
+};
+
+/** The caveat for one brand: its override, else the shared default. */
+function exampleCaveatFor(brandId: BrandId): string {
+  return EXAMPLE_CAVEAT_BY_BRAND[brandId] ?? EXAMPLE_CHECKLIST_CAVEAT;
+}
+
+function IllustrativeNotice({ brandId }: { brandId: BrandId }) {
   return (
     <div className="mb-4 rounded-md border border-amber-600/60 bg-amber-900/20 p-3 text-sm leading-relaxed text-amber-100">
       <strong>EXAMPLE CHECKLIST — NOT A FINALIZED SERIES.</strong>{' '}
-      {EXAMPLE_CHECKLIST_CAVEAT}
+      {exampleCaveatFor(brandId)}
     </div>
   );
 }
@@ -160,7 +189,7 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
         </p>
       </div>
 
-      {notice === 'illustrative' && <IllustrativeNotice />}
+      {notice === 'illustrative' && <IllustrativeNotice brandId={series.brandId} />}
 
       {/*
         The structure line. Every number in it is DERIVED from the list, never
