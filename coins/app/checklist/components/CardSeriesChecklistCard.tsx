@@ -71,16 +71,30 @@ const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
     'and may fluctuate significantly. This is not financial advice.',
 };
 
-/** The caveat for one brand: its override, else the shared default. */
-function exampleCaveatFor(brandId: BrandId): string {
-  return EXAMPLE_CAVEAT_BY_BRAND[brandId] ?? EXAMPLE_CHECKLIST_CAVEAT;
-}
-
+/**
+ * THE PREFIX IS PART OF THE DEFAULT COPY, NOT THE FRAME.
+ *
+ * The shared caveat is a sentence fragment that needs the bold
+ * "EXAMPLE CHECKLIST — NOT A FINALIZED SERIES." lead-in to read as a warning.
+ * An override is supplied whole — brand-override copy is written to a
+ * platform's wording and opens by naming itself ("Please note: The example
+ * checklist ... is for illustrative purposes only"), so the lead-in restates
+ * it and reads as boilerplate stapled on top.
+ *
+ * So the prefix renders for the default and is suppressed for an override.
+ * One lookup decides both, which is why it is not hidden behind a helper that
+ * returns only the string: the presence of an override IS the condition.
+ */
 function IllustrativeNotice({ brandId }: { brandId: BrandId }) {
+  const override = EXAMPLE_CAVEAT_BY_BRAND[brandId];
   return (
     <div className="mb-4 rounded-md border border-amber-600/60 bg-amber-900/20 p-3 text-sm leading-relaxed text-amber-100">
-      <strong>EXAMPLE CHECKLIST — NOT A FINALIZED SERIES.</strong>{' '}
-      {exampleCaveatFor(brandId)}
+      {override === undefined && (
+        <>
+          <strong>EXAMPLE CHECKLIST — NOT A FINALIZED SERIES.</strong>{' '}
+        </>
+      )}
+      {override ?? EXAMPLE_CHECKLIST_CAVEAT}
     </div>
   );
 }
