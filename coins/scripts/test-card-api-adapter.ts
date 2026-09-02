@@ -639,12 +639,6 @@ check(
   true
 );
 check(
-  'a dated series WITH finalizedOn states the finalized notice',
-  STATIC_CARD_SERIES.filter((s) => s.seriesDate !== null && s.finalizedOn)
-    .map((s) => `${s.seriesName}:${exampleNoticeFor(s)}`),
-  ['Legend Series 1:finalized']
-);
-check(
   'a live API series states neither notice',
   exampleNoticeFor(adaptApiSeries(complete())!),
   'none'
@@ -654,82 +648,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [6, 2, 19]
-);
-
-/**
- * The structure line the card renders above a finalized list. Mirrors the
- * branch in CardSeriesChecklistCard so the fixture pins the exact string, not
- * just the field that feeds it. Every number is derived from the list.
- */
-function structureLineFor(s: { cards: unknown[]; seriesDate: string | null; packSize?: number }): string {
-  const n = s.cards.length;
-  if (s.seriesDate === null) return `Example checklist. ${n} cards per pack.`;
-  return s.packSize ? `${n / s.packSize} packs of ${s.packSize} cards. ${n} cards total.` : `${n} cards total.`;
-}
-
-console.log('\n--- Komodo Rips "Legend Series 1": the first real TCG series ---\n');
-
-const legend = STATIC_CARD_SERIES.find((s) => s.seriesName === 'Legend Series 1');
-
-check('exists in the archive', Boolean(legend), true);
-check('files under komodo-rips, not the ShackPack archive default', legend?.brandId, 'komodo-rips');
-check('is a DATED series, not an example', legend?.seriesDate, '2026-08-31');
-check('group heading is its own seriesType', legend?.seriesType, 'Legend');
-check('120 rows', legend?.cards.length, 120);
-check(
-  'positions are 1..120 contiguous, in sheet order',
-  legend?.cards.map((c) => c.position).join(',') ===
-    Array.from({ length: 120 }, (_, i) => i + 1).join(','),
-  true
-);
-check(
-  'every row ends with "| Cert <digits>"',
-  legend?.cards.every((c) => / \| Cert \d+$/.test(c.entryName)),
-  true
-);
-check(
-  '120 UNIQUE cert numbers - no slab listed twice',
-  new Set(legend?.cards.map((c) => /\| Cert (\d+)$/.exec(c.entryName)?.[1])).size,
-  120
-);
-check('rendered verbatim - PSA label text must match the slabs', legend?.verbatimEntries, true);
-check('finalized, so it shows the statement and never the banner', exampleNoticeFor(legend!), 'finalized');
-// NO packSize: Komodo series do not state how the run is broken into packs,
-// so the structure line falls back to the total alone. The field and its
-// render branch remain valid for a future series that does state it.
-check(
-  'states NO pack structure, so the header is the total alone',
-  [legend?.packSize, structureLineFor(legend!)],
-  [undefined, '120 cards total.']
-);
-check(
-  'first and last rows survive byte-for-byte',
-  [legend?.cards[0].entryName, legend?.cards[119].entryName],
-  [
-    '2005 Pokemon Ex Delta Species 39 Ditto [pikachu]-Reverse Foil | PSA 8 | Cert 142155429',
-    '1999 Pokemon Game #102 Water Energy Base Set 1999-2000 | PSA 10 | Cert 150206796',
-  ]
-);
-check(
-  'apostrophes survive - PSA label punctuation is not normalized',
-  legend?.cards[20].entryName,
-  "1999 Pokemon Japanese Gym 2 #132 Koga's Ditto Holo | PSA 9 | Cert 157534679"
-);
-check(
-  'the 19 pre-existing archive entries still default to ShackPack',
-  STATIC_CARD_SERIES.filter((s) => s.seriesDate !== null && s.brandId === 'shackpack').length,
-  19
-);
-check(
-  'Komodo Rips now has a Legend group AND an examples group on the checklist',
-  getSeriesTypesForBrand(STATIC_CARD_SERIES, 'komodo-rips'),
-  ['Legend', 'Example Checklists']
-);
-check(
-  'the Legend group holds exactly the one dated series',
-  getSeriesFor(STATIC_CARD_SERIES, 'komodo-rips', 'Legend', '2026-08-31').map((s) => s.seriesName),
-  ['Legend Series 1']
+  [6, 1, 19]
 );
 
 if (failures > 0) {
