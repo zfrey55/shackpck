@@ -15,11 +15,11 @@ npm run dev
 
 **Wait for:** `Ready in X seconds` and `Local: http://localhost:3000`
 
-### 2. Open Test Dashboard
+### 2. Test Dashboard — REMOVED
 
-Navigate to: `http://localhost:3000/test`
-
-This dashboard allows you to test services without using the browser console.
+The `/test` dashboard and the `/api/test-*` endpoints it called were removed:
+they were public and unauthenticated in production. Exercise each service
+through its real entry point instead — the sections below name them.
 
 ---
 
@@ -71,7 +71,7 @@ Before starting, verify your `.env.local` file has:
 
 ### Test 1: Service Configuration Tests
 
-**Location:** `http://localhost:3000/test`
+**Location:** exercise the service directly; the `/test` dashboard was removed.
 
 #### 1.1 SendGrid Configuration
 - Click "Test SendGrid Config"
@@ -323,8 +323,8 @@ Before starting, verify your `.env.local` file has:
 ### Test 8: FedEx Label Generation
 
 #### 8.1 Test Label Generation
-1. Go to: `http://localhost:3000/test`
-2. Click "Generate Test Label"
+1. Place a test order through checkout; `/api/orders` generates the label.
+2. (The `/test` dashboard that used to do this was removed.)
 
 **Expected Results:**
 - ✅ Label generated successfully
@@ -403,7 +403,7 @@ Before starting, verify your `.env.local` file has:
 Use this for rapid testing:
 
 - [ ] Server running (`npm run dev`)
-- [ ] Test dashboard accessible (`/test`)
+- [ ] ~~Test dashboard accessible (`/test`)~~ — removed
 - [ ] SendGrid configured
 - [ ] Email sending works
 - [ ] FedEx configured

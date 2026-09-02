@@ -72,7 +72,7 @@ Detail: `FEDEX_PRODUCTION_SETUP.md`.
 | D3 | **Stripe** — webhook delivery dashboard after deploys |
 | D4 | **Database** — provider backup; one restore drill per year |
 | D5 | **Smoke cadence** (e.g. quarterly): checkout + webhook, `/contact`, FedEx label |
-| D6 | **Cleanup** — decide fate of `checklist-backup`; clear stale TODOs |
+| D6 | **Cleanup** — ~~decide fate of `checklist-backup`~~ (deleted with the public test/debug surfaces); clear stale TODOs |
 | D7 | **Assets** — replace placeholder pack art when ready |
 
 ---
