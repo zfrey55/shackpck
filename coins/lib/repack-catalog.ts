@@ -40,6 +40,22 @@ export const REPACK_CHECKLIST_DISCLAIMER =
   'Contents vary by series — see checklist for more details.';
 
 /**
+ * Manufacturer identification for the COIN checklist surfaces.
+ *
+ * Whatnot requires every checklist to identify who made the product. The card
+ * pages carry a longer version inside their per-brand context block
+ * (MANUFACTURER_PARAGRAPH in CardChecklistPanel); this is the short form the
+ * coin pages use, defined once and rendered by both of them — /checklist's
+ * coin line and /checklist/customer/[slug] — rather than pasted twice.
+ *
+ * It is deliberately brand-independent. Every coin case on the site is
+ * manufactured by Shackpack whichever customer it was built for, so a
+ * customer page states the same manufacturer as the house page.
+ */
+export const MANUFACTURER_LINE =
+  'Manufacturer: Shackpack (G & J Packaging LLLP), identified on every product.';
+
+/**
  * Statement shown under a FINALIZED example checklist.
  *
  * Sits beside the disclaimer above because it is the same kind of statement —

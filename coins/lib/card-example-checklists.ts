@@ -190,7 +190,11 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
     brandId: 'komodo-rips',
     seriesName: 'Purity',
     seriesDate: null,
-    finalizedOn: '2026-08-31',
+    // No finalizedOn. Purity is an illustrative sample of the line, not a
+    // closed production run — it never was one. It carried a finalization
+    // date while Legend Series 1 was published alongside it; with that series
+    // gone, claiming Purity is "finalized" asserts something untrue of an
+    // example. It now renders the Komodo banner like Legend.
     verbatimEntries: true,
     cards: [
       { position: 1, entryName: '2025 Mega Evolution #179 Mega Lucario ex, Special Illustration Rare | PSA 10' },

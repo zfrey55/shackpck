@@ -22,6 +22,7 @@ import {
   customerLabelFromSlug,
   slugToMatcher,
 } from "@/lib/customer-attribution";
+import { MANUFACTURER_LINE } from "@/lib/repack-catalog";
 
 /**
  * Shareable per-customer checklist: /checklist/customer/[slug].
@@ -135,6 +136,13 @@ export default function CustomerChecklistPage() {
           <p className="text-lg text-slate-400">
             Published series built for {displayName}
           </p>
+          {/*
+            Manufacturer identification. This page has no amber notice like the
+            main coin checklist, so the line sits in the header instead — the
+            requirement is that it appear on the page, not that it sit under a
+            particular block. Same shared constant either way.
+          */}
+          <p className="mt-3 text-sm text-slate-400">{MANUFACTURER_LINE}</p>
         </div>
 
         <div className="mb-8 text-center">

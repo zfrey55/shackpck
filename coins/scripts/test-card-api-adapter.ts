@@ -552,11 +552,6 @@ check(
   true
 );
 check(
-  'Purity carries a finalization date; Legend no longer does - the real',
-  tcgExamples.map((s) => `${s.seriesName}:${s.finalizedOn ?? 'none'}`).sort(),
-  ['Legend:none', 'Purity:2026-08-31']
-);
-check(
   'no cert number in an EXAMPLE - an example names no specific card. The real\n      archive series does carry certs, which is exactly the difference.',
   tcgExamples.some((s) => s.cards.some((c) => /cert|\b\d{8,}\b/i.test(c.entryName))),
   false
@@ -610,7 +605,9 @@ console.log('\n--- example notices: banner XOR finalized statement, never both -
 const noticeFor = (name: string) =>
   exampleNoticeFor(STATIC_CARD_SERIES.find((s) => s.seriesName === name)!);
 
-check("Komodo 'Purity' -> finalized statement, NO banner", noticeFor('Purity'), 'finalized');
+// Purity flipped to illustrative when Legend Series 1 came down: an example is
+// never a closed production run, so it shows the banner, not the statement.
+check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('Purity'), 'illustrative');
 // The EXAMPLE named 'Legend' reverted to illustrative when the real
 // 'Legend Series 1' landed in the archive - two entries must never both
 // present as the closed one.
@@ -648,7 +645,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [6, 1, 19]
+  [7, 0, 19]
 );
 
 if (failures > 0) {

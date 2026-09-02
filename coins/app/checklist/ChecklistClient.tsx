@@ -23,6 +23,7 @@ import { CoinInventorySeries } from "@/lib/coin-inventory-api";
 import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { writeLineParam, type ProductLine } from "@/lib/product-lines";
 import { type BrandId } from "@/lib/brands";
+import { MANUFACTURER_LINE } from "@/lib/repack-catalog";
 import {
   SHACKPACK_SLUG,
   customerLabelFromSlug,
@@ -360,6 +361,7 @@ export function ChecklistClient() {
             <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
             Please refer to the checklist for the most up-to-date information on each series. For card series, use the Sports Cards or Pokemon Cards tabs.
           </p>
+          <p className="mt-2 text-sm text-amber-200/90 text-center">{MANUFACTURER_LINE}</p>
         </div>
 
         {isShackpack && !selectedCaseType && !showSpecializedSeries && (

@@ -56,19 +56,38 @@ const EXAMPLE_CHECKLIST_CAVEAT =
  * differs and removing it restores the shared text. The component itself is
  * not forked: one notice, one render path, the string chosen by brand.
  *
- * Vault Room Breaks sells through Whatnot, whose policy requires the sample to
- * be named as illustrative and to carry an explicit no-financial-advice line.
- * That is a platform obligation on one customer's listings, not a change of
- * house voice, which is why it is scoped to the brand rather than applied to
- * everyone.
+ * EVERY card brand now has an entry. Whatnot requires the sample to be named
+ * as illustrative, to state the pack structure, and to carry an explicit
+ * no-financial-advice line; each brand states its own structure, which is why
+ * this stays a per-brand map rather than collapsing back to one string.
+ *
+ * Consequence worth knowing: the bold prefix below is suppressed whenever a
+ * brand has an entry, so with all three mapped it renders NOWHERE today. The
+ * default caveat and the prefix are both retained for a future brand added
+ * without an override.
  */
 const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
+  shackpack:
+    'Please note: The example checklist for the single show products above is ' +
+    'for illustrative purposes only. It reflects the types of multi-sport ' +
+    'cards you may hit within each single show brand, not the exact cards ' +
+    'included in any specific product. Each pack contains 10 cards. Card ' +
+    'values are subjective in nature and may fluctuate significantly. This is ' +
+    'not financial advice.',
   'vault-room-breaks':
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of multi-sport ' +
     'cards you may hit within each single show brand, not the exact cards ' +
-    'included in any specific product. Card values are subjective in nature ' +
-    'and may fluctuate significantly. This is not financial advice.',
+    'included in any specific product. Each set contains 10 packs, 1 card per ' +
+    'pack. Card values are subjective in nature and may fluctuate ' +
+    'significantly. This is not financial advice.',
+  'komodo-rips':
+    'Please note: The example checklist for the single show products above is ' +
+    'for illustrative purposes only. It reflects the types of Pokemon cards ' +
+    'you may hit within each single show brand, not the exact cards included ' +
+    'in any specific product. Each pack contains 8 cards. Card values are ' +
+    'subjective in nature and may fluctuate significantly. This is not ' +
+    'financial advice.',
 };
 
 /**
