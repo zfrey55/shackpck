@@ -204,7 +204,7 @@ export default function SeriesPage() {
             {/* Top Hits */}
             {topHits.length > 0 && (
               <div className="mb-6 p-4 bg-slate-900/40 rounded-lg border border-slate-700">
-                <h3 className="text-xl font-semibold mb-4 text-gold">Top Hits</h3>
+                <h3 className="text-xl font-semibold mb-4 text-gold">Highlighted Coins</h3>
                 <ul className="space-y-3">
                   {topHits.map((coin, index) => (
                     <li key={index} className="flex items-start gap-3 text-slate-300">
