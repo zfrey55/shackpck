@@ -49,6 +49,11 @@ const EXAMPLE_CHECKLIST_CAVEAT =
  * no-financial-advice line; each brand states its own structure, which is why
  * this stays a per-brand map rather than collapsing back to one string.
  *
+ * PACK STRUCTURE IS ONE ITEM PER PACK, everywhere, cards and coins alike. A
+ * string here states how many packs a series holds, never how many cards a
+ * pack holds — "Each pack contains N cards" is wrong for every product on the
+ * site and must not come back.
+ *
  * Consequence worth knowing: the bold prefix below is suppressed whenever a
  * brand has an entry, so with all three mapped it renders NOWHERE today. The
  * default caveat and the prefix are both retained for a future brand added
@@ -59,9 +64,9 @@ const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of multi-sport ' +
     'cards you may hit within each single show brand, not the exact cards ' +
-    'included in any specific product. Each pack contains 10 cards. Card ' +
-    'values are subjective in nature and may fluctuate significantly. This is ' +
-    'not financial advice.',
+    'included in any specific product. Every pack contains a single card. ' +
+    'Card values are subjective in nature and may fluctuate significantly. ' +
+    'This is not financial advice.',
   'vault-room-breaks':
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of multi-sport ' +
@@ -73,9 +78,9 @@ const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of Pokemon cards ' +
     'you may hit within each single show brand, not the exact cards included ' +
-    'in any specific product. Each pack contains 8 cards. Card values are ' +
-    'subjective in nature and may fluctuate significantly. This is not ' +
-    'financial advice.',
+    'in any specific product. Each series contains 8 packs, 1 card per pack. ' +
+    'Card values are subjective in nature and may fluctuate significantly. ' +
+    'This is not financial advice.',
 };
 
 /**
