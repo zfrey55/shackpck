@@ -530,11 +530,9 @@ const tcgExamples = STATIC_CARD_SERIES.filter(
 );
 const byName = (n: string) => tcgExamples.find((s) => s.seriesName === n);
 
-// One, not two: the Legend EXAMPLE is temporarily removed while the real
-// 'Legend Series 1' is published. Purity has no archive series and stays.
-check('one Komodo Rips example checklist exists', tcgExamples.length, 1);
+check('two Komodo Rips example checklists exist', tcgExamples.length, 2);
 check(
-  'it is an undated EXAMPLE, never a dated series',
+  'both are undated EXAMPLES, never dated series',
   tcgExamples.every((s) => s.seriesDate === null && s.seriesType === EXAMPLE_SERIES_TYPE),
   true
 );
@@ -544,21 +542,19 @@ check(
   [1, 2, 3, 4, 5, 6, 7, 8]
 );
 check(
-  'it is marked verbatim so cleanEntryName never runs on it',
+  'Legend has 8 rows, positions 1-8 contiguous',
+  byName('Legend')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8]
+);
+check(
+  'both are marked verbatim so cleanEntryName never runs on them',
   tcgExamples.every((s) => s.verbatimEntries === true),
   true
 );
 check(
-  'Purity carries a finalization date',
+  'Purity carries a finalization date; Legend no longer does - the real',
   tcgExamples.map((s) => `${s.seriesName}:${s.finalizedOn ?? 'none'}`).sort(),
-  ['Purity:2026-08-31']
-);
-check(
-  'no Legend EXAMPLE while the real series is published - only the archive one',
-  STATIC_CARD_SERIES.filter((s) => s.seriesName.startsWith('Legend')).map(
-    (s) => `${s.seriesName}:${s.seriesDate ?? 'undated'}`
-  ),
-  ['Legend Series 1:2026-08-31']
+  ['Legend:none', 'Purity:2026-08-31']
 );
 check(
   'no cert number in an EXAMPLE - an example names no specific card. The real\n      archive series does carry certs, which is exactly the difference.',
@@ -615,6 +611,10 @@ const noticeFor = (name: string) =>
   exampleNoticeFor(STATIC_CARD_SERIES.find((s) => s.seriesName === name)!);
 
 check("Komodo 'Purity' -> finalized statement, NO banner", noticeFor('Purity'), 'finalized');
+// The EXAMPLE named 'Legend' reverted to illustrative when the real
+// 'Legend Series 1' landed in the archive - two entries must never both
+// present as the closed one.
+check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('Legend'), 'illustrative');
 check("'ShackPack Fusion' -> banner, NO finalized statement", noticeFor('ShackPack Fusion'), 'illustrative');
 check("'ShackPack Nova' -> banner", noticeFor('ShackPack Nova'), 'illustrative');
 check("'ShackPack Select' -> banner", noticeFor('ShackPack Select'), 'illustrative');
@@ -654,7 +654,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [5, 2, 19]
+  [6, 2, 19]
 );
 
 /**

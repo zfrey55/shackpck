@@ -203,5 +203,24 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
       { position: 8, entryName: '1999 Base Set #58 Pikachu, E3 Stamp, Yellow Cheeks | PSA 5' },
     ],
   },
-  // Legend example removed 2026-08-31 while the real Legend Series 1 is published; restore by reverting the commit "chore(tcg): remove Legend example checklist while Legend Series 1 is published".
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Legend',
+    seriesDate: null,
+    // No finalizedOn: the REAL finalized Legend series now lives in the frozen
+    // archive as 'Legend Series 1'. This entry reverts to what it always was —
+    // an illustrative sample of the line — so the two never both claim to be
+    // the closed one. Purity keeps its finalizedOn; it has no archive series.
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2024 Paldean Fates #234 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 2, entryName: '2025 SV Black Star Promo #176 Umbreon ex, Prismatic Evolutions Premium Figure Collection | PSA 10' },
+      { position: 3, entryName: '2023 Scarlet & Violet 151 #200 Blastoise ex, Special Illustration Rare | PSA 9' },
+      { position: 4, entryName: '2024 Surging Sparks #219 Pikachu ex, Ultra Rare | PSA 10' },
+      { position: 5, entryName: '2026 ME Black Star Promo #038 Charmander, First Partner Illustration Collection Series 1 | PSA 10' },
+      { position: 6, entryName: '2023 Japanese Pokemon Card 151 #080 Slowbro | PSA 10' },
+      { position: 7, entryName: '2019 Hidden Fates #SV54 Articuno GX, Shiny Vault Full Art | PSA 10' },
+      { position: 8, entryName: '2000 Team Rocket #21 Dark Charizard, Holo | PSA 8' },
+    ],
+  },
 ];
