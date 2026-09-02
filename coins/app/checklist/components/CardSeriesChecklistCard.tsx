@@ -14,18 +14,6 @@ function formatFinalizedOn(isoDate: string): string {
 }
 
 /**
- * The copy above the cabinet sections on a grouped day.
- *
- * A grouped day shows the umbrella's FULL card list first, then each cabinet's
- * slice of that same list underneath. Without a word of explanation a buyer
- * scrolling past the same card twice reads it as two cards, or as a mistake.
- * This says, in one line, that the repeat is the point.
- */
-const CABINET_SECTIONS_NOTE =
-  'Each section below is a slice of the full checklist above. A card that ' +
-  'appears in both places is the same card listed twice — not an extra one.';
-
-/**
  * The ILLUSTRATIVE notice — one of the two mutually exclusive example notices
  * (see exampleNoticeFor in lib/card-checklist-model).
  *
@@ -162,7 +150,7 @@ function CardList({
 }
 
 /**
- * One cabinet, rendered as a section beneath the umbrella's full list.
+ * One cabinet, rendered as a section of a grouped series.
  *
  * The heading is the cabinet's `seriesType` and nothing else - the contract
  * carries no richer cabinet label, so inventing one here would be inventing
@@ -199,9 +187,21 @@ function CabinetSection({
  * exactly as they always have: header, then the numbered card list. Nothing
  * below the list is emitted at all.
  *
- * GROUPED DAYS - `cabinets` non-empty - render the umbrella's full list first,
- * unchanged, then a note, then one section per cabinet. Cabinets arrive from
- * the adapter already ordered by submittedAt.
+ * GROUPED DAYS - `cabinets` non-empty - render the header and then ONE SECTION
+ * PER CABINET, and NOT the umbrella's own list.
+ *
+ * The umbrella carries the full list and the cabinets partition it, so
+ * rendering both listed all 150 cards twice: once whole, then again split
+ * across the sections. A note under the full list explained that the repeat
+ * was intentional, which is a lot of words to excuse output nobody wanted.
+ * The sections alone say the same thing once.
+ *
+ * The header still reports the UMBRELLA'S OWN total, not a sum of the
+ * sections, so the count stays the series total even if a future group's
+ * cabinets do not partition it exactly.
+ *
+ * Cabinets arrive from the adapter already ordered by submittedAt, seriesId
+ * breaking ties.
  */
 export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
   const cards = byPosition(series.cards);
@@ -246,25 +246,25 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
         </p>
       )}
 
-      <CardList cards={cards} idPrefix={series.id} verbatim={verbatim} />
+      {/*
+        A grouped series shows its cabinet sections INSTEAD of its own list —
+        the cabinets partition that same list, so rendering both duplicated
+        every card.
+      */}
+      {hasCabinets ? (
+        <div className="space-y-4">
+          {series.cabinets.map((cabinet) => (
+            <CabinetSection key={cabinet.id} cabinet={cabinet} verbatim={verbatim} />
+          ))}
+        </div>
+      ) : (
+        <CardList cards={cards} idPrefix={series.id} verbatim={verbatim} />
+      )}
 
       {notice === 'finalized' && series.finalizedOn && (
         <p className="mt-4 border-t border-slate-800 pt-3 text-sm leading-relaxed text-slate-400">
           {seriesFinalizedStatement(formatFinalizedOn(series.finalizedOn))}
         </p>
-      )}
-
-      {hasCabinets && (
-        <div className="mt-8 border-t border-slate-700 pt-6">
-          <p className="mb-4 text-sm leading-relaxed text-slate-400">
-            {CABINET_SECTIONS_NOTE}
-          </p>
-          <div className="space-y-4">
-            {series.cabinets.map((cabinet) => (
-              <CabinetSection key={cabinet.id} cabinet={cabinet} verbatim={verbatim} />
-            ))}
-          </div>
-        </div>
       )}
     </div>
   );
