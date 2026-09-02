@@ -36,7 +36,6 @@ export default function PolicyPage() {
                 <li>Each series includes a complete checklist that accurately describes all items offered, including coin year, coin name/type, weight (if bullion), and grade (if applicable).</li>
                 <li>Card checklists include card year or set, character or player name, variation, language (where applicable), and grade.</li>
                 <li>Checklists are published online and publicly available for review before purchase. You can view current and historical checklists on our <a href="/checklist" className="text-gold hover:underline">checklist page</a>.</li>
-                <li>All checklists include a statement that as of a specified date, the series has been finalized and the number of products and individual items will not be changed.</li>
                 <li>All items in each product are revealed upon opening and listed in the checklist. We do not include hidden items, "golden tickets," or unrevealed contents.</li>
                 <li>We do not advertise minimum ("floor") or maximum ("ceiling") values, average values, or individual item value comparisons. Only MSRP may be referenced where applicable.</li>
                 <li>By purchasing a repack, you acknowledge the inherent randomness and uncertainty of a professionally sealed surprise product.</li>

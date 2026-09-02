@@ -230,24 +230,23 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
       {notice === 'illustrative' && <IllustrativeNotice brandId={series.brandId} />}
 
       {/*
-        The structure line. Every number in it is DERIVED from the list, never
-        stored, so the stated counts and the rows below cannot drift apart.
-        Shown only for a finalized series, where the counts are settled facts
-        rather than claims.
+        The structure line. Shown only for a finalized series, where the count
+        is a settled fact rather than a claim.
 
-        An UNDATED series is an example: one sample pack's worth of cards, so
-        it states the pack size only. A DATED series is a real produced run:
-        the whole series is listed, so it states how that total divides into
-        packs. `packSize` divides `cards.length` exactly — asserted in the
-        fixtures, not here, because a render is the wrong place to throw.
+        ONE ITEM PER PACK, everywhere, cards and coins alike — so the number of
+        packs IS the number of rows, derived from the list and never stored.
+        There is nothing left to divide: `series.packSize` is no longer read
+        here, because a stored pack size can only ever restate `cards.length`
+        or contradict it.
+
+        The two branches differ only in naming the undated one an example; the
+        structure they describe is identical because it always is.
       */}
       {notice === 'finalized' && (
         <p className="mb-3 text-sm text-slate-400">
           {series.seriesDate === null
-            ? `Example checklist. ${cards.length} cards per pack.`
-            : series.packSize
-              ? `${cards.length / series.packSize} packs of ${series.packSize} cards. ${cards.length} cards total.`
-              : `${cards.length} cards total.`}
+            ? `Example checklist. ${cards.length} packs, 1 card per pack.`
+            : `${cards.length} packs, 1 card per pack.`}
         </p>
       )}
 
