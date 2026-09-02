@@ -124,57 +124,9 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
   // { position, entryName } shape the unified model and the card API share.
   // Composed as year, set, sport, player, variation, then grade or raw
   // condition — raw form, so cleanEntryName does the casing at render time.
-  {
-    brandId: 'shackpack',
-    seriesName: 'ShackPack Fusion',
-    seriesDate: null,
-    cards: [
-      { position: 1, entryName: '2017 panini prizm football patrick mahomes silver prizm rookie psa 10' },
-      { position: 2, entryName: '2003 topps chrome basketball lebron james refractor rookie bgs 9.5' },
-      { position: 3, entryName: '2011 topps update baseball mike trout rookie psa 10' },
-      { position: 4, entryName: '1986 topps football jerry rice rookie psa 9' },
-      { position: 5, entryName: '1996 topps chrome basketball kobe bryant refractor rookie psa 10' },
-      { position: 6, entryName: '2018 topps chrome baseball shohei ohtani refractor rookie psa 10' },
-      { position: 7, entryName: '2020 panini prizm football joe burrow silver prizm rookie psa 10' },
-      { position: 8, entryName: '2018 panini prizm basketball luka dončić silver prizm rookie bgs 9.5' },
-      { position: 9, entryName: '2023 panini prizm football c.j. stroud silver prizm rookie raw near mint' },
-      { position: 10, entryName: '2022 bowman chrome baseball bobby witt jr. refractor rookie raw near mint' },
-    ],
-  },
-  {
-    brandId: 'shackpack',
-    seriesName: 'ShackPack Nova',
-    seriesDate: null,
-    cards: [
-      { position: 1, entryName: '2000 playoff contenders football tom brady rookie ticket auto bgs 9.5' },
-      { position: 2, entryName: '1986 fleer basketball michael jordan rookie psa 9' },
-      { position: 3, entryName: '1989 upper deck baseball ken griffey jr. rookie psa 10' },
-      { position: 4, entryName: '1989 score football barry sanders rookie psa 10' },
-      { position: 5, entryName: '2009 panini national treasures basketball stephen curry rpa bgs 9.5' },
-      { position: 6, entryName: '1993 sp foil baseball derek jeter rookie psa 9' },
-      { position: 7, entryName: '2018 panini prizm football josh allen silver prizm rookie psa 10' },
-      { position: 8, entryName: '2023 panini prizm basketball victor wembanyama silver prizm rookie psa 10' },
-      { position: 9, entryName: '2018 bowman chrome baseball ronald acuña jr. refractor rookie auto raw near mint' },
-      { position: 10, entryName: '2017 panini prizm football christian mccaffrey silver prizm rookie raw excellent' },
-    ],
-  },
-  {
-    brandId: 'shackpack',
-    seriesName: 'ShackPack Select',
-    seriesDate: null,
-    cards: [
-      { position: 1, entryName: '2003 topps chrome basketball dwyane wade refractor rookie bgs 9' },
-      { position: 2, entryName: '2018 donruss optic football lamar jackson holo rookie psa 10' },
-      { position: 3, entryName: '2017 topps chrome update baseball aaron judge refractor rookie psa 10' },
-      { position: 4, entryName: '2013 panini prizm basketball giannis antetokounmpo silver prizm rookie psa 10' },
-      { position: 5, entryName: '2024 panini prizm football caleb williams silver prizm rookie bgs 9.5' },
-      { position: 6, entryName: '2019 topps chrome baseball juan soto refractor rookie psa 10' },
-      { position: 7, entryName: '2014 panini prizm basketball joel embiid silver prizm rookie psa 9' },
-      { position: 8, entryName: '2013 panini prizm football travis kelce silver prizm rookie psa 10' },
-      { position: 9, entryName: '2019 panini prizm basketball ja morant silver prizm rookie raw mint' },
-      { position: 10, entryName: '2014 topps chrome update baseball mookie betts refractor rookie raw near mint' },
-    ],
-  },
+  // ShackPack Fusion / Nova / Select examples removed 2026-09-01: owner ruling
+  // that they did not represent the products as actually run. The Vault Room
+  // Breaks and Komodo examples below stay — those are based on real cases.
   // ----- Komodo Rips (TCG) -----
   // The ONLY examples stored pre-formatted. Every other entry above is raw
   // Sortly text that cleanEntryName cases at render time; these names arrived

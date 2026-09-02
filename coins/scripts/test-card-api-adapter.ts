@@ -612,10 +612,21 @@ check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('Purity'), 
 // 'Legend Series 1' landed in the archive - two entries must never both
 // present as the closed one.
 check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('Legend'), 'illustrative');
-check("'ShackPack Fusion' -> banner, NO finalized statement", noticeFor('ShackPack Fusion'), 'illustrative');
-check("'ShackPack Nova' -> banner", noticeFor('ShackPack Nova'), 'illustrative');
-check("'ShackPack Select' -> banner", noticeFor('ShackPack Select'), 'illustrative');
 check("'Vault Room Breaks Series 1' -> banner", noticeFor('Vault Room Breaks Series 1'), 'illustrative');
+check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('Vault Room Breaks Series 2-5'), 'illustrative');
+// The ShackPack Fusion / Nova / Select examples were removed: they did not
+// represent the products as actually run. ShackPack keeps its dated archive
+// series and now has NO examples group at all.
+check(
+  'no ShackPack example checklist remains',
+  STATIC_CARD_SERIES.filter((s) => s.brandId === 'shackpack' && s.seriesDate === null).map((s) => s.seriesName),
+  []
+);
+check(
+  'and ShackPack therefore renders no Example Checklists group',
+  getSeriesTypesForBrand(STATIC_CARD_SERIES, 'shackpack').includes(EXAMPLE_SERIES_TYPE),
+  false
+);
 
 check(
   'THE INVARIANT: every example gets exactly one notice, never none',
@@ -645,7 +656,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [7, 0, 19]
+  [4, 0, 19]
 );
 
 if (failures > 0) {
