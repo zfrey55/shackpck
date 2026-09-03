@@ -7,3 +7,6 @@
 coins/.env
 coins/.env.local
 coins/.env.*.local
+
+# Local agent config (per-machine, not shared)
+.claude/
