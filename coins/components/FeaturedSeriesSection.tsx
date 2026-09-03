@@ -42,40 +42,22 @@ export function FeaturedSeriesSection() {
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Featured series API response:', data);
-        
+
         // Handle both array and single object responses
         let seriesArray: any[] = [];
         if (Array.isArray(data)) {
-          console.log('Received array of', data.length, 'series');
-          console.log('All series data:', data);
           seriesArray = data.filter((s: any) => {
             const packsRemaining = s.packsRemaining || (s.totalPacks - s.packsSold);
-            const isActive = s.isActive && packsRemaining > 0;
-            console.log(`Series: ${s.name}, isActive: ${s.isActive}, isFeatured: ${s.isFeatured}, packsRemaining: ${packsRemaining}, willShow: ${isActive}`);
-            if (!isActive) {
-              console.log('Filtered out series:', s.name, 'isActive:', s.isActive, 'packsRemaining:', packsRemaining);
-            }
-            return isActive;
+            return s.isActive && packsRemaining > 0;
           });
-          console.log('Filtered series array:', seriesArray.length, 'series will be displayed');
         } else if (data && data.isActive) {
           const packsRemaining = data.packsRemaining || (data.totalPacks - data.packsSold);
-          console.log('Received single series:', data.name, 'isActive:', data.isActive, 'isFeatured:', data.isFeatured, 'packsRemaining:', packsRemaining);
           if (packsRemaining > 0) {
             seriesArray = [data];
           }
-        } else if (data) {
-          console.log('Received non-array data:', data);
-        } else {
-          console.log('No data received from API');
         }
-        
-        console.log('Final featured series array:', seriesArray.length, 'items');
+
         setFeaturedSeries(seriesArray);
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to fetch featured series:', response.status, errorText);
       }
     } catch (error) {
       console.error('Error fetching featured series:', error);
@@ -106,8 +88,8 @@ export function FeaturedSeriesSection() {
           const checklist = await checklistResponse.json();
           // Top hits are manually selected, so if not in series data, return empty
         }
-      } catch (error) {
-        console.error('Error fetching top hits:', error);
+      } catch {
+        // Top hits are optional; a checklist failure just leaves them off.
       }
     }
 
@@ -155,7 +137,6 @@ export function FeaturedSeriesSection() {
     );
   }
 
-  // Show message if no featured series (for debugging)
   if (featuredSeries.length === 0) {
     return (
       <section className="container py-16">
@@ -166,8 +147,12 @@ export function FeaturedSeriesSection() {
           <p className="text-slate-400">
             No active specialized series available at this time.
           </p>
-          <p className="text-xs text-slate-500 mt-2">
-            Check the API endpoint: /api/series?featured=true
+          <p className="text-slate-400 mt-2">
+            New series are announced regularly. Check back soon or browse our{' '}
+            <Link href="/repacks" className="text-gold hover:underline">
+              packs
+            </Link>
+            .
           </p>
         </div>
       </section>
