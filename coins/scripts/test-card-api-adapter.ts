@@ -525,7 +525,7 @@ console.log('\n--- TCG line: Komodo Rips examples and cardType routing ---\n');
 
 // EXAMPLES only. Komodo Rips has no dated series in the archive today
 // ('Legend Series 1' was removed in 3a129c8); every Komodo entry is an
-// undated example. Purity and Legend are illustrative; Prestige is finalized.
+// undated example, and all three are illustrative.
 const tcgExamples = STATIC_CARD_SERIES.filter(
   (s) => s.brandId === 'komodo-rips' && s.seriesDate === null
 );
@@ -618,9 +618,9 @@ check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('Purity'), 
 // 'Legend Series 1' landed in the archive - two entries must never both
 // present as the closed one.
 check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('Legend'), 'illustrative');
-// Prestige carries finalizedOn at the owner's direction, so it is the one
-// Komodo example that states the finalized statement and shows no banner.
-check("Komodo 'Prestige' -> finalized statement, NO banner", noticeFor('Prestige'), 'finalized');
+// Prestige is illustrative like the other two: an example is never a closed
+// production run, so it shows the caveat, not the finalized statement.
+check("Komodo 'Prestige' -> banner, NO finalized statement", noticeFor('Prestige'), 'illustrative');
 check("'Vault Room Breaks Series 1' -> banner", noticeFor('Vault Room Breaks Series 1'), 'illustrative');
 check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('Vault Room Breaks Series 2-5'), 'illustrative');
 // The ShackPack Fusion / Nova / Select examples were removed: they did not
@@ -665,7 +665,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [4, 1, 19]
+  [5, 0, 19]
 );
 
 if (failures > 0) {

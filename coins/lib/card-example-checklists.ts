@@ -183,10 +183,10 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
     brandId: 'komodo-rips',
     seriesName: 'Prestige',
     seriesDate: null,
-    // finalizedOn set at the owner's direction: the Prestige list is closed as
-    // written. It has no archive series, so it is the only Komodo example that
-    // renders the finalized statement rather than the banner.
-    finalizedOn: '2026-08-31',
+    // No finalizedOn. Prestige is an illustrative sample of the line, not a
+    // closed production run — the same ruling that removed Purity's date
+    // (b60529f): an example must not claim to be finalized. It renders the
+    // Komodo caveat like Purity and Legend.
     verbatimEntries: true,
     cards: [
       { position: 1, entryName: '2006 EX Legend Maker #91 Regirock, Gold Star, Holo | PSA 9' },
