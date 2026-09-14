@@ -263,3 +263,5 @@ reading this cold:
 `packSize` (Legend Series 1 ended up not stating it — see the table above).
 Then remove or re-scope the Legend example so the line does not carry a sample
 and a produced series of the same name at once.
+
+**2026-09-14 — Prestige added (`71ec8d5`).** Third Komodo Rips tile, `komodo-prestige` / `/images/packs/komodo-prestige.png` (1086 x 1448, same 3:4 crop as the other two), with an 8-card example checklist carrying `finalizedOn: '2026-08-31'` and `verbatimEntries: true`, no cert numbers. Purity and Legend stay illustrative and there is still no Komodo series in the archive, so the Pokemon line renders one group, Example Checklists, with three examples; Prestige is the only one showing the structure line and finalized statement, and it therefore does NOT show the Komodo Whatnot caveat. Notice distribution is now **4 illustrative / 1 finalized / 19 none** across 24 static series. The structure line reads `Example checklist. 8 packs, 1 card per pack.` — the old `N cards per pack` wording is gone (`packSize` is no longer read at render).
