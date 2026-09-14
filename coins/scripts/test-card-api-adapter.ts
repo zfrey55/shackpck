@@ -523,16 +523,17 @@ check(
 
 console.log('\n--- TCG line: Komodo Rips examples and cardType routing ---\n');
 
-// EXAMPLES only. Komodo Rips also owns the dated 'Legend Series 1' in the
-// archive now, and these checks are about the illustrative entries.
+// EXAMPLES only. Komodo Rips has no dated series in the archive today
+// ('Legend Series 1' was removed in 3a129c8); every Komodo entry is an
+// undated example. Purity and Legend are illustrative; Prestige is finalized.
 const tcgExamples = STATIC_CARD_SERIES.filter(
   (s) => s.brandId === 'komodo-rips' && s.seriesDate === null
 );
 const byName = (n: string) => tcgExamples.find((s) => s.seriesName === n);
 
-check('two Komodo Rips example checklists exist', tcgExamples.length, 2);
+check('three Komodo Rips example checklists exist', tcgExamples.length, 3);
 check(
-  'both are undated EXAMPLES, never dated series',
+  'all three are undated EXAMPLES, never dated series',
   tcgExamples.every((s) => s.seriesDate === null && s.seriesType === EXAMPLE_SERIES_TYPE),
   true
 );
@@ -547,7 +548,12 @@ check(
   [1, 2, 3, 4, 5, 6, 7, 8]
 );
 check(
-  'both are marked verbatim so cleanEntryName never runs on them',
+  'Prestige has 8 rows, positions 1-8 contiguous',
+  byName('Prestige')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8]
+);
+check(
+  'all three are marked verbatim so cleanEntryName never runs on them',
   tcgExamples.every((s) => s.verbatimEntries === true),
   true
 );
@@ -612,6 +618,9 @@ check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('Purity'), 
 // 'Legend Series 1' landed in the archive - two entries must never both
 // present as the closed one.
 check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('Legend'), 'illustrative');
+// Prestige carries finalizedOn at the owner's direction, so it is the one
+// Komodo example that states the finalized statement and shows no banner.
+check("Komodo 'Prestige' -> finalized statement, NO banner", noticeFor('Prestige'), 'finalized');
 check("'Vault Room Breaks Series 1' -> banner", noticeFor('Vault Room Breaks Series 1'), 'illustrative');
 check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('Vault Room Breaks Series 2-5'), 'illustrative');
 // The ShackPack Fusion / Nova / Select examples were removed: they did not
@@ -656,7 +665,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [4, 0, 19]
+  [4, 1, 19]
 );
 
 if (failures > 0) {

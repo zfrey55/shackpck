@@ -179,4 +179,24 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
       { position: 8, entryName: '2000 Team Rocket #21 Dark Charizard, Holo | PSA 8' },
     ],
   },
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Prestige',
+    seriesDate: null,
+    // finalizedOn set at the owner's direction: the Prestige list is closed as
+    // written. It has no archive series, so it is the only Komodo example that
+    // renders the finalized statement rather than the banner.
+    finalizedOn: '2026-08-31',
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2006 EX Legend Maker #91 Regirock, Gold Star, Holo | PSA 9' },
+      { position: 2, entryName: '2019 Hidden Fates #SV56 Greninja GX, Full Art | PSA 10' },
+      { position: 3, entryName: '2026 Ascended Heroes #295 Mega Dragonite ex, Mega Hyper Rare | PSA 9' },
+      { position: 4, entryName: '2019 Cosmic Eclipse #241 Pikachu, Full Art Secret | PSA 10' },
+      { position: 5, entryName: '2024 Paldean Fates #234 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 6, entryName: '2025 Prismatic Evolutions #144 Leafeon ex, Special Illustration Rare | PSA 10' },
+      { position: 7, entryName: '2023 Scarlet & Violet 151 #199 Charizard ex, Special Illustration Rare | PSA 9' },
+      { position: 8, entryName: '2019 Hidden Fates #SV75 Gardevoir GX, Full Art | PSA 10' },
+    ],
+  },
 ];

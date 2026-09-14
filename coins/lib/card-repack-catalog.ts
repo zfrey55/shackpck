@@ -152,6 +152,14 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     brand: 'komodo-rips',
   },
   {
+    id: 'komodo-prestige',
+    name: 'Prestige',
+    description: D,
+    image: '/images/packs/komodo-prestige.png',
+    category: 'Trading Cards',
+    brand: 'komodo-rips',
+  },
+  {
     id: 'komodo-purity',
     name: 'Purity',
     description: D,
