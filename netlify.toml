@@ -15,8 +15,7 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Contact form submissions: POST /api/contact (SendGrid → ADMIN_EMAIL).
-# Legacy static form (unused at runtime): coins/public/contact-form.html
+# Contact form submissions: POST /api/contact (saved as ContactInquiry, then SendGrid → ADMIN_EMAIL).
 
 [[headers]]
   for = "/*"

@@ -254,3 +254,50 @@ enum BuildStatus {
   SUBMITTED
   ARCHIVED
 }
+
+// Website contact form submissions (/contact). The row is written BEFORE the
+// notification email is sent, so a SendGrid failure never loses a lead;
+// emailSent / emailError record how the send went.
+model ContactInquiry {
+  id                 String                @id @default(cuid())
+  createdAt          DateTime              @default(now())
+
+  reason             ContactReason
+
+  firstName          String
+  lastName           String
+  email              String
+  phone              String?
+
+  businessName       String?
+  whatnotHandle      String?
+  state              String?               // US state code
+
+  productLines       String[]              // coins | sports | pokemon
+  // Per selected line: { products: string[], packsPerSet, setsPerMonth }.
+  // Product values are catalog ids, or 'recommend' / 'custom'.
+  lineDetails        Json
+  customBranding     CustomBrandingChoice?
+  targetPricePerCase String?               // free text, never parsed
+  timeline           String?               // asap | within-30-days | just-exploring
+  message            String?               @db.Text
+
+  sourcePack         String?               // catalog id of the tile the visitor came from
+
+  emailSent          Boolean               @default(false)
+  emailError         String?
+
+  @@index([createdAt])
+}
+
+enum ContactReason {
+  BUYING
+  ORDER
+  OTHER
+}
+
+enum CustomBrandingChoice {
+  YES
+  NO
+  MAYBE
+}
