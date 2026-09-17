@@ -525,15 +525,19 @@ console.log('\n--- TCG line: Komodo Rips examples and cardType routing ---\n');
 
 // EXAMPLES only. Komodo Rips has no dated series in the archive today
 // ('Legend Series 1' was removed in 3a129c8); every Komodo entry is an
-// undated example, and all four are illustrative.
+// undated example, and all five are illustrative.
 const tcgExamples = STATIC_CARD_SERIES.filter(
   (s) => s.brandId === 'komodo-rips' && s.seriesDate === null
 );
-const byName = (n: string) => tcgExamples.find((s) => s.seriesName === n);
+// Scoped by brand as well as name: ShackPack sells a sports product also named
+// Nova, so a bare seriesName lookup is one new entry away from matching the
+// wrong series.
+const byName = (n: string) =>
+  tcgExamples.find((s) => s.brandId === 'komodo-rips' && s.seriesName === n);
 
-check('four Komodo Rips example checklists exist', tcgExamples.length, 4);
+check('five Komodo Rips example checklists exist', tcgExamples.length, 5);
 check(
-  'all four are undated EXAMPLES, never dated series',
+  'all five are undated EXAMPLES, never dated series',
   tcgExamples.every((s) => s.seriesDate === null && s.seriesType === EXAMPLE_SERIES_TYPE),
   true
 );
@@ -558,7 +562,12 @@ check(
   [1, 2, 3, 4, 5, 6, 7, 8]
 );
 check(
-  'all four are marked verbatim so cleanEntryName never runs on them',
+  'Nova has 8 rows, positions 1-8 contiguous',
+  byName('Nova')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8]
+);
+check(
+  'all five are marked verbatim so cleanEntryName never runs on them',
   tcgExamples.every((s) => s.verbatimEntries === true),
   true
 );
@@ -613,22 +622,26 @@ check(
 
 console.log('\n--- example notices: banner XOR finalized statement, never both ---\n');
 
-const noticeFor = (name: string) =>
-  exampleNoticeFor(STATIC_CARD_SERIES.find((s) => s.seriesName === name)!);
+// Brand-scoped for the same reason as byName above.
+const noticeFor = (brandId: string, name: string) =>
+  exampleNoticeFor(
+    STATIC_CARD_SERIES.find((s) => s.brandId === brandId && s.seriesName === name)!
+  );
 
 // Purity flipped to illustrative when Legend Series 1 came down: an example is
 // never a closed production run, so it shows the banner, not the statement.
-check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('Purity'), 'illustrative');
+check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Purity'), 'illustrative');
 // The EXAMPLE named 'Legend' reverted to illustrative when the real
 // 'Legend Series 1' landed in the archive - two entries must never both
 // present as the closed one.
-check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('Legend'), 'illustrative');
+check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('komodo-rips', 'Legend'), 'illustrative');
 // Prestige is illustrative like the other two: an example is never a closed
 // production run, so it shows the caveat, not the finalized statement.
-check("Komodo 'Prestige' -> banner, NO finalized statement", noticeFor('Prestige'), 'illustrative');
-check("Komodo 'Utopia' -> banner, NO finalized statement", noticeFor('Utopia'), 'illustrative');
-check("'Vault Room Breaks Series 1' -> banner", noticeFor('Vault Room Breaks Series 1'), 'illustrative');
-check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('Vault Room Breaks Series 2-5'), 'illustrative');
+check("Komodo 'Prestige' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Prestige'), 'illustrative');
+check("Komodo 'Utopia' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Utopia'), 'illustrative');
+check("Komodo 'Nova' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Nova'), 'illustrative');
+check("'Vault Room Breaks Series 1' -> banner", noticeFor('vault-room-breaks', 'Vault Room Breaks Series 1'), 'illustrative');
+check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('vault-room-breaks', 'Vault Room Breaks Series 2-5'), 'illustrative');
 // The ShackPack Fusion / Nova / Select examples were removed: they did not
 // represent the products as actually run. ShackPack keeps its dated archive
 // series and now has NO examples group at all.
@@ -671,7 +684,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [6, 0, 19]
+  [7, 0, 19]
 );
 
 if (failures > 0) {

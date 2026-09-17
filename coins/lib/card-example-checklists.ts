@@ -218,4 +218,23 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
       { position: 8, entryName: '2023 Paldea Evolved #203 Magikarp, Illustration Rare | PSA 10' },
     ],
   },
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Nova',
+    seriesDate: null,
+    // No finalizedOn. Nova is an illustrative sample of the line, not a
+    // closed production run, on the same footing as Purity, Legend, Prestige
+    // and Utopia (b60529f). It renders the Komodo caveat.
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2022 Lost Origin #186 Giratina V, Alternate Art | PSA 10' },
+      { position: 2, entryName: '2023 Obsidian Flames #223 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 3, entryName: '2023 Crown Zenith #GG69 Giratina VSTAR | PSA 10' },
+      { position: 4, entryName: '2023 Obsidian Flames #228 Charizard ex, Hyper Rare | PSA 10' },
+      { position: 5, entryName: '2023 Scarlet & Violet 151 #202 Zapdos ex, Special Illustration Rare | PSA 10' },
+      { position: 6, entryName: '2023 Scarlet & Violet 151 #201 Alakazam ex, Special Illustration Rare | PSA 10' },
+      { position: 7, entryName: '2023 Paradox Rift #251 Roaring Moon ex, Special Illustration Rare | PSA 10' },
+      { position: 8, entryName: '2023 Scarlet & Violet 151 #204 Giovanni\'s Charisma, Special Illustration Rare | PSA 10' },
+    ],
+  },
 ];

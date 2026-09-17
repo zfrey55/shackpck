@@ -152,6 +152,16 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     brand: 'komodo-rips',
   },
   {
+    // Art shared with the ShackPack sports Nova tile above: the same
+    // shackpack-nova.png, deliberately not copied or renamed.
+    id: 'komodo-nova',
+    name: 'Nova',
+    description: D,
+    image: '/images/packs/shackpack-nova.png',
+    category: 'Trading Cards',
+    brand: 'komodo-rips',
+  },
+  {
     id: 'komodo-prestige',
     name: 'Prestige',
     description: D,
