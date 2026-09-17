@@ -28,6 +28,6 @@
 ## Practical guidance for editors
 
 - New pack → add an entry to `repack-catalog.ts` (with `brand`) + drop art in `public/images/packs/`.
-- New customer brand → add to `BRANDS` in `lib/brands.ts` (+ optional logo in `public/images/brands/`).
+- New customer brand → add to `BRANDS` in `lib/brands.ts` (+ optional logo in `public/images/brands/`), add the customer's exact ShackHQ `customerName` to `CANONICAL_OTHER_CUSTOMERS` in `lib/customer-attribution.ts`, and add a `CUSTOMER_PACKS` entry keyed by that name's slug. Without the roster entry the customer's checklists stay under ShackPack. See `12`.
 - Reword a disclaimer → edit the shared constant once; it propagates.
 - See `12-business-context.md` for the catalog/brand model.
