@@ -604,7 +604,7 @@ bucket and their cases show on the ShackPack checklist tab. This is deliberate:
 **do not add them to the roster.** Revisit together with the planned Coin Shack
 tab and wholesale bucket, which are on hold pending ShackHQ scoping.
 
-## 2. caseTypes with no label — **`6 7` DONE `a349a75`; `shack pack` variants OPEN (ShackHQ side)**
+## 2. caseTypes with no label — **DONE** (`6 7` in `a349a75`; `shack pack` variants fixed in ShackHQ)
 
 These had no `CANONICAL_LABELS` / `TO_CANONICAL` entry in
 `lib/checklist-case-labels.ts`, so `titleCaseFallback` rendered them raw:
@@ -612,8 +612,8 @@ These had no `CANONICAL_LABELS` / `TO_CANONICAL` entry in
 | caseType | Renders as | Cases | Customer | State |
 |---|---|---|---|---|
 | `6 7` | ~~6 7~~ **ShackPack 67** | 45 (7 dates, 2026-07-22..09-01) | The Coin Shack | **DONE `a349a75`** (`'6-7'` -> `'67'`) |
-| `shack pack expo` | Shack Pack Expo | 3 (2026-08-14) | Blue Collar Bullion | **OPEN** |
-| `shack pack radiant` | Shack Pack Radiant | 10 (2026-08-13..14) | Blue Collar Bullion | **OPEN** |
+| `shack pack expo` | ~~Shack Pack Expo~~ gone | 3 (2026-08-14) | Blue Collar Bullion | **DONE in ShackHQ** (now `expo`) |
+| `shack pack radiant` | ~~Shack Pack Radiant~~ gone | 10 (2026-08-13..14) | Blue Collar Bullion | **DONE in ShackHQ** (now `radiant`) |
 
 **Why the `shack pack` variants were NOT relabelled.** Blue Collar Bullion also
 holds the bare `expo` (32 cases) and `radiant` (45), which already label as
@@ -625,6 +625,14 @@ distinguishable and fix at the source, by changing those 13 cases' caseType in
 ShackHQ to `expo` / `radiant` so they merge into the existing groups. No site
 change is needed after that; do not add the `TO_CANONICAL` mappings unless the
 checklist also merges same-label caseTypes.
+
+**Resolved at the source (2026-09-16).** ShackHQ changed the 13 cases' caseType
+to `expo` / `radiant`. No site mappings were added: `TO_CANONICAL` has no
+`shack-pack-*` entry. Re-running the routing snapshot confirmed neither
+`shack pack` caseType appears anywhere, Blue Collar Bullion's `expo` rose
+32 -> 35 and `radiant` 45 -> 55, the total stayed 13,345 cases, and no slug or
+bucket changed. The Blue Collar Bullion tab now shows one "ShackPack Expo" and
+one "ShackPack Radiant" and no "Shack Pack" buttons.
 
 ## 3. `caseTypePrefixes` / `brandForCaseType` are dead — **OPEN**
 
