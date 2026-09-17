@@ -705,3 +705,45 @@ last changed in `4e4a430` (2026-02-12), and the password in them is stale, so no
 rotation is needed. Strip the connection strings from both scripts (read
 `DATABASE_URL` from the environment instead, or delete the scripts), so a
 credentialed URL is not kept in git.
+
+---
+
+# Supabase RLS state — 2026-09-17
+
+Read from prod (`pg_class.relrowsecurity`, `information_schema.role_table_grants`)
+when `ContactInquiry` shipped (`258be87`). The app connects as `postgres`, which
+has `rolbypassrls = true`, so RLS never affects the site's own Prisma queries.
+
+## 1. `ContactInquiry` — RLS **ON** — **DONE**
+
+Created by `prisma db push` (the diff was create-only: the `ContactReason` and
+`CustomBrandingChoice` enums, the table and its `createdAt` index), then
+`ALTER TABLE "ContactInquiry" ENABLE ROW LEVEL SECURITY;` with **no policies**.
+Supabase's default privileges still grant `anon` and `authenticated` every table
+privilege on it, but with RLS on and no policy those roles can select, insert,
+update and delete nothing. (TRUNCATE is not subject to RLS, but it is not
+reachable through the Supabase Data API.) Verified through Prisma on the prod
+connection: an insert and delete inside a rolled-back transaction worked, and
+no existing table's columns, indexes, constraints or RLS flag changed.
+
+## 2. Existing tables — RLS **off**, `anon` / `authenticated` fully granted — **OPEN**
+
+| Table | RLS | `anon` | `authenticated` |
+|---|---|---|---|
+| `Address` | off | SELECT INSERT UPDATE DELETE TRUNCATE REFERENCES TRIGGER | same |
+| `Build` | off | same | same |
+| `BuildLine` | off | same | same |
+| `Order` | off | same | same |
+| `OrderItem` | off | same | same |
+| `Series` | off | same | same |
+| `SeriesPurchase` | off | same | same |
+| `User` | off | same | same |
+
+If the Supabase Data API (PostgREST) exposes schema `public`, anyone with the
+project's anon key (a publishable key by design) can read and write every row of
+these tables, including `User` (emails, password hashes, roles) and `Order`.
+Whether the Data API is enabled for `public` was **not** checked. The site does
+not use the anon key (no `@supabase/supabase-js`; Prisma only), so enabling RLS
+with no policies, or revoking the `anon` / `authenticated` grants, should not
+affect the site, but that is a separate, explicitly approved change: nothing on
+these tables was altered on 2026-09-17.
