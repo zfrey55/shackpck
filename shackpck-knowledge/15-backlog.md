@@ -585,3 +585,51 @@ Owner decides; these may legitimately describe a **case** rather than a pack.
 - **Builder (`/build`, likely out of scope)** —
   `CompareDrawer.tsx:108` `{packCount} packs · {totalCoins} coins listed`.
 
+---
+
+# Backlog notes — 2026-09-16
+
+From the customer roster change (`78d9f77`, `948948e`, `2a37956`). Counts are
+from `getAvailableDates` across all 305 available dates (2025-11-06..2026-09-16).
+
+## 1. Off-roster customers under ShackPack — **INTENTIONAL** (owner ruling)
+
+| `customerName` | Cases | caseTypes | Dates |
+|---|---|---|---|
+| Gold Coin Reserve | 9 | `base` 3, `deluxe` 3, `xtreme` 3 | 2026-08-31, 2026-09-01 |
+| Emerald City Pawn & Consignment | 7 | `reign` 5, `prominence` 2 | 2025-12-16 |
+
+Neither name is on `CANONICAL_OTHER_CUSTOMERS`, so both resolve to the house
+bucket and their cases show on the ShackPack checklist tab. This is deliberate:
+**do not add them to the roster.** Revisit together with the planned Coin Shack
+tab and wholesale bucket, which are on hold pending ShackHQ scoping.
+
+## 2. caseTypes with no label — **OPEN**
+
+These have no `CANONICAL_LABELS` / `TO_CANONICAL` entry in
+`lib/checklist-case-labels.ts`, so `titleCaseFallback` renders them raw:
+
+| caseType | Renders as | Cases | Customer |
+|---|---|---|---|
+| `shack pack expo` | Shack Pack Expo | 3 (2026-08-14) | Blue Collar Bullion |
+| `shack pack radiant` | Shack Pack Radiant | 10 (2026-08-13..14) | Blue Collar Bullion |
+| `6 7` | 6 7 | 45 (7 dates, 2026-07-22..09-01) | The Coin Shack |
+
+The bare `expo` and `radiant` already label as "ShackPack Expo" / "ShackPack
+Radiant", and the catalog tile for `6 7` is "ShackPack 67". The two `shack pack`
+spellings sit on the Blue Collar Bullion tab, not ShackPack's.
+
+## 3. `caseTypePrefixes` / `brandForCaseType` are dead — **OPEN**
+
+Nothing outside `lib/brands.ts` reads either (checklist attribution is by
+`customerName`; see `12`). The field is still filled in on every brand, and the
+brand comments still explain prefix choices as if they route. Either delete the
+field and function, or mark them dead in the file so no one extends them.
+
+## 4. ShackHQ caseTypes pending — **OPEN (ShackHQ side)**
+
+`opal`, `cipher`, `pulse`, `fury` and `phantom` do not exist in ShackHQ yet
+(`relic` does, 1 case). Site tiles and "ShackPack {Name}" labels are already in
+place for all six, for both the bare and `shackpack-{name}` spellings. Nothing to
+do on the site once ShackHQ creates them; they will route to ShackPack via the
+house bucket.
