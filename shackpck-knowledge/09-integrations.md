@@ -11,6 +11,7 @@ Status legend: **Active** (wired + used), **Partial** (works but has TODO/gaps),
 | **FedEx** | Shipping label (PDF/ZPLII) on order | `lib/fedex.ts`, `/api/orders`, `/api/webhooks/stripe`, `/api/test-fedex` | `FEDEX_KEY`, `FEDEX_PASSWORD`, `FEDEX_ACCOUNT_NUMBER`, `FEDEX_METER_NUMBER`, `FEDEX_ENVIRONMENT`, `FEDEX_SHIPPER_*` | **Partial** — prod credentials gated on FedEx API validation (`env.production.template` TODO) |
 | **Netlify Blobs** | Builder artwork storage/serving | `/api/build/[id]/artwork`, `/api/build/artwork/[...key]` | `NETLIFY_BLOBS_SITE_ID`, `NETLIFY_BLOBS_TOKEN` (auto on Netlify) | **Active** |
 | **NextAuth** | Auth/session (credentials, JWT) | `lib/auth.ts`, `/api/auth/[...nextauth]` | `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_TRUST_HOST` | **Active** |
+| **Upstash Redis** | Rate limiting (`@upstash/ratelimit` sliding window) on contact, register, credentials sign-in, checkout create-intent | `lib/rate-limit.ts`, `/api/contact`, `/api/auth/register`, `/api/auth/[...nextauth]` (POST wrapper), `/api/checkout/create-intent` | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | **Active** (free tier, us-east-1; fails open) |
 | **Local ZPL/Zebra printing** | Print labels to a local Zebra printer | `/api/print-zpl`, `/api/print-zpl-direct`, `app/print-zpl/page.tsx`, `scripts/*.ps1` | — | **Scaffold/Debug** (Windows/PowerShell, internal use) |
 | **Supabase** | (DB host only, if used) | scripts `get-supabase-connection.js`, `update-db-connection.js`; README | `DATABASE_URL` | **Not an SDK integration** — see note |
 

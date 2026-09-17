@@ -51,9 +51,17 @@
   - `isAdminRequest()` (soft check, e.g. `/api/series?active=false`) and `isAdminUserId(id)` (artwork route).
   - Never gate on the session token's `role`; it goes stale until the user signs in again. Admin pages gate server-side, and their client components assume the gate passed.
 
+## Rate limiting
+
+- **`lib/rate-limit.ts`**: `await rateLimit(bucket, identifier)` returns `{ ok: true }` or `{ ok: false, retryAfterSec }`; `tooManyRequests(body, retryAfterSec)` builds the 429 with `Retry-After`. Identifiers: `ipIdentifier(clientIp(request.headers))` (Netlify's `x-nf-client-connection-ip`, then the first `x-forwarded-for` entry) and `emailIdentifier(email)` (SHA-256 of the normalized email, so no address ever reaches Upstash).
+- **It fails open, always.** Env unset, store error or 1 s timeout -> the request is allowed and a `[rate-limit]` line is logged. Never make it fail closed: it must not block a real lead.
+- Limits live in `RATE_LIMITS`: contact 5/10 min/IP (runs before validation and before saving), register 5/hour/IP, credentials sign-in 10/10 min per IP **and** per email (every attempt counts, in the `[...nextauth]` POST wrapper), checkout create-intent 10/10 min/IP. Put a new limit at the very top of the handler.
+- Keys: `shackpck:<CONTEXT or NODE_ENV>:rl:<bucket>:<identifier>`, so deploy previews and dev never share production counters.
+- Development is a no-op unless `RATE_LIMIT_ENABLED=true`; use `RATE_LIMIT_STORE=memory` for local checks and `RATE_LIMIT_FAKE_ERROR=true` to exercise fail-open. Both switches are ignored in production.
+
 ## Fixtures run before every commit
 
-`npx tsx scripts/test-card-api-adapter.ts`, `scripts/test-clean-entry-name.ts`, `scripts/test-series-numbering.ts`, `scripts/test-safe-redirect.ts`, plus `tsc --noEmit` and `npm run lint`.
+`npx tsx scripts/test-card-api-adapter.ts`, `scripts/test-clean-entry-name.ts`, `scripts/test-series-numbering.ts`, `scripts/test-safe-redirect.ts`, `scripts/test-rate-limit.ts`, plus `tsc --noEmit` and `npm run lint`.
 
 ## Database schema changes (Supabase RLS)
 

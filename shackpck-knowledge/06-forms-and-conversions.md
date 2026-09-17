@@ -36,6 +36,10 @@
 
 **Flagged submissions are saved, never silently dropped.** A filled honeypot or a submission under 3 s is saved with `emailSent = false` and `emailError = 'spam-suspected: honeypot'` or `'spam-suspected: too-fast'` (honeypot wins if both), no email is sent, and the visitor gets the normal `{ ok: true }` success body. The server logs `Spam-suspected (<check>): saved inquiry <id>, email skipped.`; the honeypot's value is never logged, since autofill can put a real visitor's details in it. Review suspected leads with `emailError LIKE 'spam-suspected:%'`.
 
+#### 2026-09-17 — Contact rate limit (`fea53f3`)
+
+`/api/contact` allows **5 requests per 10 minutes per IP** (Upstash, `lib/rate-limit.ts`). The check runs first, before validation, spam checks and the save, so invalid and spam-suspected posts count too, and a blocked request saves nothing. Over the limit: `429` with `Retry-After` and `{ error: 'Too many submissions, try again shortly.' }`, which the form shows as its error. The limiter fails open, so an Upstash outage never blocks a submission. Credentials sign-in has its own limit (10 per 10 minutes per IP and per email), and the sign-in page shows "Too many attempts, try again in a few minutes.".
+
 **Tile buttons.** `lib/purchasable-brands.ts` holds `PURCHASABLE_BRANDS = ['shackpack']` and `isPurchasableBrand()`. ShackPack tiles (coin and card) keep "Contact for Price", now linking to `/contact?line=<line>&product=<id>`. Every other brand, **including Bullion Bureau**, shows a non-clickable "Not available for purchase" label and a "Want your own branded packs? Contact us" link to `/contact?branding=yes`. `RepackCard` now requires a `brand` prop so no tile can default to purchasable. The shared disclaimer is unchanged on every tile.
 
 ### 2. Checkout (Stripe) — retail purchase path

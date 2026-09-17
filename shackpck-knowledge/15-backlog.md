@@ -805,3 +805,28 @@ Checkout is currently off in prod: the live `/checkout` redirects to `/contact` 
 - **6a. Guest checkout 500s for a registered email — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `create-intent` finds the user by email and, if that user is *not* a shadow user, tries to create a second user with the same email, which fails the unique constraint and returns 500. A registered customer checking out as a guest cannot pay.
 - **6b. Guest orders attach to registered accounts — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `/api/orders` looks the guest's email up and, when a registered (non-shadow) account has it, attaches the order to that account with no sign-in. Anyone who knows a customer's email can place orders into that customer's history.
 - Related: because the flag is UI-only, `create-intent` is reachable in prod today and can create shadow users and Stripe customers for arbitrary emails. Gate the checkout APIs server-side on the same flag when fixing 6a/6b.
+
+---
+
+# Rate limiting — Phase 3 — 2026-09-17 — **DONE** (`fea53f3`)
+
+Upstash Redis (free tier, us-east-1; `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` set in Netlify for all contexts, token secret). `@upstash/ratelimit` sliding window via `lib/rate-limit.ts`.
+
+| Endpoint | Limit | Where | Over the limit |
+|---|---|---|---|
+| `POST /api/contact` | 5 / 10 min / IP | first line, before validation and saving | 429 `Too many submissions, try again shortly.` (shown by the form) |
+| `POST /api/auth/register` | 5 / hour / IP | first line | 429 `Too many sign-up attempts, try again later.` |
+| Credentials sign-in (`/api/auth/callback/credentials`) | 10 / 10 min / IP **and** / normalized email; every attempt counts | POST wrapper in `/api/auth/[...nextauth]` (an `authorize()` throw would always be 401) | 429 `{ url: .../api/auth/error?error=RateLimited }`; the sign-in page shows `Too many attempts, try again in a few minutes.` |
+| `POST /api/checkout/create-intent` | 10 / 10 min / IP | first line | 429 `Too many checkout attempts, try again shortly.` |
+
+- **Fails open:** unset env, store error or 1 s timeout allows the request and logs `[rate-limit] ...`.
+- **Client IP:** `x-nf-client-connection-ip`, then the first `x-forwarded-for` entry.
+- **Email keys:** SHA-256 hashes of the normalized email, so no addresses are stored in Upstash.
+- **Key prefix:** `shackpck:<CONTEXT or NODE_ENV>:rl`. Whether Netlify exposes `CONTEXT` to functions at runtime shows in the first `[rate-limit] store=upstash prefix=...` function-log line after deploy.
+- **Verified on dev (in-memory fake):**
+  - Limits trip at 6 / 6 / 11 / 11, a blocked contact request saves nothing, and both friendly messages render.
+  - The per-email sign-in limit trips across 10 IPs and mixed casing.
+  - Other IPs and an unlimited route are unaffected.
+  - A throwing store fails open: submissions save and correct sign-ins work.
+  - The development default is a no-op.
+- **Fixture:** `scripts/test-rate-limit.ts` (23 checks).

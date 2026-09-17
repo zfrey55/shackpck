@@ -68,6 +68,8 @@
 - FedEx: `FEDEX_KEY`, `FEDEX_PASSWORD`, `FEDEX_ACCOUNT_NUMBER`, `FEDEX_METER_NUMBER`, `FEDEX_ENVIRONMENT`, plus `FEDEX_SHIPPER_*`
 - Inventory: `COIN_INVENTORY_API_BASE_URL` (optional; defaults hardcoded)
 - Netlify Blobs: `NETLIFY_BLOBS_SITE_ID`, `NETLIFY_BLOBS_TOKEN` (auto-injected on Netlify)
+- Rate limiting (Upstash Redis, free tier, us-east-1): `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (token marked secret; same values in every deploy context). Unset = rate limiting off, failing open. Dev-only switches, ignored in production: `RATE_LIMIT_ENABLED`, `RATE_LIMIT_STORE=memory`, `RATE_LIMIT_FAKE_ERROR`.
+- Series sync: `SYNC_SERIES_SECRET` (optional; `x-sync-secret` header for `/api/sync/series` and `/api/series/sync-from-inventory`; unset = admin sessions only)
 - Feature flags: `NEXT_PUBLIC_ENABLE_CHECKOUT/ACCOUNTS/DIRECT_PURCHASE`
 - Loyalty: `LOYALTY_POINTS_PER_DOLLAR`
 
