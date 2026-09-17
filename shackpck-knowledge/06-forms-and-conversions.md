@@ -21,12 +21,20 @@
 
 **Server validation.** Products must be real purchasable catalog ids for their line (plus `recommend`, or only `custom` on an empty line); packs per set must be valid for the line; `lineDetails` must match `productLines` exactly; `sourcePack` must be a purchasable id; state must be a US state code. Invalid input returns 400 and saves nothing.
 
-**Spam handling.** An off-screen honeypot input (`companyWebsite`: positioned off-screen, not `display:none`; `tabIndex -1`, `autocomplete off`, `aria-hidden`) and a minimum fill time: the client sends `elapsedMs`, measured with `performance.now()` from mount, and the server drops anything under 3 s. Client-measured elapsed time is used rather than a wall-clock load timestamp so a visitor whose device clock is off cannot be silently dropped. Both cases return the normal `{ ok: true }` success body and are neither saved nor emailed.
+**Spam handling.** An off-screen honeypot input and a minimum fill time: the client sends `elapsedMs`, measured with `performance.now()` from mount, and anything under 3 s is flagged. Client-measured elapsed time is used rather than a wall-clock load timestamp, so a visitor whose device clock is off is not flagged. *Superseded 2026-09-17 (see below): the honeypot was renamed, and flagged submissions are now saved instead of dropped.*
 
 **Pre-fill params** (unknown values ignored; any BUYING pre-fill opens on buying step 1):
 - `?line=coins|sports|pokemon` → Buying packs, that line selected.
 - `?product=<catalog id>` → Buying packs, that product's line and the product selected, `sourcePack` set. Only purchasable ids are recognised.
 - `?branding=yes` → Buying packs, custom branding = Yes.
+
+#### 2026-09-17 — Spam handling keeps suspected rows (`ce57686`)
+
+**What happened.** The owner submitted real inquiries on prod twice (the second signed out, in Chrome). Both showed the success screen, no email arrived, and no `ContactInquiry` row existed. Postgres logs showed no failed insert and `pg_stat_statements` no site insert, so the route never reached the save: the submissions were dropped by the spam check. The honeypot was `companyWebsite`, labelled "Company website", and Chrome address autofill filling it is the most likely cause (Netlify function logs, which name the check that tripped, were not reachable to confirm).
+
+**Honeypot now.** `id`/`name` `hp_field_x`, label "Leave this empty", `autocomplete="off"`, `data-1p-ignore` (1Password), `data-lpignore="true"` (LastPass), `data-form-type="other"` (Dashlane). Still positioned off-screen (not `display:none`), `tabIndex -1`, inside an `aria-hidden` wrapper.
+
+**Flagged submissions are saved, never silently dropped.** A filled honeypot or a submission under 3 s is saved with `emailSent = false` and `emailError = 'spam-suspected: honeypot'` or `'spam-suspected: too-fast'` (honeypot wins if both), no email is sent, and the visitor gets the normal `{ ok: true }` success body. The server logs `Spam-suspected (<check>): saved inquiry <id>, email skipped.`; the honeypot's value is never logged, since autofill can put a real visitor's details in it. Review suspected leads with `emailError LIKE 'spam-suspected:%'`.
 
 **Tile buttons.** `lib/purchasable-brands.ts` holds `PURCHASABLE_BRANDS = ['shackpack']` and `isPurchasableBrand()`. ShackPack tiles (coin and card) keep "Contact for Price", now linking to `/contact?line=<line>&product=<id>`. Every other brand, **including Bullion Bureau**, shows a non-clickable "Not available for purchase" label and a "Want your own branded packs? Contact us" link to `/contact?branding=yes`. `RepackCard` now requires a `brand` prop so no tile can default to purchasable. The shared disclaimer is unchanged on every tile.
 
