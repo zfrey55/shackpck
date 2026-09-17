@@ -10,7 +10,11 @@ export const runtime = 'nodejs';
  *
  * Access rules:
  *   - Owner (signed-in user whose build this belongs to): always allowed.
- *   - Admin (email must match ADMIN_EMAIL): allowed — so the inbox email link works.
+ *   - Admin: a signed-in user whose DB role is ADMIN, looked up by session user id
+ *     on every request, so a demotion takes effect immediately. This is what makes
+ *     the link in the admin notification email work: the reader signs in with an
+ *     admin account. Matching the ADMIN_EMAIL inbox address is deliberately NOT
+ *     an access rule — that address is a notification destination, not an identity.
  *   - Everyone else: 404.
  *
  * This keeps uploads out of public object storage while still letting us link them
@@ -34,13 +38,13 @@ export async function GET(_req: NextRequest, { params }: { params: { key: string
   }
 
   const viewer = await getBuilderUser();
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const viewerEmail = viewer?.email?.toLowerCase();
+  if (!viewer) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  const isOwner = viewer?.id === build.userId;
-  const isAdmin = !!adminEmail && !!viewerEmail && viewerEmail === adminEmail;
-  if (!isOwner && !isAdmin) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  if (viewer.id !== build.userId) {
+    const user = await prisma.user.findUnique({ where: { id: viewer.id }, select: { role: true } });
+    if (user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
   }
 
   const blob = await readBuildArtwork(key);

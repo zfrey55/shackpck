@@ -5,9 +5,9 @@ import bcrypt from 'bcryptjs';
 
 /**
  * Comma-separated list of emails that should always be treated as ADMIN, even if
- * their DB row says role=USER. Lets us grant admin without a DB write.
+ * their DB row says role=CUSTOMER. Lets us grant admin without a DB write.
  *
- * Example Netlify env: ADMIN_EMAILS=gjpacking123@gmail.com,owner2@example.com
+ * Example Netlify env: ADMIN_EMAILS=owner1@example.com,owner2@example.com
  */
 function isAdminEmail(email: string | null | undefined): boolean {
   if (!email) return false;
