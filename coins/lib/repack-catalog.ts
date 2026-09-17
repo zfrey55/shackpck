@@ -249,6 +249,54 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Coins',
     brand: 'shackpack',
   },
+  {
+    id: 'shackpack-relic',
+    name: 'ShackPack Relic',
+    description: D,
+    image: '/images/packs/shackpack-relic.png',
+    category: 'Coins',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-opal',
+    name: 'ShackPack Opal',
+    description: D,
+    image: '/images/packs/shackpack-opal.png',
+    category: 'Coins',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-cipher',
+    name: 'ShackPack Cipher',
+    description: D,
+    image: '/images/packs/shackpack-cipher.png',
+    category: 'Coins',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-pulse',
+    name: 'ShackPack Pulse',
+    description: D,
+    image: '/images/packs/shackpack-pulse.png',
+    category: 'Coins',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-fury',
+    name: 'ShackPack Fury',
+    description: D,
+    image: '/images/packs/shackpack-fury.png',
+    category: 'Coins',
+    brand: 'shackpack',
+  },
+  {
+    id: 'shackpack-phantom',
+    name: 'ShackPack Phantom',
+    description: D,
+    image: '/images/packs/shackpack-phantom.png',
+    category: 'Coins',
+    brand: 'shackpack',
+  },
 
   // ----- Coinwave -----
   {
@@ -574,7 +622,7 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
     brand: 'bullion-bureau',
   },
 
-  // ----- Let It Ride -----
+  // ----- Let It Ride Retailers -----
   {
     id: 'letitride-fullyinvolved',
     name: 'Let It Ride Fully Involved',
@@ -593,15 +641,35 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
 
   // ----- Black Mountain Coins & Stamps -----
-  // Tile name uses the short brand name; the full wordmark already
-  // appears in the brand header above the grid.
+  // One tile covers its #1/#2/#3 caseTypes; the art carries no number.
   {
     id: 'blackmountain-starter',
-    name: 'Black Mountain Starter',
+    name: 'Black Mountain Coins & Stamps',
     description: D,
     image: '/images/packs/blackmountain-starter.png',
     category: 'Coins',
     brand: 'black-mountain',
+  },
+
+  // ----- Blessed -----
+  // No pack art yet, so both tiles render the branded placeholder.
+  {
+    id: 'blessed-baggenesis',
+    name: 'Blessed Bag Genesis',
+    description: D,
+    image: '',
+    category: 'Coins',
+    brand: 'blessed',
+    usePlaceholder: true,
+  },
+  {
+    id: 'blessed-baggenesis-2',
+    name: 'Blessed Bag Genesis #2',
+    description: D,
+    image: '',
+    category: 'Coins',
+    brand: 'blessed',
+    usePlaceholder: true,
   },
 ];
 

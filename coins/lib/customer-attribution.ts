@@ -38,6 +38,8 @@ export const CANONICAL_BULLION_BUREAU = 'Bullion Bureau';
 /** The canonical roster for the 'other' bucket. */
 export const CANONICAL_OTHER_CUSTOMERS = [
   'Bald Bunny',
+  'Black Mountain Coins & Stamps',
+  'Blessed Coins',
   'Blue Collar Bullion',
   'Cobra Coin',
   'CoinWave LLC',
@@ -45,6 +47,7 @@ export const CANONICAL_OTHER_CUSTOMERS = [
   'Fortune Forge',
   'Golden Emu',
   'Juice Box Bullion',
+  'Let It Ride Retailers LLC',
   'Lincoln Reserve',
   'Numismatic Mu',
 ] as const;
@@ -289,20 +292,13 @@ export const CUSTOMER_PACKS: Record<string, CustomerPacksConfig> = {
     brandId: 'one-nasty-coin',
     checklistHref: null,
   },
-  // New brands, tiles only. getAvailableDates carries no case for any of them
-  // under any customerName or caseType, and none is on the canonical roster,
-  // so the default /checklist?customer= link would land on an empty page.
-  // Explicit null suppresses it rather than shipping a dead link.
-  'let-it-ride': {
-    hasPacks: true,
-    brandId: 'let-it-ride',
-    checklistHref: null,
-  },
-  'black-mountain-coins-stamps': {
-    hasPacks: true,
-    brandId: 'black-mountain',
-    checklistHref: null,
-  },
+  // Keyed by the slug of the customerName ShackHQ actually sends, which is on
+  // the roster above, so the default /checklist?customer= link lands on their
+  // cases. First cases appeared in getAvailableDates in 2026-09.
+  'let-it-ride-retailers-llc': { hasPacks: true, brandId: 'let-it-ride' },
+  'black-mountain-coins-stamps': { hasPacks: true, brandId: 'black-mountain' },
+  // Tiles use the branded placeholder until pack art arrives.
+  'blessed-coins': { hasPacks: true, brandId: 'blessed' },
   // Card-only, like Vault Room Breaks — but with no card series on the Cards
   // line either (getCardChecklistDates returns ShackPack only), so there is
   // not even a ?line=cards destination to point at yet.

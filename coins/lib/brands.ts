@@ -29,6 +29,7 @@ export type BrandId =
   | 'bullion-bureau'
   | 'let-it-ride'
   | 'black-mountain'
+  | 'blessed'
   | 'komodo-rips'
   | 'pop1-pokeshop';
 
@@ -182,7 +183,7 @@ export const BRANDS: Brand[] = [
   },
   {
     id: 'let-it-ride',
-    name: 'Let It Ride',
+    name: 'Let It Ride Retailers',
     tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['letitride', 'let-it-ride'],
   },
@@ -191,6 +192,13 @@ export const BRANDS: Brand[] = [
     name: 'Black Mountain Coins & Stamps',
     tagline: 'Premium certified coin repacks',
     caseTypePrefixes: ['blackmountain', 'black-mountain'],
+  },
+  {
+    id: 'blessed',
+    name: 'Blessed',
+    tagline: 'Premium certified coin repacks',
+    // Checklist routing is by customerName ('Blessed Coins'), not caseType.
+    caseTypePrefixes: [],
   },
   {
     id: 'komodo-rips',

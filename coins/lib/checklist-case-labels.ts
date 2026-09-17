@@ -44,6 +44,12 @@ const TO_CANONICAL: Record<string, string> = {
   'coinwave-golden-tuna': 'coinwave-golden-tuna',
   'coinwave-goldentuna': 'coinwave-golden-tuna',
   transcendenttransformed: 'transcendent-transformed',
+  'shackpack-relic': 'relic',
+  'shackpack-opal': 'opal',
+  'shackpack-cipher': 'cipher',
+  'shackpack-pulse': 'pulse',
+  'shackpack-fury': 'fury',
+  'shackpack-phantom': 'phantom',
 };
 
 function toCanonicalKey(normalized: string): string {
@@ -94,6 +100,19 @@ const CANONICAL_LABELS: Record<string, { short: string; long: string }> = {
   mystery: { short: 'ShackPack Mystery', long: LONG },
   custom: { short: 'ShackPack Custom', long: LONG },
   aura: { short: 'Aura by Shackpack', long: LONG },
+  relic: { short: 'ShackPack Relic', long: LONG },
+  opal: { short: 'ShackPack Opal', long: LONG },
+  cipher: { short: 'ShackPack Cipher', long: LONG },
+  pulse: { short: 'ShackPack Pulse', long: LONG },
+  fury: { short: 'ShackPack Fury', long: LONG },
+  phantom: { short: 'ShackPack Phantom', long: LONG },
+  'job-town': { short: 'Let It Ride Job Town', long: LONG },
+  'fully-involved': { short: 'Let It Ride Fully Involved', long: LONG },
+  'black-mountain-coins-&-stamps-#1': { short: 'Black Mountain Coins & Stamps #1', long: LONG },
+  'black-mountain-coins-&-stamps-#2': { short: 'Black Mountain Coins & Stamps #2', long: LONG },
+  'black-mountain-coins-&-stamps-#3': { short: 'Black Mountain Coins & Stamps #3', long: LONG },
+  'blessed-bag-genesis': { short: 'Blessed Bag Genesis', long: LONG },
+  'blessed-bag-genesis-#2': { short: 'Blessed Bag Genesis #2', long: LONG },
 };
 
 function titleCaseFallback(raw: string): string {
