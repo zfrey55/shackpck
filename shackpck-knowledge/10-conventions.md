@@ -40,3 +40,12 @@
 - Default branch **`main`**; feature work on branches (e.g. `feat/brand-customer-packs`).
 - **CI** (`.github/workflows/ci.yml`): every push/PR to `main` runs Postgres service → `npm ci` → `prisma db push` → `lint` → `build`. A green build requires lint + production build to pass.
 - Secrets never committed (`.gitignore` blocks `.env*`); `env.production.template` holds placeholder names only.
+
+## Database schema changes (Supabase RLS)
+
+- Prod schema changes go through `prisma db push`, with `DATABASE_URL` taken **explicitly** from `coins/.env.prod.local`. `coins/.env` points at the local Postgres, and the Prisma CLI loads it automatically.
+- **After every prod `prisma db push`, run the RLS guard against prod and enable RLS on any new table:**
+  `DATABASE_URL=<prod url, loaded from coins/.env.prod.local> npx tsx scripts/check-rls.ts`
+  It lists every `public` table with row level security off and exits non-zero if there are any. Fix each with `ALTER TABLE "<Table>" ENABLE ROW LEVEL SECURITY;` (no policies), then rerun it until it exits 0.
+- Why: Supabase grants the `anon` and `authenticated` roles full privileges on every new `public` table, so a new table is readable and writable through the Supabase Data API until RLS is on. The app connects as `postgres`, which bypasses RLS, so enabling it does not affect the site.
+- The script reads `DATABASE_URL` from the environment only and never prints it. It is **not in CI**: CI runs against its own throwaway local Postgres, where RLS is off and nothing is exposed.

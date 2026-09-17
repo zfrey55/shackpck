@@ -726,7 +726,7 @@ reachable through the Supabase Data API.) Verified through Prisma on the prod
 connection: an insert and delete inside a rolled-back transaction worked, and
 no existing table's columns, indexes, constraints or RLS flag changed.
 
-## 2. Existing tables — RLS **off**, `anon` / `authenticated` fully granted — **OPEN**
+## 2. Existing tables — RLS **off**, `anon` / `authenticated` fully granted — **DONE 2026-09-17** (commit `chore(db): enable RLS on all public tables, add check script`)
 
 | Table | RLS | `anon` | `authenticated` |
 |---|---|---|---|
@@ -746,4 +746,24 @@ Whether the Data API is enabled for `public` was **not** checked. The site does
 not use the anon key (no `@supabase/supabase-js`; Prisma only), so enabling RLS
 with no policies, or revoking the `anon` / `authenticated` grants, should not
 affect the site, but that is a separate, explicitly approved change: nothing on
-these tables was altered on 2026-09-17.
+these tables was altered on 2026-09-17 when `ContactInquiry` shipped.
+
+**Resolved 2026-09-17**, as a separately approved change. In one transaction,
+`ALTER TABLE ... ENABLE ROW LEVEL SECURITY;` on all eight tables above: no
+policies, no `FORCE`, grants left unchanged. Verified on prod afterwards: all 9
+`public` tables have RLS on with 0 policies; columns, indexes, constraints and
+enums are identical to the pre-change fingerprint apart from the eight RLS flags;
+Prisma still reads (`User` 12, `Order` 2, `Series` 4, unchanged) and writes (a
+`Series` insert and delete inside a rolled-back transaction). The live site passed
+all 37 browser checks, and `/series`, `/auth/signin`, `/account`, `/build` and
+`/api/series` returned 200 signed out. Netlify function logs could not be pulled
+(Netlify CLI not logged in). New `coins/scripts/check-rls.ts` exits 0 against prod;
+see `10` for the rule to run it after every prod `prisma db push`.
+
+## 3. Exposure review — **DONE**
+
+The owner reviewed the Supabase API Gateway logs for 2026-09-16 11:37 to
+2026-09-17 10:00 UTC, the full retention window available. There were zero
+`/rest/v1` requests: only Supabase infrastructure health checks and our own admin
+connections. No evidence of access. Data before that window cannot be verified.
+No breach notification needed; password resets not required.
