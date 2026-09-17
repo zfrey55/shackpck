@@ -88,12 +88,21 @@ export type LineDetail = {
 
 /**
  * Spam handling. The honeypot is an off-screen field people never see; the
- * minimum fill time rejects submissions made within 3 seconds of the form
- * loading. Both get the normal success response and are neither saved nor
- * emailed, so a bot learns nothing.
+ * minimum fill time flags submissions made within 3 seconds of the form
+ * loading. A flagged submission gets the normal success response and no email,
+ * but its row IS saved with emailError `spam-suspected: <check>`, so a real lead
+ * caught by a false positive can still be found.
+ *
+ * The honeypot name is deliberately meaningless. It was `companyWebsite`
+ * ("Company website"), and Chrome address autofill filling it is the most likely
+ * reason real inquiries were silently dropped on 2026-09-17, before flagged
+ * submissions were saved.
  */
-export const HONEYPOT_FIELD = 'companyWebsite';
+export const HONEYPOT_FIELD = 'hp_field_x';
 export const MIN_FILL_MS = 3000;
 
-/** The one success body every accepted (or silently dropped) submission gets. */
+export type SpamCheck = 'honeypot' | 'too-fast';
+export const spamSuspectedError = (check: SpamCheck) => `spam-suspected: ${check}`;
+
+/** The one success body every accepted submission gets, spam-suspected ones included. */
 export const INQUIRY_SUCCESS_BODY = { ok: true } as const;

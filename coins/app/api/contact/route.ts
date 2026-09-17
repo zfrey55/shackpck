@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
-import { INQUIRY_SUCCESS_BODY, MIN_FILL_MS } from '@/lib/contact-inquiry';
+import { INQUIRY_SUCCESS_BODY, MIN_FILL_MS, spamSuspectedError, type SpamCheck } from '@/lib/contact-inquiry';
 import { inquirySchema, type InquiryInput } from '@/lib/contact-inquiry-schema';
 import { sendInquiryEmail } from '@/lib/contact-inquiry-email';
 
@@ -18,8 +18,10 @@ export const runtime = 'nodejs';
  *
  * A failed save does not stop the email; the save error goes into the email
  * and the server log. Missing SendGrid config still saves, then returns 503.
- * Honeypot and too-fast submissions get the normal success body and are
- * neither saved nor emailed.
+ * Honeypot and too-fast submissions are SAVED with emailSent=false and
+ * emailError 'spam-suspected: <check>', are not emailed, and get the normal
+ * success body. Nothing is dropped silently: a real lead caught by a false
+ * positive is still in the table.
  */
 
 /** Non-empty env required to email (FROM_EMAIL must be a SendGrid-verified sender). */
@@ -85,8 +87,23 @@ export async function POST(request: NextRequest) {
   }
   const inquiry = parsed.data;
 
-  if (inquiry.honeypot || inquiry.elapsedMs < MIN_FILL_MS) {
-    console.warn(`[api/contact] Dropped submission: ${inquiry.honeypot ? 'honeypot filled' : 'submitted too fast'}.`);
+  const spamCheck: SpamCheck | null = inquiry.honeypot
+    ? 'honeypot'
+    : inquiry.elapsedMs < MIN_FILL_MS
+      ? 'too-fast'
+      : null;
+  if (spamCheck) {
+    // Saved, not emailed. The honeypot value itself is never logged: autofill
+    // can put a real visitor's details in it.
+    try {
+      const row = await prisma.contactInquiry.create({
+        data: { ...toRow(inquiry), emailSent: false, emailError: spamSuspectedError(spamCheck) },
+        select: { id: true },
+      });
+      console.warn(`[api/contact] Spam-suspected (${spamCheck}): saved inquiry ${row.id}, email skipped.`);
+    } catch (err) {
+      console.error(`[api/contact] Spam-suspected (${spamCheck}): save failed, email skipped:`, describeError(err));
+    }
     return NextResponse.json(INQUIRY_SUCCESS_BODY);
   }
 
