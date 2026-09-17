@@ -96,6 +96,7 @@ export default function HomePage() {
               image={pack.image}
               coinCount={pack.coinCount}
               category={pack.category}
+              brand={pack.brand}
             />
           ))}
         </div>
@@ -135,6 +136,7 @@ export default function HomePage() {
               image={pack.image}
               coinCount={pack.coinCount}
               category={pack.category}
+              brand={pack.brand}
               usePlaceholder={pack.usePlaceholder}
             />
           ))}

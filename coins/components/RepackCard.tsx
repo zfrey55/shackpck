@@ -1,6 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { PackImagePlaceholder } from '@/components/PackImagePlaceholder';
+import type { BrandId } from '@/lib/brands';
+import { lineForCategory } from '@/lib/product-lines';
+import { isPurchasableBrand } from '@/lib/purchasable-brands';
 
 type RepackCardProps = {
   id: string;
@@ -10,6 +13,12 @@ type RepackCardProps = {
   image: string;
   coinCount?: string;
   category: string;
+  /**
+   * Owning brand. Required so no tile can default to purchasable: only
+   * PURCHASABLE_BRANDS get "Contact for Price"; every other brand is a
+   * customer's own line and says "Not available for purchase".
+   */
+  brand: BrandId;
   /** When true, shows branded placeholder instead of loading image URL. */
   usePlaceholder?: boolean;
 };
@@ -21,6 +30,7 @@ export function RepackCard({
   image,
   coinCount,
   category,
+  brand,
   usePlaceholder = false,
 }: RepackCardProps) {
   const showPlaceholder = usePlaceholder || !image;
@@ -76,12 +86,30 @@ export function RepackCard({
         <p className="text-slate-300 mb-4 text-sm leading-relaxed">{description}</p>
 
         <div className="pt-3 border-t border-slate-700/50">
-          <Link
-            href="/contact"
-            className="block w-full text-center px-4 py-2 bg-gold/10 border border-gold/30 text-gold rounded-lg hover:bg-gold/20 transition-colors font-medium"
-          >
-            Contact for Price
-          </Link>
+          {isPurchasableBrand(brand) ? (
+            // Pre-fills the contact form with this pack and its product line.
+            <Link
+              href={`/contact?${new URLSearchParams({ line: lineForCategory(category), product: id })}`}
+              className="block w-full text-center px-4 py-2 bg-gold/10 border border-gold/30 text-gold rounded-lg hover:bg-gold/20 transition-colors font-medium"
+            >
+              Contact for Price
+            </Link>
+          ) : (
+            <>
+              <div
+                aria-disabled="true"
+                className="block w-full cursor-not-allowed select-none rounded-lg border border-slate-700 bg-slate-800/40 px-4 py-2 text-center font-medium text-slate-500"
+              >
+                Not available for purchase
+              </div>
+              <Link
+                href="/contact?branding=yes"
+                className="mt-2 block text-center text-sm text-gold hover:underline"
+              >
+                Want your own branded packs? Contact us
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>
