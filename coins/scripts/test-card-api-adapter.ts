@@ -525,15 +525,15 @@ console.log('\n--- TCG line: Komodo Rips examples and cardType routing ---\n');
 
 // EXAMPLES only. Komodo Rips has no dated series in the archive today
 // ('Legend Series 1' was removed in 3a129c8); every Komodo entry is an
-// undated example, and all three are illustrative.
+// undated example, and all four are illustrative.
 const tcgExamples = STATIC_CARD_SERIES.filter(
   (s) => s.brandId === 'komodo-rips' && s.seriesDate === null
 );
 const byName = (n: string) => tcgExamples.find((s) => s.seriesName === n);
 
-check('three Komodo Rips example checklists exist', tcgExamples.length, 3);
+check('four Komodo Rips example checklists exist', tcgExamples.length, 4);
 check(
-  'all three are undated EXAMPLES, never dated series',
+  'all four are undated EXAMPLES, never dated series',
   tcgExamples.every((s) => s.seriesDate === null && s.seriesType === EXAMPLE_SERIES_TYPE),
   true
 );
@@ -553,7 +553,12 @@ check(
   [1, 2, 3, 4, 5, 6, 7, 8]
 );
 check(
-  'all three are marked verbatim so cleanEntryName never runs on them',
+  'Utopia has 8 rows, positions 1-8 contiguous',
+  byName('Utopia')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8]
+);
+check(
+  'all four are marked verbatim so cleanEntryName never runs on them',
   tcgExamples.every((s) => s.verbatimEntries === true),
   true
 );
@@ -621,6 +626,7 @@ check("Komodo example 'Legend' -> banner (the real series is in the archive)", n
 // Prestige is illustrative like the other two: an example is never a closed
 // production run, so it shows the caveat, not the finalized statement.
 check("Komodo 'Prestige' -> banner, NO finalized statement", noticeFor('Prestige'), 'illustrative');
+check("Komodo 'Utopia' -> banner, NO finalized statement", noticeFor('Utopia'), 'illustrative');
 check("'Vault Room Breaks Series 1' -> banner", noticeFor('Vault Room Breaks Series 1'), 'illustrative');
 check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('Vault Room Breaks Series 2-5'), 'illustrative');
 // The ShackPack Fusion / Nova / Select examples were removed: they did not
@@ -665,7 +671,7 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [5, 0, 19]
+  [6, 0, 19]
 );
 
 if (failures > 0) {

@@ -167,4 +167,12 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Trading Cards',
     brand: 'komodo-rips',
   },
+  {
+    id: 'komodo-utopia',
+    name: 'Utopia',
+    description: D,
+    image: '/images/packs/komodo-utopia.png',
+    category: 'Trading Cards',
+    brand: 'komodo-rips',
+  },
 ];

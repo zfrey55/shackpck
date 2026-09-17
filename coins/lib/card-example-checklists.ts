@@ -199,4 +199,23 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
       { position: 8, entryName: '2019 Hidden Fates #SV75 Gardevoir GX, Full Art | PSA 10' },
     ],
   },
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Utopia',
+    seriesDate: null,
+    // No finalizedOn. Utopia is an illustrative sample of the line, not a
+    // closed production run, on the same footing as Purity, Legend and
+    // Prestige (b60529f). It renders the Komodo caveat.
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2021 Fusion Strike #271 Gengar VMAX, Alternate Art | PSA 10' },
+      { position: 2, entryName: '2024 Paldean Fates #234 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 3, entryName: '2022 Brilliant Stars #154 Charizard V, Alternate Art | PSA 10' },
+      { position: 4, entryName: '2023 Scarlet & Violet 151 #200 Blastoise ex, Special Illustration Rare | PSA 10' },
+      { position: 5, entryName: '2023 Scarlet & Violet 151 #198 Venusaur ex, Special Illustration Rare | PSA 10' },
+      { position: 6, entryName: '2023 Scarlet & Violet 151 #203 Erika\'s Invitation, Special Illustration Rare | PSA 10' },
+      { position: 7, entryName: '2024 Twilight Masquerade #214 Greninja ex, Special Illustration Rare | PSA 10' },
+      { position: 8, entryName: '2023 Paldea Evolved #203 Magikarp, Illustration Rare | PSA 10' },
+    ],
+  },
 ];
