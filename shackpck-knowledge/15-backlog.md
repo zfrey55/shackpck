@@ -604,20 +604,27 @@ bucket and their cases show on the ShackPack checklist tab. This is deliberate:
 **do not add them to the roster.** Revisit together with the planned Coin Shack
 tab and wholesale bucket, which are on hold pending ShackHQ scoping.
 
-## 2. caseTypes with no label — **OPEN**
+## 2. caseTypes with no label — **`6 7` DONE `a349a75`; `shack pack` variants OPEN (ShackHQ side)**
 
-These have no `CANONICAL_LABELS` / `TO_CANONICAL` entry in
-`lib/checklist-case-labels.ts`, so `titleCaseFallback` renders them raw:
+These had no `CANONICAL_LABELS` / `TO_CANONICAL` entry in
+`lib/checklist-case-labels.ts`, so `titleCaseFallback` rendered them raw:
 
-| caseType | Renders as | Cases | Customer |
-|---|---|---|---|
-| `shack pack expo` | Shack Pack Expo | 3 (2026-08-14) | Blue Collar Bullion |
-| `shack pack radiant` | Shack Pack Radiant | 10 (2026-08-13..14) | Blue Collar Bullion |
-| `6 7` | 6 7 | 45 (7 dates, 2026-07-22..09-01) | The Coin Shack |
+| caseType | Renders as | Cases | Customer | State |
+|---|---|---|---|---|
+| `6 7` | ~~6 7~~ **ShackPack 67** | 45 (7 dates, 2026-07-22..09-01) | The Coin Shack | **DONE `a349a75`** (`'6-7'` -> `'67'`) |
+| `shack pack expo` | Shack Pack Expo | 3 (2026-08-14) | Blue Collar Bullion | **OPEN** |
+| `shack pack radiant` | Shack Pack Radiant | 10 (2026-08-13..14) | Blue Collar Bullion | **OPEN** |
 
-The bare `expo` and `radiant` already label as "ShackPack Expo" / "ShackPack
-Radiant", and the catalog tile for `6 7` is "ShackPack 67". The two `shack pack`
-spellings sit on the Blue Collar Bullion tab, not ShackPack's.
+**Why the `shack pack` variants were NOT relabelled.** Blue Collar Bullion also
+holds the bare `expo` (32 cases) and `radiant` (45), which already label as
+"ShackPack Expo" / "ShackPack Radiant". The checklist groups by raw caseType, so
+mapping the variants to the same label would put two identical "ShackPack Expo"
+buttons and two identical "ShackPack Radiant" buttons on that tab, each opening
+different, non-overlapping dates. Owner ruling (2026-09-16): leave them
+distinguishable and fix at the source, by changing those 13 cases' caseType in
+ShackHQ to `expo` / `radiant` so they merge into the existing groups. No site
+change is needed after that; do not add the `TO_CANONICAL` mappings unless the
+checklist also merges same-label caseTypes.
 
 ## 3. `caseTypePrefixes` / `brandForCaseType` are dead — **OPEN**
 
