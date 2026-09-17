@@ -3,13 +3,14 @@ import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { pushUserToInventory } from '@/lib/inventory-api-push';
+import { emailWhere, normalizeEmail } from '@/lib/normalize-email';
 import {
   sendAdminNewUserNotification,
   sendUserWelcomeEmail,
 } from '@/lib/email';
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email(),
   password: z.string().min(8),
   name: z.string().optional(),
 });
@@ -19,10 +20,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validated = registerSchema.parse(body);
+    const email = normalizeEmail(validated.email);
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validated.email },
+    // Check if user already exists (any casing)
+    const existingUser = await prisma.user.findFirst({
+      where: emailWhere(email),
     });
 
     if (existingUser) {
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        email: validated.email,
+        email,
         passwordHash,
         name: validated.name || null,
         isShadowUser: false,

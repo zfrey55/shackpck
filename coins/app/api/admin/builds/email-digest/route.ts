@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/require-admin';
 import {
   getCoinDef,
   GRADER_LABELS,
@@ -22,15 +21,6 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  const id = (session?.user as { id?: string } | undefined)?.id;
-  if (!id) return { status: 401 as const };
-  const user = await prisma.user.findUnique({ where: { id }, select: { role: true, email: true } });
-  if (user?.role !== 'ADMIN') return { status: 403 as const };
-  return { status: 200 as const, email: user.email };
-}
-
 /**
  * POST /api/admin/builds/email-digest
  *   body (optional): { days?: number, deliverTo?: string }
@@ -41,12 +31,7 @@ async function requireAdmin() {
  */
 export async function POST(request: NextRequest) {
   const gate = await requireAdmin();
-  if (gate.status !== 200) {
-    return NextResponse.json(
-      { error: gate.status === 401 ? 'Unauthorized' : 'Forbidden' },
-      { status: gate.status }
-    );
-  }
+  if (!gate.ok) return gate.response;
 
   let days = 45;
   let deliverTo: string | null = null;

@@ -1,0 +1,149 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+/** Rendered only after app/admin/page.tsx has confirmed an admin server-side. */
+export function AdminDashboardClient() {
+  const [series, setSeries] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchAdminData = async () => {
+    try {
+      const [seriesRes, ordersRes] = await Promise.all([
+        fetch('/api/series?active=false'),
+        fetch('/api/admin/orders'),
+      ]);
+
+      if (seriesRes.ok) {
+        const seriesData = await seriesRes.json();
+        setSeries(seriesData);
+      }
+
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json();
+        setOrders(ordersData);
+      }
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="container py-16">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-slate-400">Loading admin data...</p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="container py-16">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/builds"
+              className="rounded-md border border-gold/50 bg-gold/10 px-3 py-2 text-sm font-semibold text-gold hover:bg-gold/20"
+            >
+              Builder inquiries →
+            </Link>
+            <Link
+              href="/admin/orders"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:border-gold/60"
+            >
+              All orders
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Series Management */}
+          <div className="bg-slate-900/40 p-6 rounded-lg border border-slate-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold">Series</h2>
+              <Link
+                href="/admin/series/new"
+                className="px-4 py-2 bg-gold text-black font-semibold rounded-lg hover:opacity-90 transition-opacity text-sm"
+              >
+                New Series
+              </Link>
+            </div>
+            {series.length === 0 ? (
+              <p className="text-slate-400">No series yet</p>
+            ) : (
+              <div className="space-y-2">
+                {series.map((s) => (
+                  <div
+                    key={s.id}
+                    className="p-3 bg-slate-800 rounded border border-slate-700"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{s.name}</h3>
+                        <p className="text-sm text-slate-400">
+                          {s.packsRemaining} / {s.totalPacks} packs remaining
+                        </p>
+                      </div>
+                      <Link
+                        href={`/admin/series/${s.slug}`}
+                        className="text-gold hover:underline text-sm"
+                      >
+                        Edit
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Orders */}
+          <div className="bg-slate-900/40 p-6 rounded-lg border border-slate-700">
+            <h2 className="text-2xl font-semibold mb-4">Recent Orders</h2>
+            {orders.length === 0 ? (
+              <p className="text-slate-400">No orders yet</p>
+            ) : (
+              <div className="space-y-2">
+                {orders.slice(0, 5).map((order) => (
+                  <div
+                    key={order.id}
+                    className="p-3 bg-slate-800 rounded border border-slate-700"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold">Order #{order.id.slice(0, 8)}</p>
+                        <p className="text-sm text-slate-400">
+                          ${(order.total / 100).toFixed(2)} • {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="text-xs capitalize px-2 py-1 bg-slate-700 rounded">
+                        {order.paymentStatus.toLowerCase()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Link
+              href="/admin/orders"
+              className="mt-4 inline-block text-gold hover:underline text-sm"
+            >
+              View all orders →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}

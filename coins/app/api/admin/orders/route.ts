@@ -1,34 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/require-admin';
 
-// Force dynamic rendering (uses headers via getServerSession)
+// Force dynamic rendering (the admin check reads the session)
 export const dynamic = 'force-dynamic';
 
 // GET /api/admin/orders - Get all orders (admin only)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (user?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Forbidden' },
-        { status: 403 }
-      );
-    }
+    const gate = await requireAdmin();
+    if (!gate.ok) return gate.response;
 
     const orders = await prisma.order.findMany({
       include: {

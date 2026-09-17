@@ -1,13 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { isAccountsEnabled, CONTACT_INFO } from '@/lib/feature-flags';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 
 export default function SignInPage() {
+  // useSearchParams needs a Suspense boundary for static rendering.
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
+  );
+}
+
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +39,8 @@ export default function SignInPage() {
       if (result?.error) {
         setError('Invalid email or password');
       } else {
-        router.push('/account');
+        // Same-origin paths only; anything else lands on /account.
+        router.push(safeRedirectPath(searchParams.get('callbackUrl'), window.location.origin));
         router.refresh();
       }
     } catch (err) {

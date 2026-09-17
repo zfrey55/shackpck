@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getBuilderUser } from '@/lib/builder/session';
+import { isAdminUserId } from '@/lib/require-admin';
 import { readBuildArtwork } from '@/lib/builder/storage';
 
 export const runtime = 'nodejs';
@@ -40,11 +41,9 @@ export async function GET(_req: NextRequest, { params }: { params: { key: string
   const viewer = await getBuilderUser();
   if (!viewer) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  if (viewer.id !== build.userId) {
-    const user = await prisma.user.findUnique({ where: { id: viewer.id }, select: { role: true } });
-    if (user?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
+  // Not the owner and not an admin: 404, so the build's existence is not revealed.
+  if (viewer.id !== build.userId && !(await isAdminUserId(viewer.id))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   const blob = await readBuildArtwork(key);

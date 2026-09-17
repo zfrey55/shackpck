@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
+import { emailWhere, normalizeEmail } from '@/lib/normalize-email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -13,7 +14,9 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const body = await request.json();
-    const { items, shippingAddress, email, name } = body;
+    const { items, shippingAddress, name } = body;
+    const email: string | undefined =
+      typeof body.email === 'string' && body.email.trim() ? normalizeEmail(body.email) : undefined;
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -87,8 +90,8 @@ export async function POST(request: NextRequest) {
       }
     } else if (email) {
       // Guest checkout - create or find shadow user
-      let shadowUser = await prisma.user.findUnique({
-        where: { email },
+      let shadowUser = await prisma.user.findFirst({
+        where: emailWhere(email),
       });
 
       if (!shadowUser || !shadowUser.isShadowUser) {

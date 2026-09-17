@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
 import { pushPackSaleToInventory, pushUserToInventory } from '@/lib/inventory-api-push';
+import { emailWhere, normalizeEmail } from '@/lib/normalize-email';
 import { generateFedExLabel } from '@/lib/fedex';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email';
 import { fetchAllSeries } from '@/lib/coin-inventory-api';
@@ -21,9 +22,10 @@ export async function POST(request: NextRequest) {
       paymentIntentId,
       items,
       shippingAddress,
-      email,
       name,
     } = body;
+    const email: string | undefined =
+      typeof body.email === 'string' && body.email.trim() ? normalizeEmail(body.email) : undefined;
 
     if (!paymentIntentId || !items || !shippingAddress) {
       return NextResponse.json(
@@ -49,8 +51,8 @@ export async function POST(request: NextRequest) {
       userId = session.user.id;
     } else if (email) {
       // Find or create shadow user
-      let shadowUser = await prisma.user.findUnique({
-        where: { email },
+      let shadowUser = await prisma.user.findFirst({
+        where: emailWhere(email),
       });
 
       if (!shadowUser) {

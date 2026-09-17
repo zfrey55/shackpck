@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { requireAdminPage } from '@/lib/require-admin';
 import { AdminBuildsClient } from './AdminBuildsClient';
 
 export const metadata: Metadata = {
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminBuildsPage() {
+export default async function AdminBuildsPage() {
+  // Database role, server-side: signed out -> sign-in with callbackUrl, non-admin -> /account.
+  await requireAdminPage('/admin/builds');
+
   return (
     <main className="container py-10">
       <div className="mx-auto max-w-6xl px-4">

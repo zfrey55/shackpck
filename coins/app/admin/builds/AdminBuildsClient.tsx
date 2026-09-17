@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
   COIN_CATEGORY_LABELS,
   COIN_CATEGORY_ORDER,
@@ -49,8 +48,8 @@ const STATUS_BADGE: Record<string, string> = {
   ARCHIVED: 'bg-amber-900/60 text-amber-200',
 };
 
+/** Rendered only after app/admin/builds/page.tsx has confirmed an admin server-side. */
 export function AdminBuildsClient() {
-  const { data: session, status } = useSession();
   const params = useSearchParams();
   const initialId = params.get('id');
 
@@ -66,9 +65,6 @@ export function AdminBuildsClient() {
   const [search, setSearch] = useState('');
   const [digestSending, setDigestSending] = useState(false);
   const [digestResult, setDigestResult] = useState<string | null>(null);
-
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  const isAdmin = status === 'authenticated' && role === 'ADMIN';
 
   const sendDigest = useCallback(async () => {
     setDigestSending(true);
@@ -120,8 +116,8 @@ export function AdminBuildsClient() {
   }, [statusFilter, selectedId]);
 
   useEffect(() => {
-    if (isAdmin) void load();
-  }, [isAdmin, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+    void load();
+  }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -142,48 +138,6 @@ export function AdminBuildsClient() {
   }, [builds, search]);
 
   const selected = filtered.find((b) => b.id === selectedId) ?? null;
-
-  if (status === 'loading') {
-    return <p className="text-center text-slate-400">Loading…</p>;
-  }
-
-  if (status === 'unauthenticated') {
-    return (
-      <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-6 text-sm text-slate-200">
-        <p className="font-semibold text-gold">You need to sign in first.</p>
-        <p className="mt-1 text-slate-300">
-          The builder inquiries page is only visible to admins.
-        </p>
-        <Link
-          href="/auth/signin?callbackUrl=/admin/builds"
-          className="mt-4 inline-block rounded-md bg-gold px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
-        >
-          Sign in
-        </Link>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="rounded-lg border border-amber-700/60 bg-amber-900/20 p-6 text-sm text-amber-100">
-        <p className="font-semibold">
-          Your account ({session?.user?.email}) isn't an admin yet.
-        </p>
-        <p className="mt-2">
-          Promote it from your terminal with the production database URL:
-        </p>
-        <pre className="mt-2 overflow-x-auto rounded-md bg-slate-950 p-3 text-xs text-slate-200">
-          <code>{`DATABASE_URL="postgresql://...prod url..." \\
-  npx tsx scripts/promote-admin.ts ${session?.user?.email ?? 'you@example.com'}`}</code>
-        </pre>
-        <p className="mt-2 text-amber-200">
-          After running it, <strong>sign out and sign back in</strong> so your session
-          picks up the new role. Then reload this page.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <>

@@ -2,24 +2,12 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from './db';
 import bcrypt from 'bcryptjs';
+import { emailWhere } from './normalize-email';
+import { safeRedirectPath } from './safe-redirect';
 
-/**
- * Comma-separated list of emails that should always be treated as ADMIN, even if
- * their DB row says role=CUSTOMER. Lets us grant admin without a DB write.
- *
- * Example Netlify env: ADMIN_EMAILS=owner1@example.com,owner2@example.com
- */
-function isAdminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const raw = process.env.ADMIN_EMAILS;
-  if (!raw) return false;
-  const normalized = email.trim().toLowerCase();
-  return raw
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-    .includes(normalized);
-}
+// Admin access comes ONLY from the database role, checked per request by
+// lib/require-admin.ts. The token's `role` is informational and is never used
+// to gate anything; the old ADMIN_EMAILS env override was removed.
 
 export const authOptions: NextAuthOptions = {
   // Netlify / reverse proxies: required so /api/auth/* resolves the public URL (avoids 500 + CLIENT_FETCH_ERROR)
@@ -37,8 +25,9 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        // Trimmed, lowercased and matched case-insensitively (lib/normalize-email).
+        const user = await prisma.user.findFirst({
+          where: emailWhere(credentials.email),
         });
 
         if (!user || !user.passwordHash) {
@@ -51,13 +40,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const elevatedRole = isAdminEmail(user.email) ? 'ADMIN' : user.role;
-
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: elevatedRole,
+          role: user.role,
         };
       },
     }),
@@ -68,12 +55,13 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role;
       }
-      // Re-evaluate ADMIN_EMAILS on every JWT refresh so promotion/demotion via
-      // env var takes effect for existing sessions without forcing re-login.
-      if (token.email && isAdminEmail(token.email as string)) {
-        token.role = 'ADMIN';
-      }
       return token;
+    },
+    // Every callbackUrl (sign-in, sign-out, the callback cookie) goes through
+    // safeRedirectPath: same-origin paths only, "/account" otherwise, never a
+    // throw. NextAuth's default threw on unparseable values and returned 500.
+    async redirect({ url, baseUrl }) {
+      return `${baseUrl}${safeRedirectPath(url, baseUrl)}`;
     },
     async session({ session, token }) {
       if (session.user) {

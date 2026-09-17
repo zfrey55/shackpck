@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fetchAllSeries } from '@/lib/coin-inventory-api';
+import { requireAdmin } from '@/lib/require-admin';
 
 // GET /api/series/[slug] - Get a single series by slug
 // Tries inventory app API first, then falls back to database
@@ -64,10 +65,14 @@ export async function GET(
 }
 
 // PATCH /api/series/[slug] - Update a series (admin only)
+// PATCH /api/series/:slug - Update a series (admin only)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate.response;
+
   try {
     const body = await request.json();
     const { name, description, images, totalPacks, pricePerPack, isActive } = body;

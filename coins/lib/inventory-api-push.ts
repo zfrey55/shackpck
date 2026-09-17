@@ -1,6 +1,8 @@
 // API client for pushing sales data to coin inventory app
 // This pushes pack sales from e-commerce site to inventory site
 
+import { normalizeEmail } from '@/lib/normalize-email';
+
 const INVENTORY_API_BASE = process.env.COIN_INVENTORY_API_BASE_URL || 
   'https://us-central1-coin-inventory-8b79d.cloudfunctions.net';
 
@@ -150,6 +152,7 @@ export async function pushUserToInventory(
       body: JSON.stringify({
         orgId: ORG_ID,
         ...userData,
+        email: normalizeEmail(userData.email),
       }),
     });
 

@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fetchFeaturedSeries, fetchAllSeries } from '@/lib/coin-inventory-api';
+import { isAdminRequest, requireAdmin } from '@/lib/require-admin';
 
 // Force dynamic rendering (uses no-store fetch and Prisma)
 export const dynamic = 'force-dynamic';
 
 // GET /api/series - Get all active series
 // If featured=true, fetches from inventory app API directly
+// ?active=false includes inactive series for ADMINS ONLY (database role). Anyone
+// else asking for it silently gets active-only, never an error, so public
+// callers keep working.
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const activeOnly = searchParams.get('active') !== 'false';
+    const activeOnly = searchParams.get('active') !== 'false' || !(await isAdminRequest());
     const featuredOnly = searchParams.get('featured') === 'true';
     const fromInventory = searchParams.get('fromInventory') === 'true';
 
@@ -90,6 +94,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/series - Create a new series (admin only)
 export async function POST(request: NextRequest) {
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate.response;
+
   try {
     const body = await request.json();
     const { name, slug, description, images, totalPacks, pricePerPack, isActive } = body;
