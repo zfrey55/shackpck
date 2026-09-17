@@ -794,9 +794,9 @@ Fix: `lib/require-admin.ts` replaces all five copies (`/api/admin/builds`, `/api
 - **4b.** `PATCH /api/series/[slug]` (name, price, pack counts, `isActive`) had **no auth at all**. It now requires `requireAdmin`. No caller in this repo or in `coin-inventory-system` was found for either.
 - **4c. OPEN:** `/api/sync/series` (GET and POST) is unauthenticated. It re-syncs featured series from ShackHQ into the `Series` table, so anyone can trigger the upsert. Lower risk (the data comes from ShackHQ, not the caller), but it should be gated or given a shared secret.
 
-## 5. Lowercase existing prod emails — scheduled after the Phase 1 deploy
+## 5. Lowercase existing prod emails — **DONE 2026-09-17**
 
-`scripts/lowercase-emails.ts --dry-run`, then the real run, against prod via `coins/.env.prod.local`. Expected: 3 updated, 0 collisions, 12 users. The insensitive lookups keep those 3 users able to sign in before and after.
+`scripts/lowercase-emails.ts --dry-run`, then the real run, against prod via `coins/.env.prod.local`, after the Phase 1 deploy was confirmed. Dry run: 12 users, 3 to update, 0 collisions. Real run: **3 updated**, committed in one transaction. Independent recount afterwards: **12 users, 0 not normalized, 0 collisions**. The case-insensitive lookups kept those 3 users able to sign in before and after.
 
 ## 6. BLOCKERS before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT` — **OPEN**
 
