@@ -103,7 +103,7 @@ Every image path in both catalogs was statted: **74 paths (62 coin + 12 card),
 The previously-broken `shackpack-pinnacle.jpeg` reference was fixed in
 `1418d91`; nothing is broken now.
 
-## 6. "Contact for Price" → pack id — **OPEN**
+## 6. "Contact for Price" → pack id — **DONE `258be87`, `811ba5f`** (2026-09-16)
 
 `coins/components/RepackCard.tsx:80` — the link is a bare `href="/contact"`.
 No pack id, no query string, no state.
@@ -133,6 +133,14 @@ since — nothing for Bullion Bureau, Let It Ride, Black Mountain, Cobra Coin,
 Bald Bunny, Lincoln Reserve, Blue Collar Bullion, Golden Emu, Juicebox, One
 Nasty Coin — and no card products at all. It duplicates data the catalogs
 already own and is not derived from them.
+
+**Resolved 2026-09-16.** ShackPack tiles now link to
+`/contact?line=<line>&product=<catalog id>`, and the new multi-step form
+(`components/contact/`) reads `?line`, `?product` and `?branding` to pre-fill,
+recording the tile as `sourcePack` on the saved `ContactInquiry`. The hardcoded
+`CASE_TYPE_DISPLAY_NAMES` list and the subject dropdown were deleted; products
+are derived from the catalogs. Non-ShackPack tiles show "Not available for
+purchase" instead of a contact link. See `06` for the flow.
 
 ## 7. SEO surface — **OPEN**
 
