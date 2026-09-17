@@ -43,7 +43,7 @@ Time-boxed pack "runs" (Prisma `Series`, mirrored from ShackHQ): `totalPacks`, `
 - **Shipping:** **free for account holders**, **$4.99 for guest** checkout (README).
 - **Guest checkout** creates **shadow users** to still track limits/CRM.
 - **Loyalty:** `LOYALTY_POINTS_PER_DOLLAR` (default 1/$), accrued on orders.
-- **Admin elevation:** emails in `ADMIN_EMAILS` auto-promoted to ADMIN on sign-in.
+- **Admin access:** only `User.role = ADMIN` in the database, re-read on every admin request and page load (`lib/require-admin.ts`). There is no env-var override; `ADMIN_EMAILS` was removed 2026-09-17.
 - **Compliance:** repack tiles never claim specific contents — copy always defers to the published checklist (shared disclaimer constants). Manufacturer noted as **G&J Packaging LLLP** on card products.
 
 ## Connection to operational systems

@@ -767,3 +767,41 @@ The owner reviewed the Supabase API Gateway logs for 2026-09-16 11:37 to
 `/rest/v1` requests: only Supabase infrastructure health checks and our own admin
 connections. No evidence of access. Data before that window cannot be verified.
 No breach notification needed; password resets not required.
+
+---
+
+# Auth hardening — Phase 1 — 2026-09-17
+
+## 1. `callbackUrl` handling — **DONE**
+
+Recon (dev, local DB): the sign-in page ignored `callbackUrl` entirely (always `/account`, so `/admin`, `/my-builds` and builder links lost their destination), and NextAuth's default `redirect` callback returned **500** on unparseable values (`%2F%2Fevil.example`, `https://localhost:3123.evil.example/`). No off-site redirect was possible. Prod ignored a spoofed `X-Forwarded-Host`.
+Fix: `lib/safe-redirect.ts` is used by a `redirect` callback in `lib/auth.ts` and by the sign-in page. Same-origin paths are kept; everything else lands on `/account`; nothing returns 500. 30 fixtures in `scripts/test-safe-redirect.ts`.
+
+## 2. Email normalization — **DONE** (prod rows: see item 5)
+
+Recon: every write and lookup matched the email exactly, so a user stored with uppercase could only sign in by typing that exact casing. Prod had 12 users: 3 with uppercase (all with passwords), 0 with outer whitespace, 0 collisions on `lower(trim(email))`.
+Fix: `lib/normalize-email.ts`, used in register, `authorize`, both guest-checkout shadow-user lookups/creates, and `pushUserToInventory`. Lookups are `findFirst` with `mode: 'insensitive'`. Register now returns 409 for any casing of an existing email.
+
+## 3. Admin checks — **DONE**
+
+Recon: five server copies read the database role, but `/admin` and `/admin/builds` gated on the **session token** role, which stays stale after a demotion.
+Fix: `lib/require-admin.ts` replaces all five copies (`/api/admin/builds`, `/api/admin/builds/[id]`, `/api/admin/builds/email-digest`, `/api/admin/orders`, the artwork route). `/admin` is now a server page with `AdminDashboardClient`, and `/admin/builds` is gated in its server wrapper. Signed out -> `/auth/signin?callbackUrl=<path>`; non-admin (including demoted mid-session) -> `/account`. `ADMIN_EMAILS` and `isAdminEmail` were removed: the database role is the only admin source.
+
+## 4. Series endpoints — **DONE** (4a/4b beyond the approved list; 4c is OPEN)
+
+- `GET /api/series?active=false` now returns inactive series to admins only. Everyone else silently gets active-only, never an error.
+- **4a.** `POST /api/series` (create) had **no auth at all** despite its "admin only" comment. It now requires `requireAdmin`.
+- **4b.** `PATCH /api/series/[slug]` (name, price, pack counts, `isActive`) had **no auth at all**. It now requires `requireAdmin`. No caller in this repo or in `coin-inventory-system` was found for either.
+- **4c. OPEN:** `/api/sync/series` (GET and POST) is unauthenticated. It re-syncs featured series from ShackHQ into the `Series` table, so anyone can trigger the upsert. Lower risk (the data comes from ShackHQ, not the caller), but it should be gated or given a shared secret.
+
+## 5. Lowercase existing prod emails — scheduled after the Phase 1 deploy
+
+`scripts/lowercase-emails.ts --dry-run`, then the real run, against prod via `coins/.env.prod.local`. Expected: 3 updated, 0 collisions, 12 users. The insensitive lookups keep those 3 users able to sign in before and after.
+
+## 6. BLOCKERS before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT` — **OPEN**
+
+Checkout is currently off in prod: the live `/checkout` redirects to `/contact` and no cart is shown (read-only check, 2026-09-17). The flag gates the UI only; `/api/checkout/create-intent` and `/api/orders` do not check it server-side.
+
+- **6a. Guest checkout 500s for a registered email — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `create-intent` finds the user by email and, if that user is *not* a shadow user, tries to create a second user with the same email, which fails the unique constraint and returns 500. A registered customer checking out as a guest cannot pay.
+- **6b. Guest orders attach to registered accounts — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `/api/orders` looks the guest's email up and, when a registered (non-shadow) account has it, attaches the order to that account with no sign-in. Anyone who knows a customer's email can place orders into that customer's history.
+- Related: because the flag is UI-only, `create-intent` is reachable in prod today and can create shadow users and Stripe customers for arbitrary emails. Gate the checkout APIs server-side on the same flag when fixing 6a/6b.

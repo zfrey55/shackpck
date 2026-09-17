@@ -42,7 +42,7 @@
 
 ## 7. NextAuth (sessions)
 
-- `lib/auth.ts`, credentials provider, JWT strategy, bcrypt. `ADMIN_EMAILS` auto-promotes to ADMIN.
+- `lib/auth.ts`, credentials provider, JWT strategy, bcrypt. Admin access comes only from `User.role` in the database, checked per request by `lib/require-admin.ts` (the `ADMIN_EMAILS` override was removed 2026-09-17).
 
 ## Supabase status
 

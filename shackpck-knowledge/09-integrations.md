@@ -10,7 +10,7 @@ Status legend: **Active** (wired + used), **Partial** (works but has TODO/gaps),
 | **SendGrid** | Transactional email (welcome, order, admin, contact, build) | `lib/email.ts`, `/api/contact`, others | `SENDGRID_API_KEY`, `FROM_EMAIL`, `FROM_NAME`, `ADMIN_EMAIL` | **Active** (Marketing API newsletter = TODO, `lib/email.ts:651`) |
 | **FedEx** | Shipping label (PDF/ZPLII) on order | `lib/fedex.ts`, `/api/orders`, `/api/webhooks/stripe`, `/api/test-fedex` | `FEDEX_KEY`, `FEDEX_PASSWORD`, `FEDEX_ACCOUNT_NUMBER`, `FEDEX_METER_NUMBER`, `FEDEX_ENVIRONMENT`, `FEDEX_SHIPPER_*` | **Partial** — prod credentials gated on FedEx API validation (`env.production.template` TODO) |
 | **Netlify Blobs** | Builder artwork storage/serving | `/api/build/[id]/artwork`, `/api/build/artwork/[...key]` | `NETLIFY_BLOBS_SITE_ID`, `NETLIFY_BLOBS_TOKEN` (auto on Netlify) | **Active** |
-| **NextAuth** | Auth/session (credentials, JWT) | `lib/auth.ts`, `/api/auth/[...nextauth]` | `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_TRUST_HOST`, `ADMIN_EMAILS` | **Active** |
+| **NextAuth** | Auth/session (credentials, JWT) | `lib/auth.ts`, `/api/auth/[...nextauth]` | `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_TRUST_HOST` | **Active** |
 | **Local ZPL/Zebra printing** | Print labels to a local Zebra printer | `/api/print-zpl`, `/api/print-zpl-direct`, `app/print-zpl/page.tsx`, `scripts/*.ps1` | — | **Scaffold/Debug** (Windows/PowerShell, internal use) |
 | **Supabase** | (DB host only, if used) | scripts `get-supabase-connection.js`, `update-db-connection.js`; README | `DATABASE_URL` | **Not an SDK integration** — see note |
 

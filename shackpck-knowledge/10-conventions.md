@@ -41,6 +41,20 @@
 - **CI** (`.github/workflows/ci.yml`): every push/PR to `main` runs Postgres service → `npm ci` → `prisma db push` → `lint` → `build`. A green build requires lint + production build to pass.
 - Secrets never committed (`.gitignore` blocks `.env*`); `env.production.template` holds placeholder names only.
 
+## Auth helpers (use these; do not re-implement)
+
+- **`lib/safe-redirect.ts` — `safeRedirectPath(value, origin, fallback = '/account')`.** Every post-auth redirect target goes through it: the NextAuth `redirect` callback in `lib/auth.ts` and the sign-in page's `callbackUrl`. It returns only a same-origin relative path. It rejects `//`, backslashes, whitespace and control characters, and other schemes; resolves the value against the origin and requires the origin unchanged; reduces a same-origin absolute URL to its path; and never throws (anything else gets the fallback). Fixtures: `scripts/test-safe-redirect.ts`.
+- **`lib/normalize-email.ts` — `normalizeEmail()` (trim + lowercase) and `emailWhere()`.** Normalize every email you write (register, guest-checkout shadow users, the inventory user push). Look users up with `prisma.user.findFirst({ where: emailWhere(email) })`, which also matches case-insensitively, never `findUnique({ where: { email } })`. The `User.email` unique constraint is case-sensitive. `scripts/lowercase-emails.ts` (env `DATABASE_URL` only, `--dry-run`, stops on collisions, counts only) normalizes existing rows.
+- **`lib/require-admin.ts`.** The only admin check, and it reads the **database** role by session user id:
+  - API routes: `const gate = await requireAdmin(); if (!gate.ok) return gate.response;` (401 signed out, 403 not admin; `gate.user` is `{ id, email }`).
+  - Server pages: `await requireAdminPage('/path')` (signed out -> `/auth/signin?callbackUrl=/path`, non-admin -> `/account`).
+  - `isAdminRequest()` (soft check, e.g. `/api/series?active=false`) and `isAdminUserId(id)` (artwork route).
+  - Never gate on the session token's `role`; it goes stale until the user signs in again. Admin pages gate server-side, and their client components assume the gate passed.
+
+## Fixtures run before every commit
+
+`npx tsx scripts/test-card-api-adapter.ts`, `scripts/test-clean-entry-name.ts`, `scripts/test-series-numbering.ts`, `scripts/test-safe-redirect.ts`, plus `tsc --noEmit` and `npm run lint`.
+
 ## Database schema changes (Supabase RLS)
 
 - Prod schema changes go through `prisma db push`, with `DATABASE_URL` taken **explicitly** from `coins/.env.prod.local`. `coins/.env` points at the local Postgres, and the Prisma CLI loads it automatically.
