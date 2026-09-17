@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { pushUserToInventory } from '@/lib/inventory-api-push';
 import { emailWhere, normalizeEmail } from '@/lib/normalize-email';
+import { clientIp, ipIdentifier, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import {
   sendAdminNewUserNotification,
   sendUserWelcomeEmail,
@@ -17,6 +18,12 @@ const registerSchema = z.object({
 
 // POST /api/auth/register - Register a new user
 export async function POST(request: NextRequest) {
+  // 5 per hour per IP (fails open).
+  const limited = await rateLimit('register', ipIdentifier(clientIp(request.headers)));
+  if (!limited.ok) {
+    return tooManyRequests({ error: 'Too many sign-up attempts, try again later.' }, limited.retryAfterSec);
+  }
+
   try {
     const body = await request.json();
     const validated = registerSchema.parse(body);

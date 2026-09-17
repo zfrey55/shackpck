@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { INQUIRY_SUCCESS_BODY, MIN_FILL_MS, spamSuspectedError, type SpamCheck } from '@/lib/contact-inquiry';
 import { inquirySchema, type InquiryInput } from '@/lib/contact-inquiry-schema';
 import { sendInquiryEmail } from '@/lib/contact-inquiry-email';
+import { clientIp, ipIdentifier, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 /** SendGrid + Prisma require Node; avoids Edge/runtime surprises on Netlify */
 export const runtime = 'nodejs';
@@ -74,6 +75,12 @@ async function recordEmailOutcome(id: string, emailSent: boolean, emailError: st
 }
 
 export async function POST(request: NextRequest) {
+  // First, before validation or any save: 5 per 10 minutes per IP (fails open).
+  const limited = await rateLimit('contact', ipIdentifier(clientIp(request.headers)));
+  if (!limited.ok) {
+    return tooManyRequests({ error: 'Too many submissions, try again shortly.' }, limited.retryAfterSec);
+  }
+
   let body: unknown;
   try {
     body = await request.json();

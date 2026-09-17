@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
 import { emailWhere, normalizeEmail } from '@/lib/normalize-email';
+import { clientIp, ipIdentifier, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -11,6 +12,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // POST /api/checkout/create-intent - Create Stripe payment intent
 export async function POST(request: NextRequest) {
+  // 10 per 10 minutes per IP (fails open).
+  const limited = await rateLimit('checkout', ipIdentifier(clientIp(request.headers)));
+  if (!limited.ok) {
+    return tooManyRequests({ error: 'Too many checkout attempts, try again shortly.' }, limited.retryAfterSec);
+  }
+
   try {
     const session = await getServerSession(authOptions);
     const body = await request.json();

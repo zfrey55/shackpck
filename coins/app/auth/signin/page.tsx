@@ -36,7 +36,9 @@ function SignInForm() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (result?.error === 'RateLimited') {
+        setError('Too many attempts, try again in a few minutes.');
+      } else if (result?.error) {
         setError('Invalid email or password');
       } else {
         // Same-origin paths only; anything else lands on /account.

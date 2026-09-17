@@ -25,6 +25,8 @@
     "@sendgrid/mail": "^8.1.6",
     "@stripe/react-stripe-js": "^2.4.0",
     "@stripe/stripe-js": "^2.4.0",
+    "@upstash/ratelimit": "^2.1.0",
+    "@upstash/redis": "^1.38.4",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "next": "^14.2.6",
