@@ -652,24 +652,15 @@ export const REPACK_CATALOG: RepackCatalogItem[] = [
   },
 
   // ----- Blessed -----
-  // No pack art yet, so both tiles render the branded placeholder.
+  // One tile covers both the Genesis and Genesis #2 caseTypes; the art
+  // carries no number. Their checklists stay separate.
   {
     id: 'blessed-baggenesis',
     name: 'Blessed Bag Genesis',
     description: D,
-    image: '',
+    image: '/images/packs/blessedbag-genesis.jpg',
     category: 'Coins',
     brand: 'blessed',
-    usePlaceholder: true,
-  },
-  {
-    id: 'blessed-baggenesis-2',
-    name: 'Blessed Bag Genesis #2',
-    description: D,
-    image: '',
-    category: 'Coins',
-    brand: 'blessed',
-    usePlaceholder: true,
   },
 ];
 
