@@ -143,7 +143,7 @@ You should see error messages like:
 
 **Fix**: The series needs to be synced to the database. The code auto-syncs, but if it still fails:
 - Check if series exists in inventory app
-- Try syncing manually: Visit `/api/sync/series`
+- Try syncing manually: sign in as an admin and visit `/api/sync/series`, or call it with the `x-sync-secret` header set to `SYNC_SERIES_SECRET` (the endpoint returns 401/403 otherwise)
 - Verify series ID format is correct
 
 #### 2. Database Connection Issue

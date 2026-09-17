@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fetchFeaturedSeries, fetchSeriesSales, fetchAllSeries } from '@/lib/coin-inventory-api';
 import { Prisma } from '@prisma/client';
+import { authorizeSync } from '@/lib/sync-auth';
 
 // Force dynamic rendering (uses Prisma and external API calls)
 export const dynamic = 'force-dynamic';
 
 // GET /api/sync/series - Sync series data from coin inventory app
 // This will be called periodically or manually to keep data in sync
+// Admin session or x-sync-secret header only (lib/sync-auth); POST delegates here.
 export async function GET(request: NextRequest) {
+  const gate = await authorizeSync(request);
+  if (!gate.ok) return gate.response;
+
   try {
     // Fetch featured series from coin inventory app (returns array)
     const featuredSeriesArray = await fetchFeaturedSeries();

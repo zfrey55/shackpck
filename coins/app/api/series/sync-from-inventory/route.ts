@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fetchFeaturedSeries, fetchAllSeries } from '@/lib/coin-inventory-api';
+import { authorizeSync } from '@/lib/sync-auth';
 
 // GET /api/series/sync-from-inventory - Sync all series from inventory app
 // This can be called periodically to keep data in sync
+// Admin session or x-sync-secret header only (lib/sync-auth).
 export async function GET(request: NextRequest) {
+  const gate = await authorizeSync(request);
+  if (!gate.ok) return gate.response;
+
   try {
     // Fetch all series from inventory app
     const allSeries = await fetchAllSeries();

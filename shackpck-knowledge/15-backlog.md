@@ -792,7 +792,7 @@ Fix: `lib/require-admin.ts` replaces all five copies (`/api/admin/builds`, `/api
 - `GET /api/series?active=false` now returns inactive series to admins only. Everyone else silently gets active-only, never an error.
 - **4a.** `POST /api/series` (create) had **no auth at all** despite its "admin only" comment. It now requires `requireAdmin`.
 - **4b.** `PATCH /api/series/[slug]` (name, price, pack counts, `isActive`) had **no auth at all**. It now requires `requireAdmin`. No caller in this repo or in `coin-inventory-system` was found for either.
-- **4c. OPEN:** `/api/sync/series` (GET and POST) is unauthenticated. It re-syncs featured series from ShackHQ into the `Series` table, so anyone can trigger the upsert. Lower risk (the data comes from ShackHQ, not the caller), but it should be gated or given a shared secret.
+- **4c. DONE 2026-09-17** (commit `fix(api): gate series sync endpoint`): `/api/sync/series` (GET and POST) and `/api/series/sync-from-inventory` (GET), both of which upserted ShackHQ series into `Series` with no auth, now go through `lib/sync-auth.ts` `authorizeSync`: an admin session (database role), or an `x-sync-secret` header matching `SYNC_SERIES_SECRET` (constant-time compare). With the secret unset, only admins get in. No caller existed before gating: nothing in this repo, the `coin-inventory-system` repo, `netlify.toml`, Netlify functions or GitHub workflows, and prod `pg_stat_statements` (reset 2026-09-10) showed no `Series` upserts. `Series` was last updated 2026-02-19.
 
 ## 5. Lowercase existing prod emails — **DONE 2026-09-17**
 
