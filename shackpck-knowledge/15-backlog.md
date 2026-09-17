@@ -648,3 +648,52 @@ field and function, or mark them dead in the file so no one extends them.
 place for all six, for both the bare and `shackpack-{name}` spellings. Nothing to
 do on the site once ShackHQ creates them; they will route to ShackPack via the
 house bucket.
+
+---
+
+# Admin access — 2026-09-16
+
+## 1. Stale admin account demoted — **DONE** (prod DB, no code change)
+
+`gjpacking123@gmail.com` is the company Gmail. Only its shackpck.com site login
+was disabled; the mailbox itself is untouched and remains the `ADMIN_EMAIL`
+notification inbox.
+
+In one transaction (which first re-checked that the ADMIN set was exactly the two
+accounts below): `role` ADMIN -> **CUSTOMER**, and `passwordHash` replaced with a
+bcrypt (cost 10) hash of a random 32-byte value that was never printed or stored,
+so nobody knows a password for the account. The account had no linked orders,
+builds, addresses or series purchases.
+
+| | ADMIN users |
+|---|---|
+| Before | `gjpacking123@gmail.com`, `zach@theshackhq.com` |
+| After | `zach@theshackhq.com` |
+
+`ADMIN_EMAILS` is confirmed unset in Netlify, so nothing re-promotes the account
+on sign-in. `NEXTAUTH_SECRET` was **not** rotated: sessions are JWT (NextAuth's
+default 30-day rolling `maxAge`) and a JWT issued before the change still carries
+`role: ADMIN`, but every admin API route (`/api/admin/orders`,
+`/api/admin/builds`, `/api/admin/builds/[id]`, `/api/admin/builds/email-digest`)
+and now the artwork route re-read the role from the DB by user id, so such a
+session sees at most the `/admin` page shells with every data call returning 403.
+
+## 2. Artwork access by admin role, not inbox email — **DONE `c6067a0`**
+
+`/api/build/artwork/[...key]` used to admit any signed-in user whose email matched
+`ADMIN_EMAIL`, so the inbox address doubled as an identity regardless of DB role.
+It now admits the build owner, or a signed-in user whose DB role is ADMIN (looked
+up by session user id on every request); everyone else, including signed-out
+requests, gets 404. The artwork link in the admin notification email therefore
+works only when opened while signed in with an admin account. The `lib/auth.ts`
+comment that used the company Gmail as its example `ADMIN_EMAILS` value now uses
+placeholder addresses.
+
+## 3. Embedded connection strings in two scripts — **OPEN**
+
+`coins/scripts/update-db-connection.js` and `coins/scripts/setup-env.js` each
+embed a full Postgres connection string for the direct Supabase host. Both were
+last changed in `4e4a430` (2026-02-12), and the password in them is stale, so no
+rotation is needed. Strip the connection strings from both scripts (read
+`DATABASE_URL` from the environment instead, or delete the scripts), so a
+credentialed URL is not kept in git.
