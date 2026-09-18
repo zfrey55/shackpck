@@ -1,11 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 
 export default function RegisterPage() {
+  // useSearchParams needs a Suspense boundary for static rendering.
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -39,12 +50,18 @@ export default function RegisterPage() {
         redirect: false,
       });
 
+      // Honor ?callbackUrl= (same-origin paths only) so the builder's
+      // "Create account" path returns to the build being worked on.
+      const callbackUrl = searchParams.get('callbackUrl');
+      const next = safeRedirectPath(callbackUrl, window.location.origin);
       if (result?.error) {
         // Registration succeeded but sign-in failed - redirect to login
-        router.push('/auth/signin?registered=true');
+        const signInUrl = new URLSearchParams({ registered: 'true' });
+        if (callbackUrl) signInUrl.set('callbackUrl', next);
+        router.push(`/auth/signin?${signInUrl}`);
       } else {
         // Successfully signed in
-        router.push('/account');
+        router.push(next);
         router.refresh();
       }
     } catch (err) {

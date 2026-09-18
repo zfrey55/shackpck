@@ -26,7 +26,11 @@ const MESSAGES: Record<Props['reason'], { title: string; body: string }> = {
 export function SignInGateModal({ open, onClose, reason }: Props) {
   if (!open) return null;
   const msg = MESSAGES[reason];
-  const redirectTo = typeof window !== 'undefined' ? window.location.pathname : '/build';
+  // pathname + search, so signing in while editing /build?id=… comes back to THAT build.
+  const redirectTo =
+    typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '/build';
+  const signInHref = `/auth/signin?callbackUrl=${encodeURIComponent(redirectTo)}`;
+  const registerHref = `/auth/register?callbackUrl=${encodeURIComponent(redirectTo)}`;
 
   return (
     <div
@@ -38,17 +42,18 @@ export function SignInGateModal({ open, onClose, reason }: Props) {
         <h2 className="text-xl font-bold text-gold">{msg.title}</h2>
         <p className="mt-2 text-sm text-slate-300">{msg.body}</p>
         <p className="mt-3 text-xs text-slate-500">
-          Your work-in-progress stays in the builder — signing in won't lose it.
+          Your work-in-progress stays in the builder — signing in won&apos;t lose it. (It is stashed in this tab and
+          restored when you come back.)
         </p>
         <div className="mt-6 flex gap-2">
           <Link
-            href={`/auth/signin?callbackUrl=${encodeURIComponent(redirectTo)}`}
+            href={signInHref}
             className="flex-1 rounded-md bg-gold px-4 py-2 text-center text-sm font-semibold text-black hover:opacity-90"
           >
             Sign in
           </Link>
           <Link
-            href={`/auth/signin?callbackUrl=${encodeURIComponent(redirectTo)}`}
+            href={registerHref}
             className="flex-1 rounded-md border border-slate-700 px-4 py-2 text-center text-sm text-slate-300 hover:border-gold/60 hover:text-gold"
           >
             Create account

@@ -12,8 +12,13 @@ type Props = {
   onRequireSignIn: () => void;
   /** When null, build hasn't been persisted yet — upload needs buildId. */
   buildId: string | null;
-  /** Called when build is unsaved — parent creates a DRAFT and returns the new id. */
-  ensureBuildId: () => Promise<string | null>;
+  /**
+   * Called when the build is unsaved: the parent creates one and reports whether
+   * THIS call created it, so a failed upload can undo it.
+   */
+  ensureBuildId: () => Promise<{ id: string; created: boolean } | null>;
+  /** Failed upload. Receives the build id only when it was created for this upload. */
+  onUploadFailed?: (createdBuildId: string | null) => void;
 };
 
 export function ArtworkUploader({
@@ -25,6 +30,7 @@ export function ArtworkUploader({
   onRequireSignIn,
   buildId,
   ensureBuildId,
+  onUploadFailed,
 }: Props) {
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -54,28 +60,30 @@ export function ArtworkUploader({
       return;
     }
     if (!canUpload) {
-      setError('Artwork storage is not available in this environment.');
+      setError('Artwork storage is not available in this environment. Everything else still saves.');
       return;
     }
 
     setUploading(true);
+    // Tracked so a failed upload can undo a build that only existed for it.
+    let createdBuildId: string | null = null;
     try {
-      const id = buildId ?? (await ensureBuildId());
-      if (!id) {
+      const ensured = buildId ? { id: buildId, created: false } : await ensureBuildId();
+      if (!ensured) {
         setError('Could not start a build. Please try again.');
-        setUploading(false);
         return;
       }
+      createdBuildId = ensured.created ? ensured.id : null;
       const form = new FormData();
       form.append('file', file);
-      const res = await fetch(`/api/build/${id}/artwork`, {
+      const res = await fetch(`/api/build/${ensured.id}/artwork`, {
         method: 'POST',
         body: form,
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({ error: 'Upload failed' }));
         setError(data.error || 'Upload failed.');
-        setUploading(false);
+        onUploadFailed?.(createdBuildId);
         return;
       }
       const data = (await res.json()) as { artworkUrl: string; artworkKey: string };
@@ -83,6 +91,7 @@ export function ArtworkUploader({
       setLocalPreview(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed.');
+      onUploadFailed?.(createdBuildId);
     } finally {
       setUploading(false);
     }
@@ -149,6 +158,11 @@ export function ArtworkUploader({
         {!isSignedIn && (
           <p className="text-[11px] text-slate-500">
             Sign in to upload — we preview locally without saving.
+          </p>
+        )}
+        {isSignedIn && !canUpload && (
+          <p className="text-[11px] text-slate-500">
+            Artwork uploads are unavailable in this environment — the rest of your build still saves.
           </p>
         )}
       </div>
