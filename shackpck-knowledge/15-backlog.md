@@ -848,3 +848,13 @@ Recon reproduced every issue on dev against the local database before any change
 | 7 | Submit had no rate limit | **DONE** — 5/hour per **user id** (`build-submit` bucket), 429 with a friendly message |
 
 Not changed, and still true: every builder API checks ownership (404, so existence never leaks), all write routes validate with Zod, and a SUBMITTED build cannot be edited (409).
+
+---
+
+# Artwork notice and session timeout — 2026-09-18 — **DONE** (`558f44d`, `d0709a0`)
+
+- **Artwork after the sign-in gate:** the draft survived but the picked artwork did not, silently. The stash now carries an `artworkPending` flag (never image bytes), and a restore with that flag shows a notice plus an "Upload artwork again" button. Stash version v2 -> v3; a v2 stash is ignored, not half-restored.
+- **8-hour idle session timeout for everyone:** `maxAge` 8h with `updateAge` 30 min, so the window is idle-based (7.5–8h in practice) and active use never signs anyone out. Pre-existing sessions keep their 30-day expiry until their next refresh, within 30 min of their next activity.
+- **Expiry never loses builder work:** a 401 from save or submit stashes the draft, shows "Your session expired. Sign in to save your build," and the sign-in link carries `pathname + search` so the restore lands on the same build.
+- **Audit of other signed-in writers:** My Builds and checkout already surface failures and keep their input. **Account → Add Address** silently dropped a typed address on 401 (it never checked `res.ok`) and was fixed. See `06`.
+- Verified on dev: 3 artwork checks, 4 session checks (expiry signs out, expired save stashes and restores, rolling activity never signs out), and the existing 18 builder checks still pass.

@@ -62,7 +62,7 @@
 ## Environment variables (names only — see `env.production.template`)
 
 - DB: `DATABASE_URL`
-- Auth: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_TRUST_HOST`. (`ADMIN_EMAILS` was removed 2026-09-17: admin access comes only from `User.role`.)
+- Auth: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_TRUST_HOST`. (`ADMIN_EMAILS` was removed 2026-09-17: admin access comes only from `User.role`.) Optional, testing only: `SESSION_MAX_AGE_SECONDS`, `SESSION_UPDATE_AGE_SECONDS` (defaults 28800 / 1800).
 - Stripe: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - SendGrid: `SENDGRID_API_KEY`, `FROM_EMAIL`, `FROM_NAME`, `ADMIN_EMAIL`
 - FedEx: `FEDEX_KEY`, `FEDEX_PASSWORD`, `FEDEX_ACCOUNT_NUMBER`, `FEDEX_METER_NUMBER`, `FEDEX_ENVIRONMENT`, plus `FEDEX_SHIPPER_*`
