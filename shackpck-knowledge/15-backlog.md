@@ -830,3 +830,21 @@ Upstash Redis (free tier, us-east-1; `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_R
   - A throwing store fails open: submissions save and correct sign-ins work.
   - The development default is a no-op.
 - **Fixture:** `scripts/test-rate-limit.ts` (23 checks).
+
+---
+
+# ShackPack Builder save fixes — Phase 2 — 2026-09-17 — **DONE** (`07d442c`, `742edd1`)
+
+Recon reproduced every issue on dev against the local database before any change; the same checks (18) pass after. Details and the new file layout are in `06`.
+
+| # | Issue found | State |
+|---|---|---|
+| 1 | Signing in from the builder's gate lost the whole draft, while the modal claimed it would not | **DONE** — sessionStorage stash per build scope, restored on return, cleared on save/submit; gate links fixed (`/auth/register`, `pathname + search`) |
+| 2 | No dirty tracking: navigating away or reloading lost work silently | **DONE** — "Unsaved changes" indicator and a `beforeunload` confirmation |
+| 3 | `?id=` that was missing, someone else's, or a server error left an editable blank builder; saving from it created a second build | **DONE** — explicit load states with recovery actions, no blank-draft fallback |
+| 4 | Three fast Save clicks created three builds; two concurrent submits both emailed the team | **DONE** — in-flight refs, plus an atomic submit claim that releases on send failure |
+| 5 | Save failure showed an error and kept local state | Already correct; still verified |
+| 6 | A failed artwork upload orphaned a build created just to hold it; `canUpload` was hardcoded true | **DONE** — the created build is deleted on failure; real storage availability is passed from the server |
+| 7 | Submit had no rate limit | **DONE** — 5/hour per **user id** (`build-submit` bucket), 429 with a friendly message |
+
+Not changed, and still true: every builder API checks ownership (404, so existence never leaks), all write routes validate with Zod, and a SUBMITTED build cannot be edited (409).

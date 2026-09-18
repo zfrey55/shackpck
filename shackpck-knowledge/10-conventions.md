@@ -61,7 +61,7 @@
 
 ## Fixtures run before every commit
 
-`npx tsx scripts/test-card-api-adapter.ts`, `scripts/test-clean-entry-name.ts`, `scripts/test-series-numbering.ts`, `scripts/test-safe-redirect.ts`, `scripts/test-rate-limit.ts`, plus `tsc --noEmit` and `npm run lint`.
+`npx tsx scripts/test-card-api-adapter.ts`, `scripts/test-clean-entry-name.ts`, `scripts/test-series-numbering.ts`, `scripts/test-safe-redirect.ts`, `scripts/test-rate-limit.ts`, `scripts/test-builder-draft.ts`, plus `tsc --noEmit` and `npm run lint`.
 
 ## Database schema changes (Supabase RLS)
 

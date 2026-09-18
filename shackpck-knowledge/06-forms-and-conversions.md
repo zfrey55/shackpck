@@ -56,6 +56,18 @@
 ### 5. ShackPack Builder submission
 - **UI:** `app/build/` (Builder) → POST `/api/build/[id]/submit` → marks build SUBMITTED + admin notification email. A B2B/custom-order lead path.
 
+#### 2026-09-17 — Builder save fixes (`07d442c`, `742edd1`)
+
+Six things the builder got wrong, each verified broken on dev first and then re-verified fixed (18 checks).
+
+- **A draft no longer dies at the sign-in gate.** Signing in is a full page navigation, so the in-memory draft was lost — while the modal promised the opposite. The draft is now stashed in `sessionStorage` under `shackpack:builder:draft:v2:<build id or "new">` when the gate opens, restored on return (with a notice), and cleared on a successful save or submit. The gate's "Create account" link went to `/auth/signin`; it now goes to `/auth/register`, and both links carry `pathname + search`, so signing in while editing `/build?id=…` returns to **that** build. `/auth/register` honors `?callbackUrl=` through `safeRedirectPath`.
+- **Unsaved changes are visible and warned about.** An "Unsaved changes" chip appears next to Save, and a `beforeunload` handler asks for confirmation while dirty. Dirty is a comparison against the state a save would have written (`lib/builder/draft-state`), so re-renders and whitespace do not count as edits. Chrome only shows the native prompt after real user interaction; the dev check asserts the page cancels a `beforeunload` event instead.
+- **A failed `?id=` load can no longer create a junk build.** Loading has explicit states (loading / signed-out / not-found / error). Any failure renders a card with "Start a new build" and "My builds" (plus Sign in or Try again) instead of an editable blank draft, whose Save used to create a second, unrelated build. A build belonging to someone else is indistinguishable from a missing one.
+- **Save and submit are click-safe.** Three fast clicks on Save created three builds: the `disabled` attribute only applies after a re-render. Both now hold an in-flight ref checked at the top of the handler.
+- **Submit is atomic and rate limited.** The route used to email first and set `SUBMITTED` second, so two concurrent submits both emailed the team. It now claims the submit with `updateMany` where `status != 'SUBMITTED'` (0 rows -> 409), sends, and releases the claim if the send fails so a genuine retry still works. It is also rate limited to **5 per hour per user id** (not per IP), returning 429 with a friendly message.
+- **A failed artwork upload leaves nothing behind.** Uploading first creates a build to get an id; when the upload then failed, that build was orphaned. `ensureBuildId` now reports whether it created the build, and a failed upload deletes it again. `/build` passes the real `isArtworkStorageAvailable()` into the uploader, so an environment without Netlify Blobs says so instead of failing late.
+- **Structure:** `BuilderShell` went from 533 lines to ~320 by moving state into `useBuilderDraft` / `useBuilderPersistence` and the header and failure card into their own components. Every builder file is under 500 lines. Fixture: `scripts/test-builder-draft.ts` (44 checks).
+
 ### 6. Account sub-forms
 - Address create/edit (`/api/user/addresses`), shipping/payment within checkout.
 
