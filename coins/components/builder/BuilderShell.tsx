@@ -48,8 +48,8 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
   const [gate, setGate] = useState<null | 'save' | 'submit' | 'upload'>(null);
   /**
    * A picked file is previewing locally and has not been uploaded yet. Kept in a
-   * ref: the uploader reports it and opens the gate in the SAME event, so the
-   * gate handler would otherwise read the pre-click value.
+   * ref as well: the uploader reports it and opens the gate in the SAME event,
+   * so the gate handler would otherwise read the pre-click value.
    */
   const artworkPendingRef = useRef(false);
   const setArtworkPendingBoth = useCallback((pending: boolean) => {
@@ -57,6 +57,8 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
   }, []);
   /** After a restore: the artwork the visitor had picked did not survive. */
   const [artworkNeedsReupload, setArtworkNeedsReupload] = useState(false);
+  /** A save or submit came back 401: the session timed out mid-edit. */
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const onLoaded = useCallback(
     (build: PersistedBuild) => {
@@ -88,7 +90,19 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
     [replaceDraft]
   );
 
-  const p = useBuilderPersistence({ loadBuildId, sessionStatus: status, onLoaded, showToast });
+  /** 401 on a write: stash the work FIRST, then say so. Nothing is lost. */
+  const onSessionExpired = useCallback(() => {
+    stashDraft({ artworkPending: artworkPendingRef.current });
+    setSessionExpired(true);
+  }, [stashDraft]);
+
+  const p = useBuilderPersistence({
+    loadBuildId,
+    sessionStatus: status,
+    onLoaded,
+    showToast,
+    onSessionExpired,
+  });
 
   // Restore a stash left behind by the sign-in gate, once, per scope.
   const restoredRef = useRef(false);
@@ -202,6 +216,19 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
       )}
 
       <div className="space-y-4">
+        {sessionExpired && (
+          <div
+            data-session-expired
+            role="alert"
+            className="rounded-lg border border-amber-600/70 bg-amber-900/30 p-3 text-sm text-amber-100"
+          >
+            <strong>Your session expired.</strong> Sign in to save your build — your work is kept here and comes back
+            with you.{' '}
+            <Link href={signInHref()} className="font-semibold underline">
+              Sign in
+            </Link>
+          </div>
+        )}
         <BuilderHeader
           name={d.draft.name}
           shortCode={d.draft.shortCode}

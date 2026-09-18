@@ -17,15 +17,25 @@ import { toUpsertInput, type BuildDraft, type PersistedBuild } from '@/lib/build
 
 export type LoadState = 'ready' | 'loading' | 'signed-out' | 'not-found' | 'error';
 
+/** Thrown when a write comes back 401: the session expired mid-edit. */
+class SessionExpiredError extends Error {
+  constructor() {
+    super('Session expired');
+    this.name = 'SessionExpiredError';
+  }
+}
+
 type Args = {
   loadBuildId: string | null;
   sessionStatus: 'authenticated' | 'loading' | 'unauthenticated';
   /** Called with the loaded build so the draft hook can hydrate from it. */
   onLoaded: (build: PersistedBuild) => void;
   showToast: (state: { kind: 'info' | 'success' | 'error'; message: string }) => void;
+  /** A write came back 401. The caller stashes the draft and tells the visitor. */
+  onSessionExpired: () => void;
 };
 
-export function useBuilderPersistence({ loadBuildId, sessionStatus, onLoaded, showToast }: Args) {
+export function useBuilderPersistence({ loadBuildId, sessionStatus, onLoaded, showToast, onSessionExpired }: Args) {
   const [buildId, setBuildId] = useState<string | null>(null);
   /**
    * Held in a ref so the load effect depends only on the id and the session.
@@ -97,6 +107,7 @@ export function useBuilderPersistence({ loadBuildId, sessionStatus, onLoaded, sh
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(id ? toUpsertInput(draft) : { ...toUpsertInput(draft), status: 'SAVED' }),
     });
+    if (res.status === 401) throw new SessionExpiredError();
     if (!res.ok) {
       const data = await res.json().catch(() => ({ error: 'Save failed' }));
       throw new Error(data.error || 'Save failed');
@@ -114,14 +125,15 @@ export function useBuilderPersistence({ loadBuildId, sessionStatus, onLoaded, sh
         setBuildId(persisted.id);
         return persisted;
       } catch (err) {
-        showToast({ kind: 'error', message: err instanceof Error ? err.message : 'Save failed' });
+        if (err instanceof SessionExpiredError) onSessionExpired();
+        else showToast({ kind: 'error', message: err instanceof Error ? err.message : 'Save failed' });
         return null;
       } finally {
         inFlight.current.save = false;
         setSaving(false);
       }
     },
-    [buildId, persist, showToast]
+    [buildId, onSessionExpired, persist, showToast]
   );
 
   /** Artwork upload needs an id. `created` is true when this call made the build. */
@@ -165,6 +177,10 @@ export function useBuilderPersistence({ loadBuildId, sessionStatus, onLoaded, sh
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(extras),
         });
+        if (res.status === 401) {
+          onSessionExpired();
+          return null;
+        }
         if (!res.ok) {
           const data = await res.json().catch(() => ({ error: 'Submit failed' }));
           showToast({ kind: 'error', message: data.error || 'Submit failed' });
@@ -172,14 +188,15 @@ export function useBuilderPersistence({ loadBuildId, sessionStatus, onLoaded, sh
         }
         return persisted;
       } catch (err) {
-        showToast({ kind: 'error', message: err instanceof Error ? err.message : 'Submit failed' });
+        if (err instanceof SessionExpiredError) onSessionExpired();
+        else showToast({ kind: 'error', message: err instanceof Error ? err.message : 'Submit failed' });
         return null;
       } finally {
         inFlight.current.submit = false;
         setSubmitting(false);
       }
     },
-    [buildId, persist, showToast]
+    [buildId, onSessionExpired, persist, showToast]
   );
 
   return { buildId, setBuildId, saving, submitting, loadState, startNewBuild, save, submit, ensureBuildId, discardBuild };

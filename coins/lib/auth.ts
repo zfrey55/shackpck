@@ -5,6 +5,12 @@ import bcrypt from 'bcryptjs';
 import { emailWhere } from './normalize-email';
 import { safeRedirectPath } from './safe-redirect';
 
+/** Positive integer from the environment, or the default. Never throws. */
+function positiveIntEnv(raw: string | undefined, fallback: number): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
 // Admin access comes ONLY from the database role, checked per request by
 // lib/require-admin.ts. The token's `role` is informational and is never used
 // to gate anything; the old ADMIN_EMAILS env override was removed.
@@ -76,6 +82,22 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    /**
+     * IDLE timeout, not an absolute one. NextAuth re-issues the JWT whenever a
+     * session is read more than `updateAge` after it was issued, and each
+     * re-issue sets a fresh `maxAge` expiry — so someone who keeps using the
+     * site never gets logged out, and someone who walks away is signed out
+     * 8 hours later. `updateAge` is the granularity: with 30 minutes, the
+     * effective idle window is between 7.5 and 8 hours.
+     *
+     * Existing sessions keep their old expiry until their next refresh, which
+     * happens within `updateAge` of their next activity.
+     *
+     * The env overrides exist so the timeout can be exercised in development
+     * (see scripts / docs); production uses the defaults below.
+     */
+    maxAge: positiveIntEnv(process.env.SESSION_MAX_AGE_SECONDS, 8 * 60 * 60),
+    updateAge: positiveIntEnv(process.env.SESSION_UPDATE_AGE_SECONDS, 30 * 60),
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

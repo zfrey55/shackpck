@@ -177,8 +177,19 @@ export default function AccountPage() {
                       isDefault: false,
                     }),
                   })
-                    .then(res => res.json())
-                    .then(() => {
+                    .then(async res => {
+                      if (res.status === 401) {
+                        // Session timed out: say so, instead of reloading into a
+                        // signed-out page with the typed address silently dropped.
+                        alert('Your session expired, so the address was not saved. Please sign in and try again.');
+                        window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent('/account')}`;
+                        return;
+                      }
+                      if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        alert(data.error || 'Failed to save address. Please try again.');
+                        return;
+                      }
                       // Refresh page to show new address
                       window.location.reload();
                     })
