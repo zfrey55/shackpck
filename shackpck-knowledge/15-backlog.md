@@ -542,7 +542,7 @@ checklist). Worth reviewing as one set.
 - **1a** — `$` denominations in 54% of live coin rows (`MORGAN $1`, `GOLD EAGLE $5`). Needs a ruling; the fix is upstream in ShackHQ's `coinType`, not in the renderer.
 - **1b** — pack price on `/series`, `/series/[slug]`, home. MSRP, likely permitted. Not live (both series endpoints return `[]`).
 - **4** — card entries are free-text `entryName`; grade named on 12/150 rows and the format cannot distinguish raw from omitted. Coin side: 136 bullion rows missing weight, 41 missing grade — all upstream data gaps.
-- **6a (part)** — "Quality Guaranteed" (`app/page.tsx:170`), "Authenticity Guaranteed" (`RepacksClient.tsx:178`).
+- **6a (part)** — "Quality Guaranteed" (`app/page.tsx:172`), "Authenticity Guaranteed" (`RepacksClient.tsx:178`). *(Lines re-verified 2026-09-18.)*
 
 ### ONE NEW ISSUE CREATED BY THE FIX
 

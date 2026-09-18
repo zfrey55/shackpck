@@ -2,29 +2,35 @@
 
 Severity: **CRITICAL / HIGH / MEDIUM / LOW**. Findings are from a static scan of `app/`, `components/`, `lib/`, `prisma/`, `scripts/`, and config (node_modules excluded).
 
+> **Verified against the tree 2026-09-18.** This file predated the auth,
+> rate-limiting, builder and migration work, and much of it was closed by that
+> work. Every line below is now marked **[still true]**, **[CLOSED]** with the
+> commit that closed it, or **[corrected]** where the original claim was wrong.
+> Closed items are kept rather than deleted so the file reads as a record.
+
 ## Secrets
-- **No hardcoded secrets found.** ✅ All credentials read from `process.env`; `env.production.template` contains placeholders only; CI uses fake placeholder keys. (No CRITICAL secret items.)
+- **[corrected] Two scripts embed a real Postgres connection string.** The earlier "no hardcoded secrets found" was wrong: `scripts/get-supabase-connection.js` and `scripts/update-db-connection.js` each contain a credentialed URL (last changed `4e4a430`, 2026-02-12). Neither password matches the live production credential and neither points at the production host (checked 2026-09-18 against `coins/.env.prod.local` without printing either), so it is **stale credential material, not a live leak** — no rotation needed, but strip it from git. `scripts/setup-env.js` and `scripts/verify-db-connection.js` hold `[YOUR-PASSWORD]` placeholders only. Application code is clean: all credentials read from `process.env`, `env.production.template` has placeholders only, CI uses fake keys. See `15-backlog.md` *Admin access §3*.
 
 ## CRITICAL
 - None identified.
 
 ## HIGH
-- **Public, unauthenticated debug/test endpoints in production build.** `/api/test-email` can send email to **any address** (spam/abuse vector); `/api/test-sendgrid`, `/api/test-fedex`, `/api/test-inventory`, `/api/debug-inventory`, `/api/simple-test`, `/api/basic-test` expose config/behavior. Also debug pages `/test`, `/print-zpl`. **Fix:** gate behind `role=ADMIN` or strip from prod.
+- **[CLOSED `3703b52`] Public, unauthenticated debug/test endpoints.** `/api/test-email` (could send mail to any address), `/api/test-sendgrid`, `/api/test-fedex`, `/api/test-inventory`, `/api/debug-inventory`, `/api/simple-test`, `/api/basic-test`, and the pages `/test` and `/print-zpl` were all removed. Confirmed absent 2026-09-18.
 
 ## MEDIUM
-- **Hardcoded ShackHQ Cloud Functions URL** (bypasses `COIN_INVENTORY_API_BASE_URL`) in `app/checklist/api.ts:3`, `app/checklist-backup/api.ts:3`, `app/api/simple-test/route.ts:9`. If ShackHQ endpoints move, these break. `lib/coin-inventory-api.ts` / `lib/inventory-api-push.ts` / `app/api/debug-inventory` already use the env var correctly — make all consistent.
-- **Org id `coin-shack` hardcoded** across inventory clients (not env-driven). LOW/MEDIUM if multi-tenant ever needed.
-- **Large files (>500 lines)** — refactor candidates: `app/checkout/page.tsx` (936), `lib/email.ts` (670), `app/checklist/page.tsx` (572), `app/api/orders/route.ts` (570), `components/builder/BuilderShell.tsx` (533), `app/admin/builds/AdminBuildsClient.tsx` (524).
-- **SEO gaps:** no `robots.ts`/`sitemap.ts`, no Open Graph/Twitter meta, no per-page metadata, no JSON-LD. See `08`.
-- **`next.config.js` `remotePatterns` wildcard** (`https://**`) allows any HTTPS image host; `images.unoptimized: true` ships full-size images. See `08`.
-- **Missing-art placeholders:** `shackpack-summit.png` and `shackpack-inception.png` were removed; catalog entries fall back to the branded placeholder pending re-upload (intentional, but visible gaps).
+- **[still true, corrected refs] Hardcoded ShackHQ Cloud Functions URL** (bypasses `COIN_INVENTORY_API_BASE_URL`) in `app/checklist/api.ts:8`. The other two sites named here are gone: `app/checklist-backup/` and `app/api/simple-test/` no longer exist. `lib/coin-inventory-api.ts:5` and `lib/inventory-api-push.ts:7` read the env var with the URL only as a **fallback**, which is the pattern to copy. The `checklist/api.ts` literal is deliberate for now — moving it needs a `NEXT_PUBLIC_` variable plus a Netlify config change (see `15-backlog.md` §4).
+- **[still true] Org id `coin-shack` hardcoded** across inventory clients (`app/checklist/api.ts:17`, `lib/coin-inventory-api.ts:7`, `lib/inventory-api-push.ts:9`), not env-driven. LOW/MEDIUM if multi-tenant is ever needed.
+- **[corrected] Large files (>500 lines)** — recounted 2026-09-18: `lib/card-series-checklist.ts` (1841, data), `app/checkout/page.tsx` (936), `scripts/test-card-api-adapter.ts` (695, fixture), `lib/repack-catalog.ts` (693, data), `app/api/orders/route.ts` (572), `lib/email.ts` (567). `components/builder/BuilderShell.tsx` is now 322 (`07d442c`), `app/admin/builds/AdminBuildsClient.tsx` is under 500, and `app/checklist/page.tsx` is **24 lines**, not 572 — the work moved into `ChecklistClient.tsx` (474). Real refactor candidates: `checkout/page.tsx`, `orders/route.ts`, `email.ts`.
+- **[still true] SEO gaps:** no `robots.ts`/`sitemap.ts`, no Open Graph/Twitter meta, no JSON-LD. Per-page `metadata` now exists on three routes (`/build`, `/my-builds`, `/admin/builds`) but on none of the public SEO surfaces. See `08`.
+- **[CLOSED `1418d91`] `next.config.js` image settings.** `images.unoptimized: true` is gone (optimization works on this deploy via `@netlify/plugin-nextjs` v5), and `remotePatterns` is now a single allow-listed host, `images.unsplash.com`, instead of `https://**`.
+- **[corrected] Missing-art placeholders.** `shackpack-summit.png` exists again and its catalog entry points at it. `shackpack-inception` is no longer in the catalog at all. **No catalog entry uses `usePlaceholder: true` today** (0 occurrences), so there are no visible art gaps.
 
 ## LOW
-- **Redundant `(site)` route group:** `app/(site)/layout.tsx` + `app/(site)/page.tsx` duplicate the root layout/home — likely legacy; remove or consolidate.
-- **Orphan component:** `components/ChecklistUpload.tsx` is never imported.
-- **Duplicate component:** `components/SeriesCard.tsx` vs a locally-redefined SeriesCard in `app/series/page.tsx`.
-- **`app/checklist-backup/`** appears to be a stale backup of the checklist page/api.
-- **Debug `console.log`s in client code:** notably `components/FeaturedSeriesSection.tsx` (~15 calls); 572 console statements repo-wide (most are legitimate server-side error logs in `lib/`, but client debug logs should be removed).
+- **[still true] Redundant `(site)` route group:** `app/(site)/layout.tsx` + `app/(site)/page.tsx` duplicate the root layout/home — likely legacy; remove or consolidate.
+- **[CLOSED `a4fcf81`] Orphan component `components/ChecklistUpload.tsx`** — deleted.
+- **[corrected] `components/SeriesCard.tsx` is now an orphan, not a duplicate.** Nothing imports it; `app/series/page.tsx` defines its own local `SeriesCard` (line 154). Delete the component or make the page use it.
+- **[CLOSED `3703b52`] `app/checklist-backup/`** — removed, along with the `scripts/*.ps1` Zebra scripts.
+- **[CLOSED `a4fcf81`] Debug `console.log`s in client code.** **Zero** `console.log` calls remain in any `.tsx` under `app/` or `components/` (`FeaturedSeriesSection.tsx` is down to a single `console.error`). Repo-wide console statements are **311**, not 572, and are now overwhelmingly server-side error logging in `lib/` and API routes.
 - **TODO/placeholders still open:**
   - `lib/inventory-api-push.ts:105` — admin-alert email not actually sent (placeholder).
   - `lib/email.ts:548` — SendGrid Marketing API (newsletter) not implemented.
@@ -32,12 +38,13 @@ Severity: **CRITICAL / HIGH / MEDIUM / LOW**. Findings are from a static scan of
   - `app/api/webhooks/stripe/route.ts:100,120` — loyalty points hardcoded at 1/dollar, and a comment promising "a placeholder order" that is never created. See `15-backlog.md` §6c — both are checkout blockers.
 
   *(Line numbers re-verified 2026-09-18.)*
-- **Accessibility:** icon-only buttons lacking `aria-label` (`CartDropdown.tsx:46,62`, `Toast.tsx:31`); generic `alt="Thumbnail"` in `ProductGallery.tsx:22`.
-- **New-brand pack metadata is placeholder** (`coinCount: "See checklist"`, generic categories) for Fortune Forge / Bald Bunny / Lincoln Reserve — needs real specs (see `12`).
-- **No Prettier config** — formatting unenforced.
+- **[still true] Accessibility:** icon-only buttons lacking `aria-label` (`CartDropdown.tsx:46,62`, `Toast.tsx:31`); generic `alt="Thumbnail"` in `ProductGallery.tsx:22`. No `aria-label` appears in either file.
+- **[corrected] New-brand pack metadata.** The `coinCount: "See checklist"` placeholder is gone — **0 occurrences** in `lib/repack-catalog.ts`. Fortune Forge / Bald Bunny / Lincoln Reserve entries now carry the shared checklist disclaimer and a brand, with per-pack specs deliberately left to the checklist (see `12`).
+- **[still true] No Prettier config** — formatting unenforced.
 
 ## Suggested priority order
-1. Gate/remove public test endpoints (HIGH).
-2. Centralize the inventory base URL + org id behind env (MEDIUM).
-3. Add SEO basics (robots/sitemap/OG) (MEDIUM).
-4. Refactor 500+ line files; remove orphan/duplicate/backup files & client debug logs (LOW).
+1. ~~Gate/remove public test endpoints~~ — **done** (`3703b52`).
+2. Strip the two embedded connection strings from `scripts/` (Secrets, above).
+3. Centralize the inventory base URL + org id behind env (MEDIUM).
+4. Add SEO basics (robots/sitemap/OG) (MEDIUM).
+5. Refactor the remaining 500+ line code files; delete the orphan `SeriesCard.tsx` and the `(site)` route group (LOW).
