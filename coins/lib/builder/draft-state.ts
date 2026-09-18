@@ -10,7 +10,7 @@ import { GRADERS, MAX_PACK_COUNT, MIN_PACK_COUNT, TIERS } from './catalog';
  * scripts/test-builder-draft.ts.
  */
 
-export const STASH_VERSION = 'v2';
+export const STASH_VERSION = 'v3';
 
 /** One stash per build scope: an unsaved build and build <id> never overwrite each other. */
 export function stashKey(buildId?: string | null): string {
@@ -18,7 +18,17 @@ export function stashKey(buildId?: string | null): string {
   return `shackpack:builder:draft:${STASH_VERSION}:${scope}`;
 }
 
-export type StashPayload = { draft: BuildDraft; notes: string; phone: string };
+export type StashPayload = {
+  draft: BuildDraft;
+  notes: string;
+  phone: string;
+  /**
+   * The visitor had picked artwork that was previewing locally and had never
+   * been uploaded (uploading needs a saved build). Only the FLAG travels: image
+   * bytes are never written to sessionStorage.
+   */
+  artworkPending: boolean;
+};
 
 /**
  * Stable string of everything a save would persist. Two drafts that would
@@ -56,6 +66,7 @@ export function serializeStash(payload: StashPayload): string | null {
     draft: payload.draft,
     notes: payload.notes ?? '',
     phone: payload.phone ?? '',
+    artworkPending: payload.artworkPending === true,
   });
   return body.length > MAX_STASH_CHARS ? null : body;
 }
@@ -125,5 +136,6 @@ export function parseStash(raw: string | null | undefined): StashPayload | null 
     },
     notes: str(parsed.notes) ?? '',
     phone: str(parsed.phone) ?? '',
+    artworkPending: parsed.artworkPending === true,
   };
 }

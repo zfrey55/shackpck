@@ -19,6 +19,10 @@ type Props = {
   ensureBuildId: () => Promise<{ id: string; created: boolean } | null>;
   /** Failed upload. Receives the build id only when it was created for this upload. */
   onUploadFailed?: (createdBuildId: string | null) => void;
+  /** A file is previewing locally and has not been uploaded yet. */
+  onLocalPreviewChange?: (pending: boolean) => void;
+  /** The previous pick was lost (e.g. signing in), so ask for it again. */
+  needsReupload?: boolean;
 };
 
 export function ArtworkUploader({
@@ -31,6 +35,8 @@ export function ArtworkUploader({
   buildId,
   ensureBuildId,
   onUploadFailed,
+  onLocalPreviewChange,
+  needsReupload = false,
 }: Props) {
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -50,10 +56,12 @@ export function ArtworkUploader({
       return;
     }
 
-    // Local preview immediately.
+    // Local preview immediately. The bytes stay in this component: they are
+    // never put in the draft or the sign-in stash.
     const reader = new FileReader();
     reader.onload = () => setLocalPreview(String(reader.result));
     reader.readAsDataURL(file);
+    onLocalPreviewChange?.(true);
 
     if (!isSignedIn) {
       onRequireSignIn();
@@ -89,6 +97,7 @@ export function ArtworkUploader({
       const data = (await res.json()) as { artworkUrl: string; artworkKey: string };
       onUploaded(data);
       setLocalPreview(null);
+      onLocalPreviewChange?.(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed.');
       onUploadFailed?.(createdBuildId);
@@ -100,6 +109,7 @@ export function ArtworkUploader({
   async function handleClear() {
     setError(null);
     setLocalPreview(null);
+    onLocalPreviewChange?.(false);
     if (!buildId) {
       onCleared();
       return;
@@ -135,14 +145,26 @@ export function ArtworkUploader({
             e.target.value = '';
           }}
         />
+        {needsReupload && (
+          <p
+            data-artwork-reupload
+            className="rounded-md border border-amber-600/60 bg-amber-900/25 px-2 py-1.5 text-[11px] leading-relaxed text-amber-100"
+          >
+            Your artwork was not saved — pack art uploads need a saved build, so please upload it again.
+          </p>
+        )}
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="flex-1 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 text-sm font-semibold text-gold hover:bg-gold/20 disabled:opacity-60"
+            className={`flex-1 rounded-md border px-3 py-2 text-sm font-semibold disabled:opacity-60 ${
+              needsReupload
+                ? 'border-amber-500 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30'
+                : 'border-gold/40 bg-gold/10 text-gold hover:bg-gold/20'
+            }`}
           >
-            {uploading ? 'Uploading…' : preview ? 'Replace artwork' : 'Upload artwork'}
+            {uploading ? 'Uploading…' : needsReupload ? 'Upload artwork again' : preview ? 'Replace artwork' : 'Upload artwork'}
           </button>
           {preview && (
             <button

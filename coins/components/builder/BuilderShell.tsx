@@ -46,6 +46,17 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
   // Stable across renders (useCallback([]) inside the hook): safe in effect deps.
   const { replaceDraft, restoreStash, clearStash, stashDraft } = d;
   const [gate, setGate] = useState<null | 'save' | 'submit' | 'upload'>(null);
+  /**
+   * A picked file is previewing locally and has not been uploaded yet. Kept in a
+   * ref: the uploader reports it and opens the gate in the SAME event, so the
+   * gate handler would otherwise read the pre-click value.
+   */
+  const artworkPendingRef = useRef(false);
+  const setArtworkPendingBoth = useCallback((pending: boolean) => {
+    artworkPendingRef.current = pending;
+  }, []);
+  /** After a restore: the artwork the visitor had picked did not survive. */
+  const [artworkNeedsReupload, setArtworkNeedsReupload] = useState(false);
 
   const onLoaded = useCallback(
     (build: PersistedBuild) => {
@@ -84,7 +95,16 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
   useEffect(() => {
     if (restoredRef.current || p.loadState !== 'ready') return;
     restoredRef.current = true;
-    if (restoreStash(loadBuildId ?? null)) {
+    const restored = restoreStash(loadBuildId ?? null);
+    if (!restored) return;
+    if (restored.artworkPending) {
+      // The file itself could not come with it: uploading needs a saved build.
+      setArtworkNeedsReupload(true);
+      showToast(
+        { kind: 'info', message: 'Picked your build back up. Your artwork was not saved — please upload it again.' },
+        8000
+      );
+    } else {
       showToast({ kind: 'info', message: 'Picked your build back up where you left off.' });
     }
   }, [restoreStash, loadBuildId, p.loadState, showToast]);
@@ -100,7 +120,7 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
 
   const openGate = useCallback(
     (reason: 'save' | 'submit' | 'upload') => {
-      stashDraft();
+      stashDraft({ artworkPending: artworkPendingRef.current });
       setGate(reason);
     },
     [stashDraft]
@@ -304,8 +324,21 @@ export function BuilderShell({ initialDraft = null, loadBuildId = null, artworkA
               canUpload={artworkAvailable}
               buildId={p.buildId}
               ensureBuildId={() => p.ensureBuildId(d.draft)}
-              onUploaded={({ artworkUrl, artworkKey }) => d.patchDraft({ artworkUrl, artworkKey })}
-              onCleared={() => d.patchDraft({ artworkUrl: null, artworkKey: null })}
+              needsReupload={artworkNeedsReupload}
+              onLocalPreviewChange={(pending) => {
+                setArtworkPendingBoth(pending);
+                if (pending) setArtworkNeedsReupload(false);
+              }}
+              onUploaded={({ artworkUrl, artworkKey }) => {
+                d.patchDraft({ artworkUrl, artworkKey });
+                setArtworkPendingBoth(false);
+                setArtworkNeedsReupload(false);
+              }}
+              onCleared={() => {
+                d.patchDraft({ artworkUrl: null, artworkKey: null });
+                setArtworkPendingBoth(false);
+                setArtworkNeedsReupload(false);
+              }}
               onRequireSignIn={() => openGate('upload')}
               onUploadFailed={(createdBuildId) => {
                 // The build only existed so the upload had an id: undo it.

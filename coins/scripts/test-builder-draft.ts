@@ -56,15 +56,20 @@ check('artwork is dirty', isDirty({ ...base(), artworkUrl: 'https://x/y.png', ar
 check('a re-render with new line objects is clean', isDirty({ ...base(), lines: base().lines.map((l) => ({ ...l })) }, 'notes', snap), false);
 
 console.log('\n--- stash round-trip ---');
-const payload = { draft: base(), notes: 'hello', phone: '555' };
+const payload = { draft: base(), notes: 'hello', phone: '555', artworkPending: true };
 const raw = serializeStash(payload)!;
 const back = parseStash(raw)!;
 check('round-trip keeps name, packCount, tier, notes, phone',
   [back.draft.name, back.draft.packCount, back.draft.tier, back.notes, back.phone], ['Test build', 20, 'SELECT', 'hello', '555']);
 check('round-trip keeps every line', back.draft.lines.map((l) => [l.coinType, l.quantity, l.grader]), [['morgan-dollar', 2, 'ANY'], ['peace-dollar', 1, 'PCGS']]);
 check('round-trip is dirty-equivalent to the original', draftSnapshot(back.draft, back.notes) === draftSnapshot(payload.draft, payload.notes), true);
+check('round-trip keeps the artwork-pending flag', back.artworkPending, true);
+check('the flag defaults to false when absent', parseStash(JSON.stringify({ version: STASH_VERSION, draft: base(), notes: '', phone: '' }))?.artworkPending, false);
+check('a non-boolean flag is treated as false', parseStash(JSON.stringify({ version: STASH_VERSION, draft: base(), artworkPending: 'yes' }))?.artworkPending, false);
+check('the stash never carries image bytes',
+  /data:image|base64/.test(serializeStash({ draft: { ...base(), artworkUrl: 'https://cdn.example/a.png' }, notes: '', phone: '', artworkPending: true }) ?? ''), false);
 check('line order is renumbered from position', back.draft.lines.map((l) => l.order), [0, 1]);
-check('an oversized stash is not written', serializeStash({ draft: { ...base(), name: 'x'.repeat(MAX_STASH_CHARS) }, notes: '', phone: '' }), null);
+check('an oversized stash is not written', serializeStash({ draft: { ...base(), name: 'x'.repeat(MAX_STASH_CHARS) }, notes: '', phone: '', artworkPending: false }), null);
 
 console.log('\n--- stash rejection ---');
 for (const [label, value] of [
@@ -74,7 +79,8 @@ for (const [label, value] of [
   ['a JSON array', '[]'],
   ['a JSON string', '"hi"'],
   ['no version', JSON.stringify({ draft: base() })],
-  ['old version', JSON.stringify({ version: 'v1', draft: base() })],
+  ['old version v1', JSON.stringify({ version: 'v1', draft: base() })],
+  ['the previous version v2, whose payload shape differs', JSON.stringify({ version: 'v2', draft: base(), notes: '', phone: '' })],
   ['no draft', JSON.stringify({ version: STASH_VERSION })],
   ['draft is not an object', JSON.stringify({ version: STASH_VERSION, draft: 7 })],
   ['missing name', JSON.stringify({ version: STASH_VERSION, draft: { ...base(), name: undefined } })],

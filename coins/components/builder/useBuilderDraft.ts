@@ -63,8 +63,8 @@ export function useBuilderDraft(initialDraft: BuildDraft | null) {
   );
 
   // ---- stash ----
-  const stashDraft = useCallback(() => {
-    const body = serializeStash({ draft, notes, phone });
+  const stashDraft = useCallback((opts: { artworkPending?: boolean } = {}) => {
+    const body = serializeStash({ draft, notes, phone, artworkPending: opts.artworkPending === true });
     if (!body) return false;
     try {
       window.sessionStorage.setItem(stashKey(scopeRef.current), body);
@@ -83,24 +83,24 @@ export function useBuilderDraft(initialDraft: BuildDraft | null) {
     }
   }, []);
 
-  /** Restore a stash for this scope, if there is one. Returns true when it restored. */
+  /** Restore a stash for this scope. Returns the payload it restored, or null. */
   const restoreStash = useCallback(
     (scopeId: string | null) => {
       let raw: string | null = null;
       try {
         raw = window.sessionStorage.getItem(stashKey(scopeId));
       } catch {
-        return false;
+        return null;
       }
       const payload = parseStash(raw);
-      if (!payload) return false;
+      if (!payload) return null;
       setDraft(payload.draft);
       setNotes(payload.notes);
       setPhone(payload.phone);
       scopeRef.current = payload.draft.id ?? scopeId;
       // The baseline is left alone on purpose: restored work is compared against
       // the last saved state (or the pristine draft), so it shows as unsaved.
-      return true;
+      return payload;
     },
     []
   );
