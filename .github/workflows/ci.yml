@@ -53,8 +53,10 @@ jobs:
 
       - run: npm ci
 
-      - name: Sync Prisma schema to CI database
-        run: npx prisma db push
+      - name: Apply Prisma migrations to the CI database
+        # migrate deploy, not db push: a missing or broken migration fails the PR,
+        # and CI applies migrations exactly the way production does.
+        run: npx prisma migrate deploy
 
       - run: npm run lint
 
