@@ -63,11 +63,25 @@
 
 `npx tsx scripts/test-card-api-adapter.ts`, `scripts/test-clean-entry-name.ts`, `scripts/test-series-numbering.ts`, `scripts/test-safe-redirect.ts`, `scripts/test-rate-limit.ts`, `scripts/test-builder-draft.ts`, plus `tsc --noEmit` and `npm run lint`.
 
-## Database schema changes (Supabase RLS)
+## Database schema changes (migrations)
 
-- Prod schema changes go through `prisma db push`, with `DATABASE_URL` taken **explicitly** from `coins/.env.prod.local`. `coins/.env` points at the local Postgres, and the Prisma CLI loads it automatically.
-- **After every prod `prisma db push`, run the RLS guard against prod and enable RLS on any new table:**
+Prod is migration-tracked (`prisma/migrations`, baselined 2026-09-18). **Do not use `prisma db push` against prod any more** — it would drift from the migration history.
+
+1. **Change `schema.prisma`, then generate the migration locally:**
+   `npm run db:migrate` (`prisma migrate dev --name <what-changed>`), which writes `prisma/migrations/<timestamp>_<name>/migration.sql` and applies it to the local database.
+2. **Read the generated SQL before committing it.** It is the thing that will run against production. Anything destructive (a dropped column or table, a narrowed type, a new NOT NULL without a default) should be a deliberate, separate migration — see backward compatibility below.
+3. **Commit the migration with the code**, so CI applies it to its throwaway Postgres with `prisma migrate deploy`. A missing or broken migration fails the PR.
+4. **Apply to production BEFORE deploying the code that needs it:** `npm run db:migrate:prod`. It reads `coins/.env.prod.local` (never printing it), refuses to run against localhost, off `main`, or with a dirty working tree, prints `migrate status` first, then runs `migrate deploy`.
+5. **Run the RLS guard and enable RLS on anything new** (below), then deploy the code.
+
+**Backward compatibility is what makes "migrate first, deploy second" safe.** Between step 4 and step 5 the *old* code is running against the *new* schema, so each migration must work for both: add columns nullable or with a default, add tables freely, and do renames as add-then-backfill-then-drop across separate deploys. There is no rollback path: `migrate deploy` only rolls forward, so a bad migration is fixed by writing another one.
+
+**Migrations never run in the Netlify build.** Concurrent builds would race, a failure would leave the schema half-applied while the previous deploy stayed live, deploy previews share the same environment values and would migrate production, and a build log is a bad place to recover from a failed migration. The build stays `prisma generate && next build`, which needs no database.
+
+**Baselining (done once, 2026-09-18):** prod already had the tables but no `_prisma_migrations`, so `0_init` was generated with `prisma migrate diff --from-empty --to-schema-datamodel` and recorded with `prisma migrate resolve --applied 0_init`, which writes the history row without running the SQL. Verified beforehand that prod had zero drift from the schema.
+- **After every prod migration, run the RLS guard against prod and enable RLS on any new table:**
   `DATABASE_URL=<prod url, loaded from coins/.env.prod.local> npx tsx scripts/check-rls.ts`
   It lists every `public` table with row level security off and exits non-zero if there are any. Fix each with `ALTER TABLE "<Table>" ENABLE ROW LEVEL SECURITY;` (no policies), then rerun it until it exits 0.
 - Why: Supabase grants the `anon` and `authenticated` roles full privileges on every new `public` table, so a new table is readable and writable through the Supabase Data API until RLS is on. The app connects as `postgres`, which bypasses RLS, so enabling it does not affect the site.
 - The script reads `DATABASE_URL` from the environment only and never prints it. It is **not in CI**: CI runs against its own throwaway local Postgres, where RLS is off and nothing is exposed.
+- **It stays a manual step on purpose.** RLS is a property of the production database, not of the schema: Prisma migrations do not describe it, so nothing in the migration history would recreate or verify it. It also catches tables Prisma creates for itself — baselining added `_prisma_migrations`, the guard flagged it, and RLS was enabled on it (2026-09-18).

@@ -858,3 +858,17 @@ Not changed, and still true: every builder API checks ownership (404, so existen
 - **Expiry never loses builder work:** a 401 from save or submit stashes the draft, shows "Your session expired. Sign in to save your build," and the sign-in link carries `pathname + search` so the restore lands on the same build.
 - **Audit of other signed-in writers:** My Builds and checkout already surface failures and keep their input. **Account → Add Address** silently dropped a typed address on 401 (it never checked `res.ok`) and was fixed. See `06`.
 - Verified on dev: 3 artwork checks, 4 session checks (expiry signs out, expired save stashes and restores, rolling activity never signs out), and the existing 18 builder checks still pass.
+
+---
+
+# Prisma migrations — Phase 4 — 2026-09-18 — **DONE**
+
+Prod schema changes were manual `prisma db push` runs with no migration history. Now they are migrations, applied by an explicit command, never by the Netlify build. Workflow in `10`.
+
+- **`0_init` generated from the current schema** (after `ContactInquiry`) with `migrate diff --from-empty --to-schema-datamodel`: 9 tables, 6 enums, 17 indexes, 6 unique indexes, 8 foreign keys, no destructive statements (the only `DELETE` tokens are `ON DELETE CASCADE`). Matches prod's 9 tables and 6 enums exactly, and `migrate diff` from the prod datasource to the schema reported **an empty migration**, i.e. zero drift, before anything was applied.
+- **Prod baselined** with `migrate resolve --applied 0_init`: `_prisma_migrations` now records `0_init` with `applied_steps_count = 0` (recorded, not executed), the 9 app tables were untouched, and `migrate status` reports "Database schema is up to date!".
+- **`_prisma_migrations` needed RLS.** The guard flagged it right after baselining (it is a new public table, and Supabase grants `anon`/`authenticated` on new tables), so RLS was enabled on it: all 10 public tables are now ON with 0 policies.
+- **`npm run db:migrate:prod`** (`coins/scripts/db-migrate-prod.mjs`) loads `coins/.env.prod.local`, never prints it, and refuses to run when the URL is localhost, the branch is not `main`, or the working tree is dirty. It prints `migrate status` before `migrate deploy`, and on success reminds you to run the RLS guard and then deploy. All three refusals were exercised.
+- **CI** now runs `prisma migrate deploy` instead of `prisma db push` against its throwaway Postgres, so a missing or broken migration fails the PR.
+- **Proved end to end on the LOCAL database only:** reset from migrations (so `0_init` genuinely built the schema from empty, `applied_steps_count = 1`), added a nullable `Build.proofColumn`, `migrate dev` generated and applied `ALTER TABLE "Build" ADD COLUMN "proofColumn" TEXT;`, the column existed and was nullable, then it was reverted and the local database reset back to `0_init` only. **No schema change was applied to prod.**
+- **Order that keeps this safe:** migrate, run the RLS guard, then deploy — and every migration stays backward-compatible with the code already running (nullable or defaulted columns; drops in a later migration). `migrate deploy` only rolls forward, so a bad migration is fixed with another one.
