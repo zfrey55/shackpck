@@ -330,6 +330,51 @@ export function brandHasPacks(brandId: BrandId): boolean {
   );
 }
 
+/** Trim, lowercase, collapse every whitespace run to one space. */
+export function normalizeCustomerName(name: string | null | undefined): string {
+  return (name ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * Customer names that route straight to a brand, keyed by
+ * normalizeCustomerName output.
+ *
+ * For a customer that IS one of our brands under another name, and so has no
+ * CUSTOMER_PACKS entry of its own to match by slug. Not to be confused with
+ * CUSTOMER_NAME_ALIASES above, which folds coin-roster spellings into a
+ * canonical customer NAME; this maps a name to a BRAND.
+ */
+export const CUSTOMER_BRAND_ALIASES: Record<string, BrandId> = {
+  // House card customer. Permanent: ShackHQ stamps card series 'Card Shack'
+  // the way it stamps coin cases 'The Coin Shack'. Deliberately NOT in
+  // CUSTOMER_PACKS — it has no packs of its own, and an entry there would
+  // change what customerSlugForBrand('shackpack') finds.
+  'card shack': 'shackpack',
+};
+
+const BRAND_BY_ALIAS_KEY = new Map<string, BrandId>(
+  Object.entries(CUSTOMER_BRAND_ALIASES).map(([alias, brandId]) => [
+    normalizeCustomerName(alias),
+    brandId,
+  ])
+);
+
+/** Id of the 'other' group: where a customer we cannot place is filed. */
+export const OTHER_CUSTOMER_GROUP_ID = 'other' satisfies CustomerBucket;
+
+/** Names already warned about, so one stray customer logs once per process. */
+const warnedUnknownCustomers = new Set<string>();
+
+function warnUnknownCustomer(customerName: string): void {
+  // Server only. Never log a customer name to a visitor's browser console.
+  if (typeof window !== 'undefined') return;
+  if (warnedUnknownCustomers.has(customerName)) return;
+  warnedUnknownCustomers.add(customerName);
+  console.warn(
+    `[customer-attribution] unmapped customerName ${JSON.stringify(customerName)} -> '${OTHER_CUSTOMER_GROUP_ID}'`
+  );
+}
+
 /**
  * Route an inventory `customerName` to the brand that owns it.
  *
@@ -342,25 +387,34 @@ export function brandHasPacks(brandId: BrandId): boolean {
  * coin cases and no CANONICAL_OTHER_CUSTOMERS entry), so an unresolved name
  * falls back to a direct slug match rather than to the house bucket — the
  * nameToSlug default of 'shackpack' would silently file another customer's
- * cards under ours.
+ * cards under ours. CUSTOMER_BRAND_ALIASES is checked last.
  *
- * Returns null when the name maps to no known brand. Callers treat that as a
- * reason to EXCLUDE the series, never as a reason to guess.
+ * Both sides of every lookup are normalized: the input here, the roster via
+ * normalizeKey, CUSTOMER_PACKS via its slug keys, the aliases via their map.
+ *
+ * Returns null only for a blank name. A name that maps to no known brand
+ * returns OTHER_CUSTOMER_GROUP_ID, never null and never a guessed brand.
  */
 export function brandIdForCustomerName(
   customerName: string | null | undefined
-): BrandId | null {
-  const raw = (customerName ?? '').trim();
-  if (!raw) return null;
+): BrandId | typeof OTHER_CUSTOMER_GROUP_ID | null {
+  const name = normalizeCustomerName(customerName);
+  if (!name) return null;
 
-  const canonical = resolveCustomerName(raw);
-  if (canonical !== null) {
-    const slug = canonical === CANONICAL_HOUSE ? SHACKPACK_SLUG : slugify(canonical);
-    return CUSTOMER_PACKS[slug]?.brandId ?? null;
-  }
+  const canonical = resolveCustomerName(name);
+  const slug =
+    canonical === null
+      ? // Off the coin roster: a card-only brand keyed directly by its own slug.
+        slugify(name)
+      : canonical === CANONICAL_HOUSE
+        ? SHACKPACK_SLUG
+        : slugify(canonical);
 
-  // Off the coin roster: a card-only brand keyed directly by its own slug.
-  return CUSTOMER_PACKS[slugify(raw)]?.brandId ?? null;
+  const brandId = CUSTOMER_PACKS[slug]?.brandId ?? BRAND_BY_ALIAS_KEY.get(name);
+  if (brandId) return brandId;
+
+  warnUnknownCustomer((customerName ?? '').trim());
+  return OTHER_CUSTOMER_GROUP_ID;
 }
 
 /** Customer slug that owns a brand's packs, for cross-linking packs -> checklist. */

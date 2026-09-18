@@ -13,7 +13,10 @@
  * The only import from the model is type-only, so there is no runtime cycle.
  */
 
-import { brandIdForCustomerName } from '@/lib/customer-attribution';
+import {
+  OTHER_CUSTOMER_GROUP_ID,
+  brandIdForCustomerName,
+} from '@/lib/customer-attribution';
 import type { CardEntry, CardSeries } from '@/lib/card-checklist-model';
 
 /**
@@ -193,7 +196,9 @@ export function adaptApiSeries(input: ApiSeriesLike): CardSeries | null {
   if (!customerName) return null;
 
   const brandId = brandIdForCustomerName(customerName);
-  if (brandId === null) return null;
+  // 'other' is the coin side's group. The card line has brand tabs only and no
+  // tab that could show it, so an unplaced series is still excluded here.
+  if (brandId === null || brandId === OTHER_CUSTOMER_GROUP_ID) return null;
 
   return {
     id: input.seriesId,

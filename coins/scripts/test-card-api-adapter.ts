@@ -21,7 +21,15 @@ import {
   normalizeSeriesType,
   type ApiSeriesLike,
 } from '../lib/card-checklist-model';
-import { brandIdForCustomerName } from '../lib/customer-attribution';
+import {
+  CUSTOMER_BRAND_ALIASES,
+  CUSTOMER_PACKS,
+  OTHER_CUSTOMER_GROUP_ID,
+  brandIdForCustomerName,
+  checklistHrefForBrand,
+  customerSlugForBrand,
+  normalizeCustomerName,
+} from '../lib/customer-attribution';
 import { cardLineForBrand } from '../lib/product-lines';
 import { cardBrandsForLine } from '../app/checklist/nav-params';
 
@@ -113,6 +121,58 @@ check(
   adaptApiSeries(complete({ customerName: 'Vault Room Breaks' }))?.brandId,
   'vault-room-breaks'
 );
+
+console.log('\n--- house card customer "Card Shack" and the unknown-name fallback ---\n');
+
+for (const spelling of ['Card Shack', 'card shack', ' Card  Shack ']) {
+  check(
+    `brandIdForCustomerName(${JSON.stringify(spelling)}) -> 'shackpack'`,
+    brandIdForCustomerName(spelling),
+    'shackpack'
+  );
+}
+check(
+  'normalizeCustomerName: trim, lowercase, collapse whitespace',
+  normalizeCustomerName(' Card \t Shack '),
+  'card shack'
+);
+check(
+  'every CUSTOMER_BRAND_ALIASES key is already normalized',
+  Object.keys(CUSTOMER_BRAND_ALIASES).filter((k) => k !== normalizeCustomerName(k)),
+  []
+);
+check(
+  'a "Card Shack" series lands under the ShackPack brand',
+  adaptApiSeries(complete({ customerName: 'Card Shack' }))?.brandId,
+  'shackpack'
+);
+check(
+  'Card Shack is NOT a CUSTOMER_PACKS entry - no pack tiles, no /repacks tab',
+  Object.keys(CUSTOMER_PACKS).filter((slug) => slug.includes('card')),
+  []
+);
+check(
+  "customerSlugForBrand('shackpack') is unchanged",
+  customerSlugForBrand('shackpack'),
+  'shackpack'
+);
+check(
+  "checklistHrefForBrand('shackpack') is unchanged",
+  checklistHrefForBrand('shackpack'),
+  '/checklist?customer=shackpack'
+);
+check(
+  'unknown name returns the Other id, not null/undefined',
+  brandIdForCustomerName('Some Brand We Do Not Know'),
+  OTHER_CUSTOMER_GROUP_ID
+);
+check("the Other id is the coin side's existing 'other' bucket", OTHER_CUSTOMER_GROUP_ID, 'other');
+check(
+  'a prototype key is an unknown name, not a lookup hit',
+  brandIdForCustomerName('constructor'),
+  OTHER_CUSTOMER_GROUP_ID
+);
+check('a blank name is still null - missing is not unknown', brandIdForCustomerName('   '), null);
 
 console.log('\n--- seriesType yields TWO values: group heading vs title base ---\n');
 
