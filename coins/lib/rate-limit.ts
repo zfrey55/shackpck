@@ -26,7 +26,7 @@ import { normalizeEmail } from '@/lib/normalize-email';
  * email: no address is stored in Upstash.
  */
 
-export type RateLimitBucket = 'contact' | 'register' | 'signin-ip' | 'signin-email' | 'checkout';
+export type RateLimitBucket = 'contact' | 'register' | 'signin-ip' | 'signin-email' | 'checkout' | 'build-submit';
 
 export const RATE_LIMITS: Record<RateLimitBucket, { limit: number; windowSec: number }> = {
   contact: { limit: 5, windowSec: 10 * 60 },
@@ -34,6 +34,9 @@ export const RATE_LIMITS: Record<RateLimitBucket, { limit: number; windowSec: nu
   'signin-ip': { limit: 10, windowSec: 10 * 60 },
   'signin-email': { limit: 10, windowSec: 10 * 60 },
   checkout: { limit: 10, windowSec: 10 * 60 },
+  // Keyed by user id, not IP: submitting emails the team, and one account
+  // hammering submit is the case worth bounding.
+  'build-submit': { limit: 5, windowSec: 60 * 60 },
 };
 
 export type RateLimitResult = { ok: true } | { ok: false; retryAfterSec: number };
@@ -54,6 +57,11 @@ export function clientIp(headers: HeaderGetter): string {
 
 export function ipIdentifier(ip: string): string {
   return `ip:${ip}`;
+}
+
+/** For limits that belong to an account rather than a network. */
+export function userIdentifier(userId: string): string {
+  return `user:${userId}`;
 }
 
 /** Hashed so no email address is ever written to the rate-limit store. */

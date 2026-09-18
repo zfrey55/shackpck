@@ -12,6 +12,7 @@ import {
   ipIdentifier,
   rateLimitKey,
   rateLimitPrefix,
+  userIdentifier,
 } from '../lib/rate-limit';
 
 let failures = 0;
@@ -54,7 +55,11 @@ check('configured limits', RATE_LIMITS, {
   'signin-ip': { limit: 10, windowSec: 600 },
   'signin-email': { limit: 10, windowSec: 600 },
   checkout: { limit: 10, windowSec: 600 },
+  'build-submit': { limit: 5, windowSec: 3600 },
 });
+check('user identifier shape', userIdentifier('cku123'), 'user:cku123');
+check('build-submit keys are per user, not per IP',
+  rateLimitKey('build-submit', userIdentifier('cku123'), { CONTEXT: 'production' }), 'shackpck:production:rl:build-submit:user:cku123');
 
 console.log('\n--- memory store ---');
 (async () => {

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { BuilderShell } from '@/components/builder/BuilderShell';
+import { isArtworkStorageAvailable } from '@/lib/builder/storage';
 
 export const metadata: Metadata = {
   title: 'ShackPack Builder — Design your custom case',
@@ -42,7 +43,7 @@ export default function BuildPage({
           </div>
         </div>
 
-        <BuilderShell loadBuildId={id} />
+        <BuilderShell loadBuildId={id} artworkAvailable={isArtworkStorageAvailable()} />
       </div>
     </main>
   );
