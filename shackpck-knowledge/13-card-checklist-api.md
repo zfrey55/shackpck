@@ -1,7 +1,7 @@
 # Card Checklist API Integration — Handover
 
 **Repo:** `~/Desktop/Cursor Projects/shackpck` · **Branch:** `main` · **HEAD:** `6a5482b`
-**Written:** 2026-08-27 · **Last updated:** 2026-08-31 · **Status:** done and live in production
+**Written:** 2026-08-27 · **Last updated:** 2026-09-18 (customer routing, 3.2) · **Status:** done and live in production
 
 Written for someone picking this up cold with no memory of the decisions. Where
 something looks odd, the reason is given — most of the odd-looking parts are
@@ -46,6 +46,7 @@ Break any one and renames or new series go stale silently.
 | Client fetchers | `coins/app/checklist/api.ts` | `fetchCardChecklistDates()`, `fetchCardChecklistSeries(seriesId)` |
 | Read model | `coins/lib/card-checklist-model.ts` | The `CardSeries` shape, the three static sources, and the selectors — brands, series-type groups, dates, counts |
 | API adapter | `coins/lib/card-api-adapter.ts` | The gate, `seriesType` normalization, umbrella/cabinet tree assembly, per-date numbering |
+| Brand routing | `coins/lib/customer-attribution.ts` | `brandIdForCustomerName`: `customerName` → brand tab. Shared with the coin side. See 3.2 |
 | Formatter | `coins/lib/clean-entry-name.ts` | Turns raw Sortly text into display casing |
 | Loading hook | `coins/app/checklist/useCardApiSeries.ts` | Fetches, gates, merges, handles 404s |
 | Render | `coins/app/checklist/components/CardSeriesBrowser.tsx` | Series-type → dates → checklist |
@@ -118,6 +119,51 @@ product line at any time; `seriesId` never changes.
 This is also what let the adapter ship weeks before ShackHQ sent the fields: the
 gate was closed, zero series rendered, and it opened by itself when the fields
 arrived. Nothing was deployed to turn it on.
+
+**How a `customerName` routes (`920cb39`, 2026-09-18).** A card series reaches a
+brand tab through `brandIdForCustomerName` in `lib/customer-attribution.ts`, and
+through nothing else. The name is normalized first (`normalizeCustomerName`:
+trim, lowercase, collapse whitespace), then looked up in this order:
+
+1. **The coin roster.** `resolveCustomerName` folds house spellings and
+   `CUSTOMER_NAME_ALIASES` (`'CoinWave, LLC'`) exactly as it does for coin cases,
+   and the canonical name's slug is looked up in `CUSTOMER_PACKS`.
+2. **A direct slug match on `CUSTOMER_PACKS`**, for a card-only customer that is
+   not on the coin roster (Vault Room Breaks).
+3. **`CUSTOMER_BRAND_ALIASES`**, keyed by the normalized name. One entry:
+   `'card shack'` → `'shackpack'`.
+
+Every lookup is normalized on both sides, so `'Card Shack'`, `'card shack'` and
+`' Card  Shack '` all route the same way.
+
+**`Card Shack` is the permanent house card customer.** ShackHQ stamps card
+series `Card Shack` the way it stamps coin cases `The Coin Shack`. It is
+deliberately NOT a `CUSTOMER_PACKS` entry: it has no packs of its own, and an
+entry there would mint a `/repacks` tab and change what
+`customerSlugForBrand('shackpack')` finds. Do not confuse the two alias maps —
+`CUSTOMER_NAME_ALIASES` maps a spelling to a canonical customer NAME;
+`CUSTOMER_BRAND_ALIASES` maps a name to a BRAND.
+
+**An unknown name returns `'other'`, and the adapter still excludes it.**
+`brandIdForCustomerName` returns `OTHER_CUSTOMER_GROUP_ID` (`'other'`, the coin
+side's bucket id) rather than `null` for a name it cannot place, and `null` only
+for a blank name. `'other'` is not a `BrandId` and the card line has no tab that
+could show it, so `adaptApiSeries` treats it exactly like `null`. Owner ruling
+2026-09-18: **there is no public "Other" card tab** (`15-backlog.md`). A new card
+customer therefore stays invisible until it gets a `CUSTOMER_PACKS` entry or an
+alias — which is what happened to the first `Card Shack` upload, and why the
+alias exists.
+
+The function also `console.warn`s an unknown name once per process, **server
+side only**. Adaptation runs in the browser today (`useCardApiSeries` is a client
+hook), so in production that warn never fires; it shows up under the fixture
+scripts and would under any future server-side caller.
+
+**Wire fields today:** `seriesId, seriesDate, totalCards, seriesType,
+customerName, parentSeriesId, productCategory, submittedAt`. There is no
+customer id or brand id, which is why routing keys on a display name at all.
+`productCategory` (`'sports-cards'` on the `Card Shack` series, absent on older
+ones) is present and **not read**.
 
 ### 3.3 `"Gauntlet Live"` → `"Gauntlet"` by EXACT match only.
 
@@ -269,9 +315,14 @@ when its parent link:
    so no input can loop; the traversal is a single non-recursive pass over a
    flat map.
 
-**Currently inert.** `parentSeriesId` is live on both endpoints and **`null` on
-every series today**, so nothing above executes until ShackHQ's first grouped
-upload lands. `6a5482b` was verified byte-identical on all 42 render-visible
+**No longer inert (2026-09-18).** The first grouped upload landed on 2026-09-18:
+a `Gauntlet Live` umbrella (150 cards) with `Fusion`, `Nova` and `Select`
+cabinets (50 each), stamped `Card Shack`. It assembles as one "Gauntlet Live
+Series 1" under ShackPack → Gauntlet. The paragraph below describes the state
+when `6a5482b` shipped.
+
+**Inert at ship time.** `parentSeriesId` was live on both endpoints and **`null`
+on every series**, so nothing above executed until that first grouped upload. `6a5482b` was verified byte-identical on all 42 render-visible
 surfaces against the previous commit using the live payload. The existing
 2026-08-27 four-series day predates the field and stays four flat checklists
 permanently.
@@ -294,7 +345,7 @@ assertion scripts run via `npx tsx` with no dependency to install.
 |---|---|---|
 | `scripts/test-clean-entry-name.ts` | 21 fixtures / 42 | Formatting rules + idempotence + typo passthrough |
 | `scripts/test-series-numbering.ts` | 10 fixtures / 30 | Per-date numbering, order preservation, no leaked state |
-| `scripts/test-card-api-adapter.ts` | 66 | The gate, brand routing, alias, `submittedAt` ordering, merge, outage, grouped days |
+| `scripts/test-card-api-adapter.ts` | 110 | The gate, brand routing (incl. `Card Shack` spellings and the `'other'` fallback), alias, `submittedAt` ordering, merge, outage, grouped days |
 
 Run all three plus `npx tsc --noEmit` before any change to the model, the
 formatter or the adapter. Notable guards worth not deleting:

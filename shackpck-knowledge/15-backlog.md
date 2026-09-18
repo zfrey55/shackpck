@@ -939,3 +939,53 @@ under *Auth hardening — Phase 1 §6, BLOCKERS before enabling
 Also noted, not tracked as items: `env.production.template` carries four `TODO`
 markers for credentials to fill in (lines 19, 29, 35, 72), which is what a
 template is for.
+
+---
+
+# Card customer attribution — 2026-09-18
+
+From the `Card Shack` fix (`920cb39`, PR #1). On 2026-09-18 ShackHQ's first
+grouped card upload (a `Gauntlet Live` umbrella with `Fusion`, `Nova`, `Select`
+cabinets) arrived stamped `customerName: "Card Shack"`, matched no brand, and was
+dropped from `/checklist`. Routing and the alias are written up in `13` §3.2.
+
+## 1. ShackHQ to send a brand id on card series; site prefers it over `customerName` — **OPEN (ShackHQ side)**
+
+Card series route to a brand tab on a display name. That is what broke: a new
+spelling of our own house customer was enough to hide a day's checklists, and
+every future rename or new customer will do the same until someone adds an alias
+or a `CUSTOMER_PACKS` entry and deploys.
+
+The wire has no stable customer or brand key today. Fields on both card
+endpoints: `seriesId, seriesDate, totalCards, seriesType, customerName,
+parentSeriesId, productCategory, submittedAt`. (`productCategory` is new,
+`'sports-cards'` on the `Card Shack` series and absent on older ones; the site
+does not read it.)
+
+**Ask of ShackHQ:** send a brand id on each card series, on both
+`getCardChecklistDates` and `getCardChecklistSeries`, using the site's `BrandId`
+values (`shackpack`, `vault-room-breaks`, `komodo-rips`, …).
+
+**Site change once it exists:** `adaptApiSeries` prefers a valid brand id and
+falls back to `brandIdForCustomerName` only when the field is absent or not a
+known `BrandId`. Keep the fallback: the series already published carry no brand
+id. Nothing to build on the site until the field is on the wire.
+
+## 2. No public "Other" card tab — **DECIDED** (owner ruling, 2026-09-18)
+
+`brandIdForCustomerName` returns `'other'` for a name it cannot place, and the
+card adapter excludes those series exactly as it excluded `null` before. The
+card line has brand tabs only; there is no "Other" group on it and none will be
+added. A card series from an unmapped customer is not shown publicly — showing
+it under a catch-all tab, or under ShackPack, is worse than not showing it.
+
+Consequence to keep in mind: an unmapped card customer is **silent** in
+production. The `console.warn` for it is server-side only and adaptation runs in
+the browser, so nothing logs. The signal is a checklist that ShackHQ submitted
+and the site does not show; the fix is an alias in `CUSTOMER_BRAND_ALIASES` or a
+`CUSTOMER_PACKS` entry, until item 1 removes the dependency on names.
+
+This is the card-side counterpart of *Backlog notes — 2026-09-16 §1*, where
+off-roster COIN customers fold into the ShackPack bucket by design. The two
+lines differ on purpose: a stray coin case is one of ours; a stray card series
+may be another customer's.
