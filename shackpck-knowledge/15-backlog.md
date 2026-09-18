@@ -10,6 +10,13 @@ commit, not recollection.
 > is ready to be re-keyed to the numbered backlog list when that is supplied —
 > the verdicts and evidence carry over unchanged.
 
+> **Correction pass — 2026-09-18.** Items 2, 3 and 12 were closed by later work
+> but still read OPEN; they now carry the commit that closed them. The counts in
+> 11 and 13 were re-measured, the scripts named in *Admin access §3* were wrong
+> and are corrected, the `/policy` half of the finalized issue is resolved and
+> dropped, and drifted code line numbers were re-verified. Sections dated
+> 2026-08-31 otherwise remain evidence from `84db9d9`.
+
 ---
 
 ## 1. Test / debug routes and pages — **DONE** `3703b52`
@@ -46,29 +53,36 @@ with `git checkout 3703b52^ -- coins/scripts/<name>.ps1`.
 **Orphaned by this deletion — not removed, separate commit:** none. The two
 unreferenced lib exports below were already unreferenced before it.
 
-## 2. Inquiry / lead persistence — **OPEN**
+## 2. Inquiry / lead persistence — **DONE 2026-09-16** (`258be87`)
 
-`coins/prisma/schema.prisma` declares `User`, `Address`, `Series`,
-`SeriesPurchase`, `Order`, `OrderItem`, `Build`, `BuildLine` and four enums.
-**No `Inquiry`, `Lead`, `Contact`, `Message` or `Submission` model.**
+Was: no `Inquiry`/`Lead`/`Contact` model at all, and `/api/contact` never
+touched the database — it validated, called `sendContactInquiryEmail` and
+returned `{ ok: true }`, so a SendGrid failure lost the submission entirely.
 
-`coins/app/api/contact/route.ts` (102 lines) **does not touch the database.**
-It imports exactly `next/server`, `zod` and `sendContactInquiryEmail` — no
-`prisma` import anywhere in the file. The handler validates, calls
-`sendContactInquiryEmail`, returns `{ ok: true }`. **A SendGrid failure loses
-the submission entirely**; there is no record of it.
+Now: `prisma/schema.prisma` declares `ContactInquiry` (plus the `ContactReason`
+and `CustomBrandingChoice` enums, indexed on `createdAt`), and
+`/api/contact` writes the row **before** attempting email. Send failures are
+recorded on the row (`emailSent`, `emailError`) instead of vanishing, which is
+what made the 2026-09-17 spam-drop diagnosis possible at all.
 
-## 3. Honeypot / rate limit — **OPEN**
+## 3. Honeypot / rate limit — **DONE 2026-09-17**
 
-Neither exists in either file.
+Commits: `258be87` (honeypot, 2026-09-16), `ce57686` (autofill-safe honeypot,
+keep spam-suspected rows, 2026-09-17), `fea53f3` (rate limiting, 2026-09-17).
 
-- `coins/app/api/contact/route.ts` — no rate limiter, no IP handling, no
-  honeypot field, no captcha/turnstile. The only match for `limit` is `.max()`
-  length caps in the zod schema.
-- `coins/components/ContactForm.tsx` (255 lines) — no hidden/decoy field, no
-  submit throttle, no captcha.
+Was: an unauthenticated POST that sent mail on every valid body — no limiter,
+no IP handling, no decoy field, no captcha.
 
-The endpoint is an unauthenticated POST that sends mail on every valid body.
+Now both exist:
+
+- **Honeypot + timing trap** (`lib/contact-inquiry.ts`): hidden `hp_field_x`
+  and a `MIN_FILL_MS` of 3 s. A tripped check no longer drops the submission —
+  it **saves the row** with `emailError = spamSuspectedError(...)` and skips
+  only the email. (The first cut dropped the row, which silently lost real
+  inquiries; see the spam-drop entry below.)
+- **Rate limiting** (`lib/rate-limit.ts`, Upstash sliding window): `contact`
+  5 per 10 min per IP, applied before validation, alongside buckets for
+  register, sign-in, checkout and build submit. Fails open.
 
 ## 4. Hardcoded inventory host and org id — **REDUCED** by `3703b52`
 
@@ -188,48 +202,56 @@ series are added by hand-editing `lib/card-series-checklist.ts`; the 120-row
 Legend Series 1 entry in `7457483` was generated ad hoc, not by a committed
 importer.
 
-## 11. Files ≥ 500 lines — **eight, not six**
+## 11. Files ≥ 500 lines — **six** (recounted 2026-09-18)
 
-| Lines | File |
-|--:|---|
-| 1988 | `coins/lib/card-series-checklist.ts` |
-| 936 | `coins/app/checkout/page.tsx` |
-| 740 | `coins/scripts/test-card-api-adapter.ts` |
-| 670 | `coins/lib/email.ts` |
-| 618 | `coins/lib/repack-catalog.ts` |
-| 570 | `coins/app/api/orders/route.ts` |
-| 533 | `coins/components/builder/BuilderShell.tsx` |
-| 524 | `coins/app/admin/builds/AdminBuildsClient.tsx` |
+| Lines | File | |
+|--:|---|---|
+| 1841 | `coins/lib/card-series-checklist.ts` | data |
+| 936 | `coins/app/checkout/page.tsx` | code |
+| 695 | `coins/scripts/test-card-api-adapter.ts` | fixture |
+| 693 | `coins/lib/repack-catalog.ts` | data |
+| 572 | `coins/app/api/orders/route.ts` | code |
+| 567 | `coins/lib/email.ts` | code |
 
-Next below the line: `lib/builder/catalog.ts` 483, `app/checklist/ChecklistClient.tsx` 472.
+Changes since the 2026-08-31 count (eight files): `BuilderShell.tsx` dropped
+533 -> 322 in the Phase 2 split and is off the list; `AdminBuildsClient.tsx`
+is now below 500. `repack-catalog.ts` grew past `email.ts` as tiles were added.
 
-`card-series-checklist.ts` and `repack-catalog.ts` are data files that grow by
-append and are arguably exempt; the other six are code.
+The two data files grow by append and are arguably exempt, and
+`test-card-api-adapter.ts` is a fixture that grows with each new series — so
+the real refactor candidates are `checkout/page.tsx`, `orders/route.ts` and
+`email.ts`.
 
-## 12. `shackpck-knowledge/` in `.gitignore` — **OPEN**
+## 12. `shackpck-knowledge/` in `.gitignore` — **DONE 2026-09-02** (`61d6fbf`)
 
-**Not ignored.** Root `.gitignore` has no entry for it (0 matches), and neither
-does `coins/.gitignore`. It survives as untracked only because nobody has run
-`git add -A` — which is exactly why every commit in this repo stages explicit
-paths. `.claude/` is in the same position (0 matches).
+The original risk was that the directory was neither ignored nor tracked, so a
+single `git add -A` would have committed it by accident. It is now **tracked on
+purpose**: 16 files under version control, still with no `.gitignore` entry in
+either the root or `coins/`. Knowledge-doc updates ship as their own
+`docs(knowledge):` commits.
 
-One `git add -A` commits both directories.
+`.claude/` remains untracked and unignored — the same latent accident, which is
+one more reason every commit here stages explicit paths and never `git add -A`.
 
 ## 13. Tracked PNGs
 
-`git ls-files | grep -c '\.png$'` → **72** (case-sensitive; misses 3 `.PNG`).
+Recounted 2026-09-18:
 
 | Extension | Files | Bytes | MB |
 |---|--:|--:|--:|
-| `.png` | 72 | 171,223,938 | 171.2 |
-| `.PNG` | 3 | 5,331,685 | 5.3 |
-| **Total** | **75** | **176,555,623** | **176.6** |
+| `.png` | 83 | 197,241,218 | 188.1 |
+| `.jpg` | 1 | 799,533 | 0.8 |
+| `.svg` | 1 | 897 | 0.0 |
+| **Total** | **85** | **198,041,648** | **188.9** |
 
-Location: 74 in `coins/public/images/packs/`, 1 in `coins/public/`. Also tracked:
-1 `.svg`. No `.jpg`/`.jpeg`/`.webp` remain.
+Up from 75 files / 176.6 MB on 2026-08-31, as pack art was added for the new
+brands and cases. All 83 PNGs and the one `.jpg` (`blessedbag-genesis.jpg`, the
+Blessed tile) live in `coins/public/images/packs/`, except a single PNG in
+`coins/public/`. The earlier note that no `.jpg` remained is out of date.
 
 `next/image` optimization is enabled (`1418d91`), so delivered bytes are far
-below this — but all 176.6 MB is paid on every clone, CI checkout and build.
+below this — but the full ~188 MB is paid on every clone, CI checkout and build,
+and it grows with every new tile.
 
 ---
 
@@ -522,19 +544,21 @@ checklist). Worth reviewing as one set.
 - **4** — card entries are free-text `entryName`; grade named on 12/150 rows and the format cannot distinguish raw from omitted. Coin side: 136 bullion rows missing weight, 41 missing grade — all upstream data gaps.
 - **6a (part)** — "Quality Guaranteed" (`app/page.tsx:170`), "Authenticity Guaranteed" (`RepacksClient.tsx:178`).
 
-### TWO NEW ISSUES CREATED BY THE FIX
+### ONE NEW ISSUE CREATED BY THE FIX
 
-1. **`/policy` now contradicts the site.** `app/policy/page.tsx:39` states:
-   *"All checklists include a statement that as of a specified date, the series
-   has been finalized and the number of products and individual items will not
-   be changed."* After `b60529f` **no checklist carries that statement**. Either
-   the policy line comes out, or real dated series start setting `finalizedOn`.
-   This is a public compliance commitment, so it should not sit unresolved.
+> The second issue — *"`/policy` now contradicts the site"*, where the policy
+> page promised a finalized statement no checklist carried — is **RESOLVED**:
+> `app/policy/page.tsx` no longer makes that claim, and a search of the whole
+> app finds the wording only inside the dead code path below. Dropped from this
+> list 2026-09-18.
 
-2. **The finalized path is now entirely dead code.** `seriesFinalizedStatement`
-   (`lib/repack-catalog.ts:56`), its single call site
-   (`CardSeriesChecklistCard.tsx:234`), the `'finalized'` branch of
-   `exampleNoticeFor`, and the `packSize` structure line all render nowhere.
+1. **The finalized path is entirely dead code.** `seriesFinalizedStatement`
+   (`lib/repack-catalog.ts:72`), its single call site
+   (`CardSeriesChecklistCard.tsx:270`, under the `notice === 'finalized'`
+   branch at `:245`), the `'finalized'` branch of `exampleNoticeFor`
+   (`lib/card-checklist-model.ts:115`), and the `packSize` structure line all
+   render nowhere — confirmed again 2026-09-18: **no series sets
+   `finalizedOn`**.
    Retained deliberately as the mechanism a real dated series would use — see
    `14-tcg-product-type.md` §7 — but nothing exercises it, so it will rot
    silently. The fixture `'NOTHING on the site is finalized'` pins the current
@@ -699,12 +723,24 @@ placeholder addresses.
 
 ## 3. Embedded connection strings in two scripts — **OPEN**
 
-`coins/scripts/update-db-connection.js` and `coins/scripts/setup-env.js` each
-embed a full Postgres connection string for the direct Supabase host. Both were
-last changed in `4e4a430` (2026-02-12), and the password in them is stale, so no
-rotation is needed. Strip the connection strings from both scripts (read
-`DATABASE_URL` from the environment instead, or delete the scripts), so a
-credentialed URL is not kept in git.
+*Corrected 2026-09-18 — the scripts named here were wrong.* The two that embed
+**real** credentials are:
+
+| Script | Last changed | State |
+|---|---|---|
+| `coins/scripts/get-supabase-connection.js` | `4e4a430` (2026-02-12) | real password, twice |
+| `coins/scripts/update-db-connection.js` | `4e4a430` (2026-02-12) | real password |
+
+`coins/scripts/setup-env.js` and `coins/scripts/verify-db-connection.js` also
+contain connection strings, but with `[YOUR-PASSWORD]` placeholders only — they
+are not an exposure and need no change.
+
+**Neither embedded password matches the live production credential**, and
+neither points at the production host (checked 2026-09-18 by comparison against
+`coins/.env.prod.local`, without printing either value), so this is stale
+credential material rather than a live leak — no rotation is needed. Still strip
+the connection strings from both scripts (read `DATABASE_URL` from the
+environment, or delete the scripts), so a credentialed URL is not kept in git.
 
 ---
 
@@ -804,6 +840,7 @@ Checkout is currently off in prod: the live `/checkout` redirects to `/contact` 
 
 - **6a. Guest checkout 500s for a registered email — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `create-intent` finds the user by email and, if that user is *not* a shadow user, tries to create a second user with the same email, which fails the unique constraint and returns 500. A registered customer checking out as a guest cannot pay.
 - **6b. Guest orders attach to registered accounts — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `/api/orders` looks the guest's email up and, when a registered (non-shadow) account has it, attaches the order to that account with no sign-in. Anyone who knows a customer's email can place orders into that customer's history.
+- **6c. The Stripe webhook never creates the order it claims to — blocker before enabling `NEXT_PUBLIC_ENABLE_CHECKOUT`.** `handleSuccessfulPayment` in `app/api/webhooks/stripe/route.ts` is commented as creating "a placeholder order", but it creates no order at all: it *looks one up* by `stripePaymentIntentId` and carries on whether or not it finds one. On `payment_intent.succeeded` it increments `user.loyaltyPoints` with **no idempotency key or guard**, so every Stripe retry credits the points again; generates a **FedEx shipping label** from the payment intent's address, then never persists the tracking number or label URL to any row — they exist only inside the emails; and when the lookup finds nothing, it emails the customer a confirmation with **`orderId` = the payment intent id and an empty item list**, and sends the admin a notification with nothing to pack. The handler also swallows every error and returns `200 {received: true}`, explicitly so Stripe will not retry — so a failure here is invisible. Fix the order lifecycle before money can flow: create the order before the payment intent, make the webhook idempotent, persist the label, and do not email on a missing order.
 - Related: because the flag is UI-only, `create-intent` is reachable in prod today and can create shadow users and Stripe customers for arbitrary emails. Gate the checkout APIs server-side on the same flag when fixing 6a/6b.
 
 ---
@@ -872,3 +909,33 @@ Prod schema changes were manual `prisma db push` runs with no migration history.
 - **CI** now runs `prisma migrate deploy` instead of `prisma db push` against its throwaway Postgres, so a missing or broken migration fails the PR.
 - **Proved end to end on the LOCAL database only:** reset from migrations (so `0_init` genuinely built the schema from empty, `applied_steps_count = 1`), added a nullable `Build.proofColumn`, `migrate dev` generated and applied `ALTER TABLE "Build" ADD COLUMN "proofColumn" TEXT;`, the column existed and was nullable, then it was reverted and the local database reset back to `0_init` only. **No schema change was applied to prod.**
 - **Order that keeps this safe:** migrate, run the RLS guard, then deploy — and every migration stays backward-compatible with the code already running (nullable or defaulted columns; drops in a later migration). `migrate deploy` only rolls forward, so a bad migration is fixed with another one.
+
+---
+
+# Code placeholders — 2026-09-18
+
+A sweep for `TODO` / `FIXME` / `HACK` / `XXX` across every tracked file. The
+three already recorded in `11-known-issues.md` (`inventory-api-push`,
+`email.ts` newsletter, `coin-inventory-api` pending endpoints) are still open;
+their line numbers had drifted and were corrected there. Two more were not in
+any backlog, both in the Stripe webhook:
+
+## 1. Loyalty points are a guessed rate — **OPEN**
+
+`app/api/webhooks/stripe/route.ts:100` — "using 1 point per dollar as
+placeholder". The rate comes from `LOYALTY_POINTS_PER_DOLLAR` with a default of
+`1`, and the increment runs on every `payment_intent.succeeded` with no
+idempotency, so a Stripe retry credits it twice. Nobody has ruled on what the
+rate should actually be, and the loyalty balance is customer-visible.
+
+## 2. The webhook's "placeholder order" — **OPEN** (checkout blocker **6c**)
+
+`app/api/webhooks/stripe/route.ts:120` — the comment says the handler creates a
+placeholder order; it creates nothing and only looks one up by
+`stripePaymentIntentId`. Full behaviour and the fix are written up as **6c**
+under *Auth hardening — Phase 1 §6, BLOCKERS before enabling
+`NEXT_PUBLIC_ENABLE_CHECKOUT`*.
+
+Also noted, not tracked as items: `env.production.template` carries four `TODO`
+markers for credentials to fill in (lines 19, 29, 35, 72), which is what a
+template is for.

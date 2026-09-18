@@ -26,9 +26,12 @@ Severity: **CRITICAL / HIGH / MEDIUM / LOW**. Findings are from a static scan of
 - **`app/checklist-backup/`** appears to be a stale backup of the checklist page/api.
 - **Debug `console.log`s in client code:** notably `components/FeaturedSeriesSection.tsx` (~15 calls); 572 console statements repo-wide (most are legitimate server-side error logs in `lib/`, but client debug logs should be removed).
 - **TODO/placeholders still open:**
-  - `lib/inventory-api-push.ts:103` — admin-alert email not actually sent (placeholder).
-  - `lib/email.ts:651` — SendGrid Marketing API (newsletter) not implemented.
-  - `lib/coin-inventory-api.ts:118,141,167` — `getSeries`/`getSeriesSales`/DB-sync endpoints pending on the inventory side.
+  - `lib/inventory-api-push.ts:105` — admin-alert email not actually sent (placeholder).
+  - `lib/email.ts:548` — SendGrid Marketing API (newsletter) not implemented.
+  - `lib/coin-inventory-api.ts:116,139,165` — `getSeries`/`getSeriesSales`/DB-sync endpoints pending on the inventory side.
+  - `app/api/webhooks/stripe/route.ts:100,120` — loyalty points hardcoded at 1/dollar, and a comment promising "a placeholder order" that is never created. See `15-backlog.md` §6c — both are checkout blockers.
+
+  *(Line numbers re-verified 2026-09-18.)*
 - **Accessibility:** icon-only buttons lacking `aria-label` (`CartDropdown.tsx:46,62`, `Toast.tsx:31`); generic `alt="Thumbnail"` in `ProductGallery.tsx:22`.
 - **New-brand pack metadata is placeholder** (`coinCount: "See checklist"`, generic categories) for Fortune Forge / Bald Bunny / Lincoln Reserve — needs real specs (see `12`).
 - **No Prettier config** — formatting unenforced.
