@@ -989,3 +989,74 @@ This is the card-side counterpart of *Backlog notes — 2026-09-16 §1*, where
 off-roster COIN customers fold into the ShackPack bucket by design. The two
 lines differ on purpose: a stray coin case is one of ours; a stray card series
 may be another customer's.
+
+---
+
+# SEO — Phase 1 — 2026-09-19 — **DONE**
+
+Nine commits, in order: `81befc7` delete placeholder `/shop` and `/product`
+routes · `95f0633` remove the `(site)` route group · `33722d1` favicon
+1254x1254/1.9 MB → 192x192/43.3 KB · `f0b7cf3` `robots.ts` · `2cde71d`
+`sitemap.ts` · `88c7be7` noindex on `/checklist/customer/*` · `2a85c06` Open
+Graph, Twitter Card and canonical · `ce9039f` Organization + WebSite JSON-LD ·
+`7e69f69` `llms.txt`. Detail in `08-seo-and-performance.md`.
+
+Phase 1 touched no existing page component. Everything was a new file, an
+additive edit to `app/layout.tsx`, or a deletion.
+
+## 1. `/series` links to an empty page — **OPEN**
+
+`NavBar.tsx` links to `/series`, but `app/series/page.tsx:33` filters the API
+response to `isFeatured === true` and **no row sets it**, so the page renders an
+empty list. The prod `Series` table is empty entirely as of 2026-09-19 (Griff
+deleted the retired series and its two test orders), so this is moot today and
+becomes visible the moment a row lands without `isFeatured`.
+
+`/series` is excluded from `sitemap.ts` for this reason. `/series/[slug]` is
+still enumerated, so real rows will publish on their own.
+
+**Gate the `/series` nav link behind a flag in phase 2**, so the nav does not
+advertise an empty page.
+
+## 2. ShackHQ `getSeries` — **CORRECTION**
+
+Earlier notes listed `getSeries` among the endpoints ShackHQ still owes. That
+is wrong. **The endpoint exists and returns HTTP 200** — verified 2026-09-19:
+
+```
+GET .../getSeries?orgId=coin-shack  →  {"success":true,"series":[]}
+```
+
+It is deployed and **unpopulated**, not missing. The distinction matters: no
+integration work is owed on this side, and `lib/coin-inventory-api.ts`
+`fetchAllSeries` already handles the empty result by falling through to the
+local `Series` table. What is owed is *data* in ShackHQ. (`getSeriesSales` was
+not probed and remains unverified either way.)
+
+This also means `/api/series/[slug]` has always served from local Postgres in
+prod, never from ShackHQ.
+
+## 3. Sitemap submission — **OPEN, human step**
+
+None of phase 1 does anything until the sitemap is submitted in Google Search
+Console (verified; Bing is imported from it). `https://shackpck.com/sitemap.xml`.
+
+## 4. Carried into phase 2
+
+- Per-page `metadata` on `/repacks`, `/checklist`, `/contact`, `/policy` —
+  three lines each, they are already server components.
+- Server/client split for `/`, `/series`, `/series/[slug]`, then `metadata` and
+  `generateMetadata` on them. Set `openGraph` per page too, or the root
+  `og:title` will leak (see the trap noted in `08`).
+- `notFound()` on unresolved `/series/[slug]` and `/checklist/customer/[slug]`
+  slugs — both return **HTTP 200** for any slug today.
+- noindex on `/admin`, `/account`, `/my-builds`, `/checkout`, `/auth/*`.
+- `cache: 'no-store'` on `fetchAllSeries` before it is ever called server-side.
+
+## 5. Carried into phase 3
+
+Server-rendered content for `/repacks`, `/checklist` and `/series`. All three
+serve ~330 characters of HTML today. The blocker is `useSearchParams()` forcing
+the Suspense fallback to prerender, **not** data fetching — `/repacks` and
+`/checklist` read local catalog modules. Biggest available SEO win, riskiest
+change, own commit.
