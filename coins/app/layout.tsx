@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { CartProvider } from '@/components/CartProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { Providers } from './providers';
+import { StructuredData } from '@/components/StructuredData';
 import {
   OG_IMAGE_ALT,
   OG_IMAGE_PATH,
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="h-full">
       <body className={clsx('min-h-full bg-charcoal text-slate-200 antialiased flex flex-col')}>
+        <StructuredData />
         <Providers>
           <CartProvider>
             <ToastProvider>
