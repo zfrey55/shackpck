@@ -14,7 +14,7 @@ export const SITE_URL = 'https://shackpck.com';
 /** Brand name as it should appear to people, not the lowercase domain. */
 export const SITE_NAME = 'ShackPack';
 
-export const SITE_TITLE = 'Shackpack — Premium Coin, Bullion and Card Repacks';
+export const SITE_TITLE = 'ShackPack — Premium Coin, Bullion and Card Repacks';
 
 export const SITE_DESCRIPTION =
   'Premium coin, bullion, sports card and Pokemon card repacks. Every series is backed by a published checklist; contents vary by series.';

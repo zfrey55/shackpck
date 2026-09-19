@@ -6,17 +6,52 @@ import { Footer } from '@/components/Footer';
 import { CartProvider } from '@/components/CartProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { Providers } from './providers';
+import {
+  OG_IMAGE_ALT,
+  OG_IMAGE_PATH,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from '@/lib/site-metadata';
 
 export const metadata: Metadata = {
-  title: 'Shackpack — Premium Coin, Bullion and Card Repacks',
-  description:
-    'Premium coin, bullion, sports card and Pokemon card repacks. Every series is backed by a published checklist; contents vary by series.',
-  metadataBase: new URL('https://shackpck.com'),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: '/shackpack-favicon.png',
     shortcut: '/shackpack-favicon.png',
     apple: '/shackpack-favicon.png',
-  }
+  },
+  // './' resolves per route, so every page declares itself canonical and the
+  // query-string variants the tab navs produce (/repacks?line=, /checklist?
+  // customer=) collapse onto the clean URL instead of competing with it.
+  alternates: {
+    canonical: './',
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    type: 'website',
+    locale: 'en_US',
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
