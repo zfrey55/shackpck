@@ -1,0 +1,40 @@
+# ShackPack
+
+> ShackPack is the surprise-product manufacturing and coin-wholesale arm of
+> The Shack, based in Boca Raton, Florida. It builds graded coin, bullion,
+> sports card and Pokemon card repacks for wholesale buyers and collectors.
+> Every series is backed by a published checklist of what was produced for
+> that series; contents vary by series, and no individual pack's contents are
+> specified or guaranteed in advance.
+
+## Products
+
+- [Packs](https://shackpck.com/repacks): The repack catalogue, organised by
+  product line (Coins and Bullion, Sports Cards, Pokemon Cards) and then by
+  brand.
+- [Custom builds](https://shackpck.com/build): The ShackPack Builder, for
+  designing a bespoke case — artwork, configuration and submission for a
+  quote.
+
+## Checklists
+
+- [Checklists](https://shackpck.com/checklist): Per-series checklists, sourced
+  live from the inventory backend and published by date and case type. A
+  checklist records what was produced for a series as a whole. It is not a
+  statement of what any single pack contains.
+
+## Company
+
+- [Contact](https://shackpck.com/contact): Enquiries about packs, orders and
+  wholesale. Direct purchasing is currently disabled site-wide, so orders are
+  arranged through this form, by email at info@shackpck.com, or by phone at
+  +1-561-870-4222.
+- [Policies](https://shackpck.com/policy): Terms, shipping and returns.
+
+## Notes
+
+- Pack contents vary by series. Descriptions of a series describe the series,
+  never an individual pack.
+- Checklist pages scoped to a named wholesale customer
+  (/checklist/customer/*) are excluded from indexing and are not part of the
+  public content set.
