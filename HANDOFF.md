@@ -1,82 +1,79 @@
 # HANDOFF
 
 **Goal:** SEO for shackpck.com. Phase 1 (new files and deletions only) is
-shipped; phase 2 is per-page metadata, phase 3 is server-rendered content.
+shipped and live. Phase 2 is analytics, per-page metadata and crawl hygiene.
+Phase 3 is server-rendered content.
 
-**Done:**
-- SEO phase 1, ten commits on main, CI green, pushed 2026-09-19:
-  - `81befc7` delete placeholder /shop and /product routes (+ ProductCard,
-    ProductGallery). Fake prices over Unsplash stock; orphaned; GSC reported
-    every URL "unknown to Google", so a plain delete, no 410s.
-  - `95f0633` remove the (site) route group (both files mapped to "/")
-  - `33722d1` favicon 1254x1254/1.9 MB -> 192x192/43.3 KB
-  - `f0b7cf3` app/robots.ts — Disallow /api/ only
-  - `2cde71d` app/sitemap.ts — 6 static routes + isActive series via Prisma
-  - `88c7be7` noindex on /checklist/customer/* via a new layout.tsx
-  - `2a85c06` Open Graph, Twitter Card, canonical, og-default.png
-  - `ce9039f` Organization + WebSite JSON-LD
-  - `7e69f69` public/llms.txt
-  - `2ee7278` docs(knowledge) for 08, 11 and 15
-- Verified per item: tsc 0, lint 0 errors, fixtures green (6, then 7 once
-  scripts/test-structured-data.ts landed). Clean-checkout build passes.
-- Prod VERIFY: see the run report in the session; rerun the block below if in
-  doubt.
+## Done
 
-**Next:** Griff submits the sitemap in Google Search Console —
-https://shackpck.com/sitemap.xml. Nothing in phase 1 has any effect until that
-happens. Then phase 2.
+**SEO phase 1 shipped 2026-09-21 — 11 commits, `81befc7..dd2f1fb`.**
 
-**Watch:**
-- `/repacks`, `/checklist`, `/series` serve ~330 chars of HTML — nav, footer,
-  "Loading…". Cause is `useSearchParams()` forcing the Suspense fallback to
-  prerender, NOT data fetching; /repacks and /checklist read local catalog
-  modules. This is the biggest remaining SEO win and the riskiest change.
-  Phase 3, own commit.
-- `openGraph` inherits as a whole object. Phase 2 must set `openGraph.title`
-  per page as well as `metadata.title`, or every page emits the root og:title.
-- `/repacks`, `/checklist`, `/contact`, `/policy` are ALREADY server
-  components — metadata is a 3-line add. Only `/`, `/series` and
-  `/series/[slug]` need a server/client split.
-- `/series/<anything>` and `/checklist/customer/<anything>` return HTTP 200.
-  No app/not-found.tsx, no notFound() anywhere. Unbounded soft-404 space; the
-  customer half is noindexed, the real fix is phase 2.
-- `/series` renders an empty list (filters isFeatured === true, nothing sets
-  it). Excluded from the sitemap. Gate the nav link behind a flag in phase 2.
-- Prod `Series` table is EMPTY as of 2026-09-19. The sitemap therefore emits
-  static routes only today; the Prisma enumeration is live and will light up on
-  its own. Proved both directions against the dev DB.
-- ShackHQ `getSeries` EXISTS and returns `{"success":true,"series":[]}` — it is
-  unpopulated, not missing. What is owed is data, not integration work.
-- `fetchAllSeries` (lib/coin-inventory-api.ts:118) has NO cache directive and
-  will inherit force-cache the moment it runs server-side. Fix before phase 2
-  calls it from a server component.
-- Footer social links are all `href="#"`. That is why the JSON-LD omits
-  sameAs.
-- scripts/test-api.js cannot run (needs a dev server and node-fetch, which is
-  not installed). The real fixture set is the 7 scripts/test-*.ts files.
-- scripts/generate-og-image.mjs needs Chrome (honours CHROME_PATH). Source art
-  is coins/assets/shackpack-mark.png, outside public/ so it is never served.
-- Visible chrome still reads "Shackpack" while metadata now reads "ShackPack"
-  (NavBar.tsx:14, Footer.tsx:9,38, app/page.tsx:32,159).
+- Search Console verified (DNS TXT). Bing Webmaster verified via GSC import.
+- Sitemap submitted in GSC. Status was **"Couldn't fetch"** pending the first
+  read — expected immediately after submission, see Watch.
+- Indexing requested for `/repacks`, `/checklist` and `/`.
+- Prod `Series`, `Order`, `OrderItem` and `SeriesPurchase` tables are **empty**
+  (test data removed by Griff). The sitemap therefore emits static routes only
+  today; its Prisma enumeration is live and lights up on its own when rows land.
+- `/shop` and `/product` confirmed never indexed, so the plain 404 from
+  deleting them is sufficient. No 410s needed.
+- Analytics decision: **Plausible**. Snippet not yet available.
 
-**Prod VERIFY block (rerun any time):**
-```
-curl -sI https://shackpck.com/robots.txt
-curl -s  https://shackpck.com/sitemap.xml | grep -c "<loc>"
-curl -sI https://shackpck.com/shop/gold                  # expect 404
-curl -s  https://shackpck.com/checklist/customer/bullion-bureau | grep robots
-curl -s  https://shackpck.com/ | grep -oE 'og:image|twitter:card|ld\+json'
-curl -sI https://shackpck.com/og-default.png
-curl -sI https://shackpck.com/llms.txt
-```
+## Next
 
-**Files:**
-- `coins/lib/site-metadata.ts` — the shared title/description/URL constants
-- `coins/app/layout.tsx` — root metadata, OG, Twitter, canonical, JSON-LD mount
+**SEO phase 2 — one commit per item.**
+
+1. **Analytics.** Add the Plausible script to `app/layout.tsx` once Griff
+   supplies the snippet. No consent banner. Verify the request fires on prod.
+2. **Per-page metadata** on `/repacks`, `/checklist`, `/contact`, `/policy`.
+   All four are already server components, so this is an `export const
+   metadata` with title, description, **and** `openGraph.title` /
+   `openGraph.description`. `openGraph` inherits as a whole object, so a
+   per-page `og:title` requires setting `openGraph` per page — set both or the
+   root `og:title` leaks onto every page.
+3. **noindex layouts** for `/admin`, `/account`, `/my-builds`, `/checkout`,
+   `/auth`. Do **NOT** add these to robots.txt — a disallowed URL is never
+   fetched, so the noindex would never be seen.
+4. **`notFound()`** for unknown `/series/[slug]` and
+   `/checklist/customer/[slug]`. Needs server-side slug resolution. Add
+   `app/not-found.tsx`.
+5. **Hide the `/series` NavBar link behind a flag** until ShackHQ `getSeries`
+   returns rows.
+6. **Footer social links** from real URLs (Griff to supply), then add `sameAs`
+   to `StructuredData.tsx`. Fix "Shackpack" → "ShackPack" in the visible chrome.
+7. **IndexNow.** Ping Bing on deploy via a Netlify build hook or a small
+   script. Key file goes in `public/`.
+8. **Decision needed from Griff:** delete the `/checklist/customer/*` routes
+   entirely (they duplicate `/checklist?customer=`) or keep them as noindex.
+9. **`docs(knowledge)`** commit closing each item.
+
+**Phase 3 — after phase 2 has been live a week.** SSR for `/repacks` and
+`/checklist`. Move the `?line=` / `?customer=` tab state off `useSearchParams`
+so the Suspense fallback stops prerendering. Verify visible text > 2,000 chars
+on both.
+
+## Watch
+
+- `fetchAllSeries` in `lib/coin-inventory-api.ts` has **no cache directive**.
+  Add `cache: 'no-store'` before any server-side caller exists, or it inherits
+  Next 14's `force-cache` default and serves stale series.
+- **GSC sitemap status:** if still "Couldn't fetch" after 48h, investigate.
+- **Netlify `DATABASE_URL` scope:** if `sitemap.ts` ever logs its DB warning in
+  a Netlify build, the var is scoped Functions-only and needs Builds scope.
+
+## Files
+
+- `coins/app/layout.tsx` — root metadata, OG/Twitter, canonical, JSON-LD mount;
+  where the Plausible script goes
+- `coins/lib/site-metadata.ts` — shared title/description/URL constants
 - `coins/app/robots.ts`, `coins/app/sitemap.ts`
-- `coins/app/checklist/customer/layout.tsx` — the noindex
+- `coins/app/checklist/customer/layout.tsx` — the noindex, and the pattern to
+  copy for phase 2 item 3
 - `coins/components/StructuredData.tsx` + `coins/scripts/test-structured-data.ts`
-- `coins/scripts/generate-og-image.mjs`, `coins/assets/shackpack-mark.png`
-- `coins/public/og-default.png`, `coins/public/llms.txt`
-- `shackpck-knowledge/08-seo-and-performance.md` — rewritten, the reference
+  — where `sameAs` lands
+- `coins/components/{NavBar,Footer}.tsx` — the `/series` link, the `href="#"`
+  socials, the "Shackpack" spelling
+- `coins/lib/coin-inventory-api.ts` — `fetchAllSeries`, the missing cache
+  directive
+- `shackpck-knowledge/08-seo-and-performance.md` — the reference for this work
 - `shackpck-knowledge/15-backlog.md` — phase 1 section at the end
