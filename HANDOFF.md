@@ -12,8 +12,9 @@ Phase 3 is server-rendered content.
   PR #2, `b4f53f0`.
 - Komodo example notice derives pack count from `cards.length`, not a
   hardcoded "8 packs". PR #3, `8e28ad9`.
-- Vault Room Breaks notice NOT changed: still hardcodes "10 packs". No
-  `fix/vrb-notice-pack-count` branch or PR exists.
+- Vault Room Breaks example notice derives pack count from `cards.length`,
+  not a hardcoded "10 packs". PR #4, `d1974b2`. No hardcoded counts remain
+  in `EXAMPLE_CAVEAT_BY_BRAND`.
 
 **SEO phase 1 shipped 2026-09-21 — 11 commits, `81befc7..dd2f1fb`.**
 
