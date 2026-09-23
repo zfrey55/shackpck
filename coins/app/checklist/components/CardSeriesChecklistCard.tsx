@@ -73,12 +73,12 @@ const EXAMPLE_CAVEAT_BY_BRAND: Partial<
     'included in any specific product. Every pack contains a single card. ' +
     'Card values are subjective in nature and may fluctuate significantly. ' +
     'This is not financial advice.',
-  'vault-room-breaks':
+  'vault-room-breaks': (packs) =>
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of multi-sport ' +
     'cards you may hit within each single show brand, not the exact cards ' +
-    'included in any specific product. Each set contains 10 packs, 1 card per ' +
-    'pack. Card values are subjective in nature and may fluctuate ' +
+    `included in any specific product. Each set contains ${packs} pack${packs === 1 ? '' : 's'}, ` +
+    '1 card per pack. Card values are subjective in nature and may fluctuate ' +
     'significantly. This is not financial advice.',
   'komodo-rips': (packs) =>
     'Please note: The example checklist for the single show products above is ' +
