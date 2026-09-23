@@ -54,12 +54,18 @@ const EXAMPLE_CHECKLIST_CAVEAT =
  * pack holds — "Each pack contains N cards" is wrong for every product on the
  * site and must not come back.
  *
+ * A brand whose series vary in size supplies a function of the pack count
+ * instead of a fixed string, so the stated count cannot contradict the card
+ * count shown above it. The count is cards.length, per the rule above.
+ *
  * Consequence worth knowing: the bold prefix below is suppressed whenever a
  * brand has an entry, so with all three mapped it renders NOWHERE today. The
  * default caveat and the prefix are both retained for a future brand added
  * without an override.
  */
-const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
+const EXAMPLE_CAVEAT_BY_BRAND: Partial<
+  Record<BrandId, string | ((packs: number) => string)>
+> = {
   shackpack:
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of multi-sport ' +
@@ -74,13 +80,13 @@ const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
     'included in any specific product. Each set contains 10 packs, 1 card per ' +
     'pack. Card values are subjective in nature and may fluctuate ' +
     'significantly. This is not financial advice.',
-  'komodo-rips':
+  'komodo-rips': (packs) =>
     'Please note: The example checklist for the single show products above is ' +
     'for illustrative purposes only. It reflects the types of Pokemon cards ' +
     'you may hit within each single show brand, not the exact cards included ' +
-    'in any specific product. Each series contains 8 packs, 1 card per pack. ' +
-    'Card values are subjective in nature and may fluctuate significantly. ' +
-    'This is not financial advice.',
+    `in any specific product. Each series contains ${packs} pack${packs === 1 ? '' : 's'}, ` +
+    '1 card per pack. Card values are subjective in nature and may fluctuate ' +
+    'significantly. This is not financial advice.',
 };
 
 /**
@@ -97,8 +103,9 @@ const EXAMPLE_CAVEAT_BY_BRAND: Partial<Record<BrandId, string>> = {
  * One lookup decides both, which is why it is not hidden behind a helper that
  * returns only the string: the presence of an override IS the condition.
  */
-function IllustrativeNotice({ brandId }: { brandId: BrandId }) {
-  const override = EXAMPLE_CAVEAT_BY_BRAND[brandId];
+function IllustrativeNotice({ brandId, packs }: { brandId: BrandId; packs: number }) {
+  const entry = EXAMPLE_CAVEAT_BY_BRAND[brandId];
+  const override = typeof entry === 'function' ? entry(packs) : entry;
   return (
     <div className="mb-4 rounded-md border border-amber-600/60 bg-amber-900/20 p-3 text-sm leading-relaxed text-amber-100">
       {override === undefined && (
@@ -227,7 +234,9 @@ export function CardSeriesChecklistCard({ series }: { series: CardSeries }) {
         </p>
       </div>
 
-      {notice === 'illustrative' && <IllustrativeNotice brandId={series.brandId} />}
+      {notice === 'illustrative' && (
+        <IllustrativeNotice brandId={series.brandId} packs={cards.length} />
+      )}
 
       {/*
         The structure line. Shown only for a finalized series, where the count
