@@ -6,6 +6,15 @@ Phase 3 is server-rendered content.
 
 ## Done
 
+**Checklist examples, 2026-09-23.**
+
+- Utopia Singles example added for Komodo Rips (10 raw singles, `| Raw`).
+  PR #2, `b4f53f0`.
+- Komodo example notice derives pack count from `cards.length`, not a
+  hardcoded "8 packs". PR #3, `8e28ad9`.
+- Vault Room Breaks notice NOT changed: still hardcodes "10 packs". No
+  `fix/vrb-notice-pack-count` branch or PR exists.
+
 **SEO phase 1 shipped 2026-09-21 — 11 commits, `81befc7..dd2f1fb`.**
 
 - Search Console verified (DNS TXT). Bing Webmaster verified via GSC import.
