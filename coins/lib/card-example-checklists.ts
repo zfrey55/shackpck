@@ -220,6 +220,27 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
   },
   {
     brandId: 'komodo-rips',
+    seriesName: 'Utopia Singles',
+    seriesDate: null,
+    // No finalizedOn. Illustrative sample of a 10-pack raw singles case,
+    // one card per pack. Ranked by raw market value, most valuable first.
+    // Raw (ungraded) product: the pipe suffix carries condition, not a grade.
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2022 Astral Radiance #161 Beedrill V, Alternate Art | Raw' },
+      { position: 2, entryName: '2023 Scarlet & Violet 151 #176 Poliwhirl, Illustration Rare | Raw' },
+      { position: 3, entryName: '2023 Scarlet & Violet 151 #167 Ivysaur, Illustration Rare | Raw' },
+      { position: 4, entryName: '2024 Stellar Crown #170 Terapagos ex, Special Illustration Rare | Raw' },
+      { position: 5, entryName: '2023 Scarlet & Violet Base Set #215 Riolu, Illustration Rare | Raw' },
+      { position: 6, entryName: '2017 SM Black Star Promo #SM70 Shining Ho-Oh, Shining Legends | Raw' },
+      { position: 7, entryName: '2025 White Flare #095 Virizion, Illustration Rare | Raw' },
+      { position: 8, entryName: '2023 SV Black Star Promo #051 Snorlax, Illustration Rare | Raw' },
+      { position: 9, entryName: '2023 Obsidian Flames #125 Charizard ex, Tera | Raw' },
+      { position: 10, entryName: '2024 Surging Sparks #057 Pikachu ex | Raw' },
+    ],
+  },
+  {
+    brandId: 'komodo-rips',
     seriesName: 'Nova',
     seriesDate: null,
     // No finalizedOn. Nova is an illustrative sample of the line, not a
