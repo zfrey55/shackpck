@@ -1,89 +1,62 @@
 # HANDOFF
 
-**Goal:** SEO for shackpck.com. Phase 1 (new files and deletions only) is
-shipped and live. Phase 2 is analytics, per-page metadata and crawl hygiene.
-Phase 3 is server-rendered content.
+**Goal:** Publish non-ShackHQ coin series (Lincoln Reserve "Legends Never Die"
+002) on the coin checklist via a frozen static archive. The SEO phase 2 plan
+remains the next larger body of work (see git history of this file,
+`df252eb` and earlier, for its full item list).
 
 ## Done
 
-**Checklist examples, 2026-09-23.**
+**Coin series archive, 2026-10-13.**
 
-- Utopia Singles example added for Komodo Rips (10 raw singles, `| Raw`).
-  PR #2, `b4f53f0`.
-- Komodo example notice derives pack count from `cards.length`, not a
-  hardcoded "8 packs". PR #3, `8e28ad9`.
-- Vault Room Breaks example notice derives pack count from `cards.length`,
-  not a hardcoded "10 packs". PR #4, `d1974b2`. No hardcoded counts remain
-  in `EXAMPLE_CAVEAT_BY_BRAND`.
-
-**SEO phase 1 shipped 2026-09-21 — 11 commits, `81befc7..dd2f1fb`.**
-
-- Search Console verified (DNS TXT). Bing Webmaster verified via GSC import.
-- Sitemap submitted in GSC. Status was **"Couldn't fetch"** pending the first
-  read — expected immediately after submission, see Watch.
-- Indexing requested for `/repacks`, `/checklist` and `/`.
-- Prod `Series`, `Order`, `OrderItem` and `SeriesPurchase` tables are **empty**
-  (test data removed by Griff). The sitemap therefore emits static routes only
-  today; its Prisma enumeration is live and lights up on its own when rows land.
-- `/shop` and `/product` confirmed never indexed, so the plain 404 from
-  deleting them is sufficient. No 410s needed.
-- Analytics decision: **Plausible**. Snippet not yet available.
+- `coins/lib/coin-series-checklist.ts`: frozen, append-only archive. Packs are
+  derived (`sum(qty) / packSize`), never stored.
+- First entry: Lincoln Reserve Legends Never Die Series 002, 21 rows,
+  150 pieces / 150 packs.
+- `CoinSeriesChecklistCard` + `StaticCoinSeriesPanel` render on `/checklist`
+  (coin line, above CaseTypeSelector) and on `/checklist/customer/[slug]`
+  (above the date buttons, since the archive is date-independent).
+- "Coming soon" / "No checklists for X" empty states are suppressed when the
+  customer has archive entries.
+- No nav change was needed. `useCustomerIndex.otherCustomers` already seeds
+  every `CANONICAL_OTHER_CUSTOMERS` name with zero cases. The fixture asserts
+  each archive `customerSlug` is a roster slug, which guarantees its tab.
+- Verified: tsc 0, lint 0, `scripts/test-coin-series-checklist.ts` 16/16, and
+  the clean-checkout build.
 
 ## Next
 
-**SEO phase 2 — one commit per item.**
-
-1. **Analytics.** Add the Plausible script to `app/layout.tsx` once Griff
-   supplies the snippet. No consent banner. Verify the request fires on prod.
-2. **Per-page metadata** on `/repacks`, `/checklist`, `/contact`, `/policy`.
-   All four are already server components, so this is an `export const
-   metadata` with title, description, **and** `openGraph.title` /
-   `openGraph.description`. `openGraph` inherits as a whole object, so a
-   per-page `og:title` requires setting `openGraph` per page — set both or the
-   root `og:title` leaks onto every page.
-3. **noindex layouts** for `/admin`, `/account`, `/my-builds`, `/checkout`,
-   `/auth`. Do **NOT** add these to robots.txt — a disallowed URL is never
-   fetched, so the noindex would never be seen.
-4. **`notFound()`** for unknown `/series/[slug]` and
-   `/checklist/customer/[slug]`. Needs server-side slug resolution. Add
-   `app/not-found.tsx`.
-5. **Hide the `/series` NavBar link behind a flag** until ShackHQ `getSeries`
-   returns rows.
-6. **Footer social links** from real URLs (Griff to supply), then add `sameAs`
-   to `StructuredData.tsx`. Fix "Shackpack" → "ShackPack" in the visible chrome.
-7. **IndexNow.** Ping Bing on deploy via a Netlify build hook or a small
-   script. Key file goes in `public/`.
-8. **Decision needed from Griff:** delete the `/checklist/customer/*` routes
-   entirely (they duplicate `/checklist?customer=`) or keep them as noindex.
-9. **`docs(knowledge)`** commit closing each item.
-
-**Phase 3 — after phase 2 has been live a week.** SSR for `/repacks` and
-`/checklist`. Move the `?line=` / `?customer=` tab state off `useSearchParams`
-so the Suspense fallback stops prerendering. Verify visible text > 2,000 chars
-on both.
+1. Copy decisions for Griff (below, under Watch), then any wording fixes.
+2. Fix the stale counts in `coins/scripts/test-card-api-adapter.ts`. It
+   expects 5 Komodo examples (now 6) and notice split [7,0,19] (now
+   [8,0,30]). These failures predate the coin archive and were left alone.
+3. Resume SEO phase 2.
 
 ## Watch
 
-- `fetchAllSeries` in `lib/coin-inventory-api.ts` has **no cache directive**.
-  Add `cache: 'no-store'` before any server-side caller exists, or it inherits
-  Next 14's `force-cache` default and serves stale series.
-- **GSC sitemap status:** if still "Couldn't fetch" after 48h, investigate.
-- **Netlify `DATABASE_URL` scope:** if `sitemap.ts` ever logs its DB warning in
-  a Netlify build, the var is scoped Functions-only and needs Builds scope.
+- **Copy tensions, unresolved:**
+  - The card says "150 sealed bags" while `seriesFinalizedStatement` says
+    "packs" just below it.
+  - The coin-line amber banner says contents "may vary by date" directly
+    above a finalized, exact card.
+  - `MANUFACTURER_LINE` appears twice: once on the page, once in the card.
+- `packSize` is stored on coin entries per spec. The card side deliberately
+  stopped reading `packSize` (`CardSeriesChecklistCard.tsx`, "ONE ITEM PER
+  PACK").
+- Known gap: on `/checklist`, the archive does not render in the zero-dates
+  or error early returns. A comment marks it in `ChecklistClient.tsx`. The
+  customer page has no such early return.
+- Fixture scripts are not wired into `package.json`. Run each with
+  `npx tsx scripts/test-*.ts`.
 
 ## Files
 
-- `coins/app/layout.tsx` — root metadata, OG/Twitter, canonical, JSON-LD mount;
-  where the Plausible script goes
-- `coins/lib/site-metadata.ts` — shared title/description/URL constants
-- `coins/app/robots.ts`, `coins/app/sitemap.ts`
-- `coins/app/checklist/customer/layout.tsx` — the noindex, and the pattern to
-  copy for phase 2 item 3
-- `coins/components/StructuredData.tsx` + `coins/scripts/test-structured-data.ts`
-  — where `sameAs` lands
-- `coins/components/{NavBar,Footer}.tsx` — the `/series` link, the `href="#"`
-  socials, the "Shackpack" spelling
-- `coins/lib/coin-inventory-api.ts` — `fetchAllSeries`, the missing cache
-  directive
-- `shackpck-knowledge/08-seo-and-performance.md` — the reference for this work
-- `shackpck-knowledge/15-backlog.md` — phase 1 section at the end
+- `coins/lib/coin-series-checklist.ts`
+- `coins/app/checklist/components/CoinSeriesChecklistCard.tsx`
+- `coins/app/checklist/components/StaticCoinSeriesPanel.tsx`
+- `coins/app/checklist/ChecklistClient.tsx`
+- `coins/app/checklist/customer/[slug]/page.tsx`
+- `coins/app/checklist/useCustomerIndex.ts`: roster seeding of `otherCustomers`
+- `coins/lib/customer-attribution.ts`: `CANONICAL_OTHER_CUSTOMERS`, `CUSTOMER_PACKS`
+- `coins/scripts/test-coin-series-checklist.ts`
+- `coins/scripts/test-card-api-adapter.ts`: the stale counts
