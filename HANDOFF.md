@@ -7,45 +7,51 @@ remains the next larger body of work (see git history of this file,
 
 ## Done
 
-**Coin series archive, 2026-10-13.**
+**Coin series archive, 2026-10-13.** Commits `8f59613` (archive) and `e003a9b`
+(follow-up).
 
 - `coins/lib/coin-series-checklist.ts`: frozen, append-only archive. Packs are
-  derived (`sum(qty) / packSize`), never stored.
+  derived (`sum(qty) / packSize`), never stored. `unitLabel` (singular, e.g.
+  'bag') drives the structure line and the finalized statement.
+- `seriesFinalizedStatement(date, unit = 'pack')` in `lib/repack-catalog.ts`.
+  The default keeps card output byte-identical.
 - First entry: Lincoln Reserve Legends Never Die Series 002, 21 rows,
-  150 pieces / 150 packs.
-- `CoinSeriesChecklistCard` + `StaticCoinSeriesPanel` render on `/checklist`
-  (coin line, above CaseTypeSelector) and on `/checklist/customer/[slug]`
-  (above the date buttons, since the archive is date-independent).
-- "Coming soon" / "No checklists for X" empty states are suppressed when the
-  customer has archive entries.
-- No nav change was needed. `useCustomerIndex.otherCustomers` already seeds
-  every `CANONICAL_OTHER_CUSTOMERS` name with zero cases. The fixture asserts
-  each archive `customerSlug` is a roster slug, which guarantees its tab.
-- Verified: tsc 0, lint 0, `scripts/test-coin-series-checklist.ts` 16/16, and
-  the clean-checkout build.
+  150 pieces / 150 bags.
+- The archive card renders on `/checklist` (coin line, above
+  CaseTypeSelector, and also in the error and no-dates early returns) and on
+  `/checklist/customer/[slug]` (above the date buttons).
+- When the customer has archive entries:
+  - the "coming soon" box is suppressed
+  - the "No Checklists" box is suppressed
+  - the customer page's empty-state box is suppressed
+- The amber "may vary by date" paragraph renders only when the customer has
+  live case types. `MANUFACTURER_LINE` is page-level only, not in the card.
+- Nav needed no change. The roster seeds every `CANONICAL_OTHER_CUSTOMERS`
+  tab with zero cases, and the fixture asserts archive slugs are on the
+  roster.
+- `test-card-api-adapter.ts` expectations updated and verified against the
+  data: 6 Komodo examples, notice split [8,0,30].
+- Verified: tsc 0, lint 0, all 8 fixture scripts exit 0, and the
+  clean-checkout build passes.
 
 ## Next
 
-1. Copy decisions for Griff (below, under Watch), then any wording fixes.
-2. Fix the stale counts in `coins/scripts/test-card-api-adapter.ts`. It
-   expects 5 Komodo examples (now 6) and notice split [7,0,19] (now
-   [8,0,30]). These failures predate the coin archive and were left alone.
-3. Resume SEO phase 2.
+1. Copy decision for Griff: the card says "150 sealed bags" while
+   ShackPack's other copy says "packs" (intentional per unitLabel; confirm).
+2. Resume SEO phase 2.
 
 ## Watch
 
-- **Copy tensions, unresolved:**
-  - The card says "150 sealed bags" while `seriesFinalizedStatement` says
-    "packs" just below it.
-  - The coin-line amber banner says contents "may vary by date" directly
-    above a finalized, exact card.
-  - `MANUFACTURER_LINE` appears twice: once on the page, once in the card.
-- `packSize` is stored on coin entries per spec. The card side deliberately
-  stopped reading `packSize` (`CardSeriesChecklistCard.tsx`, "ONE ITEM PER
-  PACK").
-- Known gap: on `/checklist`, the archive does not render in the zero-dates
-  or error early returns. A comment marks it in `ChecklistClient.tsx`. The
-  customer page has no such early return.
+- The error and no-dates branches of `ChecklistClient.tsx` render the archive
+  without `MANUFACTURER_LINE`, because the amber block exists only in the
+  main return. These states are rare.
+- The "may vary" gate is `caseTypes.length > 0`. A customer with BOTH live
+  cases and archive entries would get the banner above a finalized card.
+  There is no such customer today.
+- No card archive entry has `finalizedOn`, so the "finalized" notice count is
+  0. That includes Komodo Fusion 1 and Utopia Singles 1-10.
+- `ChecklistClient.tsx` is 494 lines. Past 500, extract the early-return
+  bodies into `components/ChecklistShellStates.tsx`.
 - Fixture scripts are not wired into `package.json`. Run each with
   `npx tsx scripts/test-*.ts`.
 
@@ -56,7 +62,7 @@ remains the next larger body of work (see git history of this file,
 - `coins/app/checklist/components/StaticCoinSeriesPanel.tsx`
 - `coins/app/checklist/ChecklistClient.tsx`
 - `coins/app/checklist/customer/[slug]/page.tsx`
-- `coins/app/checklist/useCustomerIndex.ts`: roster seeding of `otherCustomers`
+- `coins/lib/repack-catalog.ts`: `seriesFinalizedStatement`, `MANUFACTURER_LINE`
 - `coins/lib/customer-attribution.ts`: `CANONICAL_OTHER_CUSTOMERS`, `CUSTOMER_PACKS`
 - `coins/scripts/test-coin-series-checklist.ts`
-- `coins/scripts/test-card-api-adapter.ts`: the stale counts
+- `coins/scripts/test-card-api-adapter.ts`
