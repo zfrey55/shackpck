@@ -14,6 +14,7 @@ import {
   DateButtonsForCaseType,
   ErrorState,
   LoadingState,
+  StaticCoinSeriesPanel,
 } from "../../components";
 import { useCustomerIndex } from "../../useCustomerIndex";
 import { sortCasesForDisplay } from "../../sorting";
@@ -23,6 +24,7 @@ import {
   slugToMatcher,
 } from "@/lib/customer-attribution";
 import { MANUFACTURER_LINE } from "@/lib/repack-catalog";
+import { coinSeriesForCustomer } from "@/lib/coin-series-checklist";
 
 /**
  * Shareable per-customer checklist: /checklist/customer/[slug].
@@ -124,6 +126,9 @@ export default function CustomerChecklistPage() {
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [checklist, matcher]);
 
+  // Archived (non-ShackHQ) series suppress the empty state on their own.
+  const hasArchivedSeries = coinSeriesForCustomer(slug).length > 0;
+
   const totalCases = groups.reduce((sum, g) => sum + g.cases.length, 0);
 
   return (
@@ -161,6 +166,10 @@ export default function CustomerChecklistPage() {
           />
         )}
 
+        {/* Date-independent, so it sits above the date buttons rather than
+            reading as part of whichever date is selected. */}
+        <StaticCoinSeriesPanel slug={slug} />
+
         {datesForCustomer.length > 0 && (
           <DateButtonsForCaseType
             dates={datesForCustomer}
@@ -172,7 +181,7 @@ export default function CustomerChecklistPage() {
 
         {loading && <LoadingState />}
 
-        {!loading && datesForCustomer.length === 0 && hasLoadedData && (
+        {!loading && datesForCustomer.length === 0 && hasLoadedData && !hasArchivedSeries && (
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-2 text-slate-200">

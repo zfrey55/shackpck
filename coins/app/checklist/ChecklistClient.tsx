@@ -15,6 +15,7 @@ import {
   FeaturedSeriesPanel,
   ProductLineNav,
   CardChecklistPanel,
+  StaticCoinSeriesPanel,
   cardLineHeading,
 } from "./components";
 import { useCustomerIndex } from "./useCustomerIndex";
@@ -24,6 +25,7 @@ import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { writeLineParam, type ProductLine } from "@/lib/product-lines";
 import { type BrandId } from "@/lib/brands";
 import { MANUFACTURER_LINE } from "@/lib/repack-catalog";
+import { coinSeriesForCustomer } from "@/lib/coin-series-checklist";
 import {
   SHACKPACK_SLUG,
   customerLabelFromSlug,
@@ -245,6 +247,12 @@ export function ChecklistClient() {
     );
   }, [selectedCaseType, datesForCaseType]);
 
+  // Archived (non-ShackHQ) series for this customer. When present, the
+  // customer is not "coming soon" even with zero live cases.
+  const hasArchivedSeries = customerSlug
+    ? coinSeriesForCustomer(customerSlug).length > 0
+    : false;
+
   const customerMatcher = useMemo(
     () => (customerSlug ? slugToMatcher(customerSlug) : null),
     [customerSlug]
@@ -328,6 +336,8 @@ export function ChecklistClient() {
     );
   }
 
+  // Known gap: the archive panel does not render in this state or the error
+  // state above. Unreachable against a populated API with a 1095-day window.
   if (!availableDates || availableDates.dates.length === 0) {
     return (
       <main className="container py-10">
@@ -384,6 +394,10 @@ export function ChecklistClient() {
           />
         )}
 
+        {!selectedCaseType && !showSpecializedSeries && customerSlug && (
+          <StaticCoinSeriesPanel slug={customerSlug} />
+        )}
+
         {!selectedCaseType && !showSpecializedSeries && caseTypes.length > 0 && (
           <CaseTypeSelector
             caseTypes={caseTypes}
@@ -392,7 +406,7 @@ export function ChecklistClient() {
           />
         )}
 
-        {!selectedCaseType && !showSpecializedSeries && caseTypes.length === 0 && hasLoadedData && (
+        {!selectedCaseType && !showSpecializedSeries && caseTypes.length === 0 && hasLoadedData && !hasArchivedSeries && (
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-2 text-slate-200">
