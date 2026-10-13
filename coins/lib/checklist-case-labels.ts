@@ -115,6 +115,7 @@ const CANONICAL_LABELS: Record<string, { short: string; long: string }> = {
   'black-mountain-coins-&-stamps-#3': { short: 'Black Mountain Coins & Stamps #3', long: LONG },
   'blessed-bag-genesis': { short: 'Blessed Bag Genesis', long: LONG },
   'blessed-bag-genesis-#2': { short: 'Blessed Bag Genesis #2', long: LONG },
+  'legends-never-die': { short: 'Legends Never Die', long: LONG },
 };
 
 function titleCaseFallback(raw: string): string {

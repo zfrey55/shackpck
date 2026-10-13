@@ -25,7 +25,7 @@ import { getChecklistCaseShortLabel } from "@/lib/checklist-case-labels";
 import { writeLineParam, type ProductLine } from "@/lib/product-lines";
 import { type BrandId } from "@/lib/brands";
 import { MANUFACTURER_LINE } from "@/lib/repack-catalog";
-import { coinSeriesForCustomer } from "@/lib/coin-series-checklist";
+import { withArchiveCases, withArchiveDates } from "@/lib/coin-series-checklist";
 import {
   SHACKPACK_SLUG,
   customerLabelFromSlug,
@@ -107,7 +107,7 @@ export function ChecklistClient() {
     setError(null);
     try {
       // ~3 years, so every backfilled case is reachable.
-      const dates = await fetchAvailableDates(1095);
+      const dates = withArchiveDates(await fetchAvailableDates(1095));
       setAvailableDates(dates);
       setLoading(false);
     } catch (err) {
@@ -120,7 +120,7 @@ export function ChecklistClient() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchDailyChecklist(date, caseType);
+      const data = withArchiveCases(await fetchDailyChecklist(date, caseType));
       const filteredCases = data.cases.filter(c => c.caseType === caseType);
       setChecklist({ ...data, cases: filteredCases, totalCases: filteredCases.length });
     } catch (err) {
@@ -247,12 +247,6 @@ export function ChecklistClient() {
     );
   }, [selectedCaseType, datesForCaseType]);
 
-  // Archived (non-ShackHQ) series for this customer. When present, the
-  // customer is not "coming soon" even with zero live cases.
-  const hasArchivedSeries = customerSlug
-    ? coinSeriesForCustomer(customerSlug).length > 0
-    : false;
-
   const customerMatcher = useMemo(
     () => (customerSlug ? slugToMatcher(customerSlug) : null),
     [customerSlug]
@@ -330,6 +324,7 @@ export function ChecklistClient() {
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-6">{nav}</div>
+          {/* Live API down: the archive cannot merge into it, so show it alone. */}
           {customerSlug && <StaticCoinSeriesPanel slug={customerSlug} />}
           <ErrorState error={error} onRetry={loadAvailableDates} />
         </div>
@@ -342,15 +337,12 @@ export function ChecklistClient() {
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-6">{nav}</div>
-          {customerSlug && <StaticCoinSeriesPanel slug={customerSlug} />}
-          {!hasArchivedSeries && (
-            <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
-              <div className="text-6xl mb-4">📋</div>
-              <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
-              <p className="text-slate-400">Create your first series to get started!</p>
-              <p className="text-sm text-slate-500 mt-2">Series created today will appear on tomorrow&apos;s checklist.</p>
-            </div>
-          )}
+          <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
+            <div className="text-6xl mb-4">📋</div>
+            <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
+            <p className="text-slate-400">Create your first series to get started!</p>
+            <p className="text-sm text-slate-500 mt-2">Series created today will appear on tomorrow&apos;s checklist.</p>
+          </div>
         </div>
       </main>
     );
@@ -369,15 +361,11 @@ export function ChecklistClient() {
         <div className="mb-8">{nav}</div>
 
         <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
-          {/* Live series only. An archive-only customer's card carries its own
-              finalized statement, which this would contradict. */}
-          {caseTypes.length > 0 && (
-            <p className="mb-2 text-sm text-amber-200 text-center">
-              <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
-              Please refer to the checklist for the most up-to-date information on each series. For card series, use the Sports Cards or Pokemon Cards tabs.
-            </p>
-          )}
-          <p className="text-sm text-amber-200/90 text-center">{MANUFACTURER_LINE}</p>
+          <p className="text-sm text-amber-200 text-center">
+            <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
+            Please refer to the checklist for the most up-to-date information on each series. For card series, use the Sports Cards or Pokemon Cards tabs.
+          </p>
+          <p className="mt-2 text-sm text-amber-200/90 text-center">{MANUFACTURER_LINE}</p>
         </div>
 
         {isShackpack && !selectedCaseType && !showSpecializedSeries && (
@@ -400,10 +388,6 @@ export function ChecklistClient() {
           />
         )}
 
-        {!selectedCaseType && !showSpecializedSeries && customerSlug && (
-          <StaticCoinSeriesPanel slug={customerSlug} />
-        )}
-
         {!selectedCaseType && !showSpecializedSeries && caseTypes.length > 0 && (
           <CaseTypeSelector
             caseTypes={caseTypes}
@@ -412,7 +396,7 @@ export function ChecklistClient() {
           />
         )}
 
-        {!selectedCaseType && !showSpecializedSeries && caseTypes.length === 0 && hasLoadedData && !hasArchivedSeries && (
+        {!selectedCaseType && !showSpecializedSeries && caseTypes.length === 0 && hasLoadedData && (
           <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
             <div className="text-6xl mb-4">📋</div>
             <h2 className="text-2xl font-bold mb-2 text-slate-200">

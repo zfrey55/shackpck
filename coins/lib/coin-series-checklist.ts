@@ -1,107 +1,172 @@
 import type { BrandId } from '@/lib/brands';
+import { nameToSlug } from '@/lib/customer-attribution';
+import type {
+  AvailableDatesResponse,
+  CaseData,
+  CoinData,
+  DailyChecklistResponse,
+} from '@/app/checklist/types';
 
 /**
- * REAL, finalized coin series checklists — the exact published contents of a
- * produced series that does NOT come from ShackHQ.
- *
- * The coin line is otherwise live-only (app/checklist/api.ts). Some series
- * never enter ShackHQ — ungraded art pieces, for one, which CoinData's
- * year/grade/gradingCompany cannot describe — so they are published here.
+ * REAL, finalized coin series that do NOT come from ShackHQ — the exact
+ * published contents of a produced series.
  *
  * FROZEN ARCHIVE, same rules as lib/card-series-checklist.ts: an entry records
  * what was actually sealed, exactly as published. It is never edited to look
  * better after the fact. Append only; newest entries go at the top.
  *
- * Sealed contents only. No redemption prizes, no sample notes.
+ * Each entry renders EXACTLY like a live ShackHQ case. toCaseData expands the
+ * qty table into a CaseData, and withArchiveDates / withArchiveCases fold it
+ * into the two API responses, so the customer index, case type tiles, date
+ * buttons and CaseCard all treat it as one more live case.
+ *
+ * If ShackHQ ever ingests one of these series, DELETE the entry here, or the
+ * case renders twice.
  */
 
 export type CoinSeriesPiece = {
-  name: string;
-  metal: 'Gold' | 'Silver' | 'Platinum';
-  /** As published, e.g. '1 gram', '10 grams'. */
-  weight: string;
+  /** Exact coinType string, as a live case would carry it. */
+  displayName: string;
+  /** Weight in grams; rendered as "1 g" / "10 g" like live cases. */
+  grams: number;
   qty: number;
 };
 
 export type CoinSeriesChecklist = {
   id: string;
-  title: string;
-  subtitle?: string;
+  /** Raw customerName, exactly as ShackHQ would send it. The tab slug is derived. */
+  customerName: string;
   brandId: BrandId;
-  /**
-   * Customer tab this series renders under. Must equal nameToSlug of a
-   * CANONICAL_OTHER_CUSTOMERS name; a fixture asserts it, which is also what
-   * guarantees the tab exists in CustomerNav with zero live cases.
-   */
-  customerSlug: string;
-  /** Publish date in ISO form (YYYY-MM-DD). */
+  /** Publish date in ISO form (YYYY-MM-DD); becomes displayDate. */
   date: string;
-  /**
-   * Pieces per sealed bag. The pack COUNT is derived (totalPacks), never
-   * stored, so the two numbers cannot drift. A fixture asserts the division
-   * is exact.
-   */
-  packSize: number;
-  /**
-   * Singular name of the sealed unit, e.g. 'bag'. Drives the pack-structure
-   * line and the finalized statement; pluralized by appending 's', so a
-   * fixture asserts it is singular.
-   */
-  unitLabel: string;
-  /** One row per distinct piece with its quantity — NOT expanded per slot. */
+  caseType: string;
+  caseTypeName: string;
+  seriesNumber: number;
+  /** Per-series defaults stamped on every coin, as ShackHQ does. */
+  year: string;
+  grade: string;
+  gradingCompany: string;
+  /** Qty table, the source of truth. Expanded per coin in table order. */
   pieces: CoinSeriesPiece[];
-  /** ISO date this series was finalized. */
-  finalizedOn: string;
 };
 
-export function totalPieces(series: CoinSeriesChecklist): number {
-  return series.pieces.reduce((sum, p) => sum + p.qty, 0);
-}
-
-export function totalPacks(series: CoinSeriesChecklist): number {
-  return totalPieces(series) / series.packSize;
+export function customerSlugFor(series: CoinSeriesChecklist): string {
+  return nameToSlug(series.customerName);
 }
 
 /** This customer's archived series, newest date first. Stable within a date. */
 export function coinSeriesForCustomer(slug: string): CoinSeriesChecklist[] {
-  return COIN_SERIES_CHECKLISTS.filter((s) => s.customerSlug === slug).sort(
+  return COIN_SERIES_CHECKLISTS.filter((s) => customerSlugFor(s) === slug).sort(
     (a, b) => b.date.localeCompare(a.date)
   );
+}
+
+/** Expand the qty table into a live-shaped case, positions 1..N in table order. */
+export function toCaseData(series: CoinSeriesChecklist): CaseData {
+  const coins: CoinData[] = series.pieces
+    .flatMap((piece) => Array.from({ length: piece.qty }, () => piece))
+    .map((piece, i) => ({
+      position: i + 1,
+      coinType: piece.displayName,
+      year: series.year,
+      grade: series.grade,
+      gradingCompany: series.gradingCompany,
+      weight: `${piece.grams} g`,
+    }));
+
+  return {
+    caseId: series.id,
+    displayName: `${series.caseTypeName} - Series ${series.seriesNumber}`,
+    caseType: series.caseType,
+    caseTypeName: series.caseTypeName,
+    seriesNumber: series.seriesNumber,
+    customerName: series.customerName,
+    createdDate: series.date,
+    displayDate: series.date,
+    status: 'published',
+    totalCoins: coins.length,
+    coins,
+  };
+}
+
+/** getAvailableDates with each archive series added as a caseBreakdown row. */
+export function withArchiveDates(res: AvailableDatesResponse): AvailableDatesResponse {
+  const dates = res.dates.map((d) => ({
+    ...d,
+    caseTypes: [...d.caseTypes],
+    caseBreakdown: [...(d.caseBreakdown ?? [])],
+  }));
+  for (const s of COIN_SERIES_CHECKLISTS) {
+    let day = dates.find((d) => d.displayDate === s.date);
+    if (!day) {
+      day = { displayDate: s.date, totalCases: 0, caseTypes: [], caseBreakdown: [] };
+      dates.push(day);
+    }
+    day.caseBreakdown.push({
+      customerName: s.customerName,
+      caseType: s.caseType,
+      count: 1,
+      seriesNumbers: [s.seriesNumber],
+    });
+    day.totalCases += 1;
+    if (!day.caseTypes.includes(s.caseType)) day.caseTypes.push(s.caseType);
+  }
+  dates.sort((a, b) => b.displayDate.localeCompare(a.displayDate));
+  return { ...res, dates, totalDates: dates.length };
+}
+
+/** getDailyChecklist with that date's archive cases appended. */
+export function withArchiveCases(res: DailyChecklistResponse): DailyChecklistResponse {
+  const present = new Set(res.cases.map((c) => c.caseId));
+  const extra = COIN_SERIES_CHECKLISTS.filter(
+    (s) => s.date === res.displayDate && !present.has(s.id)
+  ).map(toCaseData);
+  if (extra.length === 0) return res;
+
+  const casesByType = { ...res.casesByType };
+  for (const c of extra) casesByType[c.caseType] = (casesByType[c.caseType] ?? 0) + 1;
+  return {
+    ...res,
+    cases: [...res.cases, ...extra],
+    totalCases: res.totalCases + extra.length,
+    casesByType,
+  };
 }
 
 export const COIN_SERIES_CHECKLISTS: CoinSeriesChecklist[] = [
   {
     id: 'lincolnreserve-legends-never-die-002-2026-10-13',
-    title: 'Legends Never Die',
-    subtitle: 'Series 002',
+    customerName: 'Lincoln Reserve',
     brandId: 'lincoln-reserve',
-    customerSlug: 'lincoln-reserve',
     date: '2026-10-13',
-    finalizedOn: '2026-10-13',
-    packSize: 1,
-    unitLabel: 'bag',
+    caseType: 'legends never die',
+    caseTypeName: 'Legends Never Die',
+    seriesNumber: 2,
+    year: '2026',
+    grade: 'GEM BU',
+    gradingCompany: 'ICG',
     pieces: [
-      { name: 'Golden Bigfoot', metal: 'Gold', weight: '1 gram', qty: 3 },
-      { name: 'Bigfoot vs. Yeti', metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: 'Wrath of the Kraken', metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: "Medusa's Gaze", metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: "Dragon's Hoard", metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: 'Blood Moon', metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: 'Beneath the Loch', metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: 'High Stakes', metal: 'Silver', weight: '10 grams', qty: 1 },
-      { name: 'Mothman', metal: 'Silver', weight: '1 gram', qty: 1 },
-      { name: 'Phoenix Rising', metal: 'Silver', weight: '1 gram', qty: 1 },
-      { name: 'Gates of Hades', metal: 'Silver', weight: '1 gram', qty: 1 },
-      { name: 'Chupacabra', metal: 'Silver', weight: '1 gram', qty: 1 },
-      { name: "Siren's Song", metal: 'Silver', weight: '1 gram', qty: 1 },
-      { name: 'Into the Wild', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'Whiteout', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'From the Depths', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'The Loch', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'Full Moon', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'Dragonfire', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'Stone Cold', metal: 'Silver', weight: '1 gram', qty: 10 },
-      { name: 'Legend Loot (numbered 01-65)', metal: 'Silver', weight: '1 gram', qty: 65 },
+      { displayName: 'GOLDEN BIGFOOT 1G GOLD', grams: 1, qty: 3 },
+      { displayName: 'Bigfoot vs. Yeti 1-OF-1 ART 10G SILVER', grams: 10, qty: 1 },
+      { displayName: 'Wrath of the Kraken 1-OF-1 ART 10G SILVER', grams: 10, qty: 1 },
+      { displayName: "Medusa's Gaze 1-OF-1 ART 10G SILVER", grams: 10, qty: 1 },
+      { displayName: "Dragon's Hoard 1-OF-1 ART 10G SILVER", grams: 10, qty: 1 },
+      { displayName: 'Blood Moon 1-OF-1 ART 10G SILVER', grams: 10, qty: 1 },
+      { displayName: 'Beneath the Loch 1-OF-1 ART 10G SILVER', grams: 10, qty: 1 },
+      { displayName: 'High Stakes 1-OF-1 ART 10G SILVER', grams: 10, qty: 1 },
+      { displayName: 'Mothman 1-OF-1 ART 1G SILVER', grams: 1, qty: 1 },
+      { displayName: 'Phoenix Rising 1-OF-1 ART 1G SILVER', grams: 1, qty: 1 },
+      { displayName: 'Gates of Hades 1-OF-1 ART 1G SILVER', grams: 1, qty: 1 },
+      { displayName: 'Chupacabra 1-OF-1 ART 1G SILVER', grams: 1, qty: 1 },
+      { displayName: "Siren's Song 1-OF-1 ART 1G SILVER", grams: 1, qty: 1 },
+      { displayName: 'Into the Wild 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'Whiteout 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'From the Depths 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'The Loch 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'Full Moon 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'Dragonfire 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'Stone Cold 1G SILVER', grams: 1, qty: 10 },
+      { displayName: 'LEGEND LOOT 1G SILVER', grams: 1, qty: 65 },
     ],
   },
 ];

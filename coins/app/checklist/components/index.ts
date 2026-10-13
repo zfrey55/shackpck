@@ -10,5 +10,4 @@ export { CardSeriesChecklistCard } from "./CardSeriesChecklistCard";
 export { FeaturedSeriesPanel } from "./FeaturedSeriesPanel";
 export { ProductLineNav } from "./ProductLineNav";
 export { CardChecklistPanel, cardLineHeading } from "./CardChecklistPanel";
-export { CoinSeriesChecklistCard } from "./CoinSeriesChecklistCard";
 export { StaticCoinSeriesPanel } from "./StaticCoinSeriesPanel";

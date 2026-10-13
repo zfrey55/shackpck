@@ -1,9 +1,11 @@
-import { coinSeriesForCustomer } from "@/lib/coin-series-checklist";
-import { CoinSeriesChecklistCard } from "./CoinSeriesChecklistCard";
+import { coinSeriesForCustomer, toCaseData } from "@/lib/coin-series-checklist";
+import { CaseCard } from "./CaseCard";
 
 /**
- * Archived coin series for one customer, newest first. Date-independent, so
- * callers render it above any date selection. Null when the customer has none.
+ * Archived coin series for one customer, rendered as ordinary CaseCards,
+ * newest first. Only used where the live API failed and the merged index is
+ * unavailable; everywhere else the archive arrives merged into the API data.
+ * Null when the customer has none.
  */
 export function StaticCoinSeriesPanel({ slug }: { slug: string }) {
   const series = coinSeriesForCustomer(slug);
@@ -12,7 +14,7 @@ export function StaticCoinSeriesPanel({ slug }: { slug: string }) {
   return (
     <div className="space-y-6 mb-8">
       {series.map((s) => (
-        <CoinSeriesChecklistCard key={s.id} series={s} />
+        <CaseCard key={s.id} caseData={toCaseData(s)} seriesOrdinal={s.seriesNumber} />
       ))}
     </div>
   );
