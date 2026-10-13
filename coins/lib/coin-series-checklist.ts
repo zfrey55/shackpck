@@ -42,6 +42,12 @@ export type CoinSeriesChecklist = {
    * is exact.
    */
   packSize: number;
+  /**
+   * Singular name of the sealed unit, e.g. 'bag'. Drives the pack-structure
+   * line and the finalized statement; pluralized by appending 's', so a
+   * fixture asserts it is singular.
+   */
+  unitLabel: string;
   /** One row per distinct piece with its quantity — NOT expanded per slot. */
   pieces: CoinSeriesPiece[];
   /** ISO date this series was finalized. */
@@ -73,6 +79,7 @@ export const COIN_SERIES_CHECKLISTS: CoinSeriesChecklist[] = [
     date: '2026-10-13',
     finalizedOn: '2026-10-13',
     packSize: 1,
+    unitLabel: 'bag',
     pieces: [
       { name: 'Golden Bigfoot', metal: 'Gold', weight: '1 gram', qty: 3 },
       { name: 'Bigfoot vs. Yeti', metal: 'Silver', weight: '10 grams', qty: 1 },

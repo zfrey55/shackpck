@@ -63,6 +63,11 @@ for (const s of COIN_SERIES_CHECKLISTS) {
     `packSize: ${s.packSize}`
   );
   check(
+    s.unitLabel.trim().length > 0 && !/s$/i.test(s.unitLabel.trim()),
+    `${s.id}: unitLabel is a non-empty singular (pluralized by appending 's')`,
+    `unitLabel: ${JSON.stringify(s.unitLabel)}`
+  );
+  check(
     totalPieces(s) % s.packSize === 0,
     `${s.id}: ${totalPieces(s)} pieces divide exactly into packs of ${s.packSize}`
   );

@@ -583,9 +583,9 @@ check(
 
 console.log('\n--- TCG line: Komodo Rips examples and cardType routing ---\n');
 
-// EXAMPLES only. Komodo Rips has no dated series in the archive today
-// ('Legend Series 1' was removed in 3a129c8); every Komodo entry is an
-// undated example, and all five are illustrative.
+// EXAMPLES only, filtered by seriesDate === null. Komodo Rips also has dated
+// archive series (Fusion Series 1, Utopia Singles Series 1-10); those are
+// excluded here. The six undated examples are all illustrative.
 const tcgExamples = STATIC_CARD_SERIES.filter(
   (s) => s.brandId === 'komodo-rips' && s.seriesDate === null
 );
@@ -595,9 +595,9 @@ const tcgExamples = STATIC_CARD_SERIES.filter(
 const byName = (n: string) =>
   tcgExamples.find((s) => s.brandId === 'komodo-rips' && s.seriesName === n);
 
-check('five Komodo Rips example checklists exist', tcgExamples.length, 5);
+check('six Komodo Rips example checklists exist', tcgExamples.length, 6);
 check(
-  'all five are undated EXAMPLES, never dated series',
+  'all six are undated EXAMPLES, never dated series',
   tcgExamples.every((s) => s.seriesDate === null && s.seriesType === EXAMPLE_SERIES_TYPE),
   true
 );
@@ -627,7 +627,12 @@ check(
   [1, 2, 3, 4, 5, 6, 7, 8]
 );
 check(
-  'all five are marked verbatim so cleanEntryName never runs on them',
+  'Utopia Singles has 10 rows, positions 1-10 contiguous',
+  byName('Utopia Singles')?.cards.map((c) => c.position),
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+);
+check(
+  'all six are marked verbatim so cleanEntryName never runs on them',
   tcgExamples.every((s) => s.verbatimEntries === true),
   true
 );
@@ -700,6 +705,7 @@ check("Komodo example 'Legend' -> banner (the real series is in the archive)", n
 check("Komodo 'Prestige' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Prestige'), 'illustrative');
 check("Komodo 'Utopia' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Utopia'), 'illustrative');
 check("Komodo 'Nova' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Nova'), 'illustrative');
+check("Komodo 'Utopia Singles' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Utopia Singles'), 'illustrative');
 check("'Vault Room Breaks Series 1' -> banner", noticeFor('vault-room-breaks', 'Vault Room Breaks Series 1'), 'illustrative');
 check("'Vault Room Breaks Series 2-5' -> banner", noticeFor('vault-room-breaks', 'Vault Room Breaks Series 2-5'), 'illustrative');
 // The ShackPack Fusion / Nova / Select examples were removed: they did not
@@ -744,7 +750,10 @@ check(
   ['illustrative', 'finalized', 'none'].map(
     (n) => STATIC_CARD_SERIES.filter((s) => exampleNoticeFor(s) === n).length
   ),
-  [7, 0, 19]
+  // 8 illustrative = 6 Komodo examples + 2 Vault Room Breaks examples.
+  // 0 finalized: no archive entry carries finalizedOn.
+  // 30 none = 19 ShackPack dated + 11 Komodo dated (Fusion 1, Utopia Singles 1-10).
+  [8, 0, 30]
 );
 
 if (failures > 0) {

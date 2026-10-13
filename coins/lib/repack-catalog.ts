@@ -68,10 +68,12 @@ export const MANUFACTURER_LINE =
  * shows nothing rather than an empty or guessed claim.
  *
  * @param date Human-readable finalization date, already formatted.
+ * @param unit Singular sealed unit, pluralized by appending 's'. Defaults to
+ *   'pack', so card output is unchanged; the coin archive passes its unitLabel.
  */
-export function seriesFinalizedStatement(date: string): string {
+export function seriesFinalizedStatement(date: string, unit = 'pack'): string {
   return (
-    `As of ${date}, this series has been finalized. The number of packs and ` +
+    `As of ${date}, this series has been finalized. The number of ${unit}s and ` +
     'the number of items in the series will not change.'
   );
 }

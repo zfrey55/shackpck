@@ -330,25 +330,27 @@ export function ChecklistClient() {
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-6">{nav}</div>
+          {customerSlug && <StaticCoinSeriesPanel slug={customerSlug} />}
           <ErrorState error={error} onRetry={loadAvailableDates} />
         </div>
       </main>
     );
   }
 
-  // Known gap: the archive panel does not render in this state or the error
-  // state above. Unreachable against a populated API with a 1095-day window.
   if (!availableDates || availableDates.dates.length === 0) {
     return (
       <main className="container py-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-6">{nav}</div>
-          <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
-            <div className="text-6xl mb-4">📋</div>
-            <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
-            <p className="text-slate-400">Create your first series to get started!</p>
-            <p className="text-sm text-slate-500 mt-2">Series created today will appear on tomorrow&apos;s checklist.</p>
-          </div>
+          {customerSlug && <StaticCoinSeriesPanel slug={customerSlug} />}
+          {!hasArchivedSeries && (
+            <div className="text-center py-12 bg-slate-900/40 rounded-lg border border-slate-700">
+              <div className="text-6xl mb-4">📋</div>
+              <h2 className="text-2xl font-bold mb-4 text-slate-200">No Checklists Available Yet</h2>
+              <p className="text-slate-400">Create your first series to get started!</p>
+              <p className="text-sm text-slate-500 mt-2">Series created today will appear on tomorrow&apos;s checklist.</p>
+            </div>
+          )}
         </div>
       </main>
     );
@@ -367,11 +369,15 @@ export function ChecklistClient() {
         <div className="mb-8">{nav}</div>
 
         <div className="mb-8 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
-          <p className="text-sm text-amber-200 text-center">
-            <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
-            Please refer to the checklist for the most up-to-date information on each series. For card series, use the Sports Cards or Pokemon Cards tabs.
-          </p>
-          <p className="mt-2 text-sm text-amber-200/90 text-center">{MANUFACTURER_LINE}</p>
+          {/* Live series only. An archive-only customer's card carries its own
+              finalized statement, which this would contradict. */}
+          {caseTypes.length > 0 && (
+            <p className="mb-2 text-sm text-amber-200 text-center">
+              <strong>⚠️ Important:</strong> All series and the coins contained within them may vary by date.
+              Please refer to the checklist for the most up-to-date information on each series. For card series, use the Sports Cards or Pokemon Cards tabs.
+            </p>
+          )}
+          <p className="text-sm text-amber-200/90 text-center">{MANUFACTURER_LINE}</p>
         </div>
 
         {isShackpack && !selectedCaseType && !showSpecializedSeries && (

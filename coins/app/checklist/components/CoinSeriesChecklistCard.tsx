@@ -4,7 +4,7 @@ import {
   totalPieces,
   type CoinSeriesChecklist,
 } from "@/lib/coin-series-checklist";
-import { MANUFACTURER_LINE, seriesFinalizedStatement } from "@/lib/repack-catalog";
+import { seriesFinalizedStatement } from "@/lib/repack-catalog";
 
 /** ISO dates are stored and shown long-form. */
 function formatIsoDate(isoDate: string): string {
@@ -28,6 +28,7 @@ export const CoinSeriesChecklistCard = memo(function CoinSeriesChecklistCard({
 }) {
   const pieces = totalPieces(series);
   const packs = totalPacks(series);
+  const unit = series.unitLabel;
   const title = series.subtitle ? `${series.title} ${series.subtitle}` : series.title;
 
   return (
@@ -38,8 +39,9 @@ export const CoinSeriesChecklistCard = memo(function CoinSeriesChecklistCard({
       </div>
 
       <p className="mb-3 text-sm text-slate-400">
-        {packs} sealed bag{packs === 1 ? "" : "s"}, {series.packSize} piece
-        {series.packSize === 1 ? "" : "s"} per bag.
+        {packs} sealed {unit}
+        {packs === 1 ? "" : "s"}, {series.packSize} piece
+        {series.packSize === 1 ? "" : "s"} per {unit}.
       </p>
 
       <div className="overflow-x-auto">
@@ -72,9 +74,8 @@ export const CoinSeriesChecklistCard = memo(function CoinSeriesChecklistCard({
       </div>
 
       <p className="mt-4 border-t border-slate-800 pt-3 text-sm leading-relaxed text-slate-400">
-        {seriesFinalizedStatement(formatIsoDate(series.finalizedOn))}
+        {seriesFinalizedStatement(formatIsoDate(series.finalizedOn), unit)}
       </p>
-      <p className="mt-2 text-sm text-slate-400">{MANUFACTURER_LINE}</p>
     </div>
   );
 });
