@@ -10,3 +10,6 @@ coins/.env.*.local
 
 # Local agent config (per-machine, not shared)
 .claude/
+
+# Local Netlify folder
+.netlify
