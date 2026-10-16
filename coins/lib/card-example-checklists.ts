@@ -258,4 +258,25 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
       { position: 8, entryName: '2023 Scarlet & Violet 151 #204 Giovanni\'s Charisma, Special Illustration Rare | PSA 10' },
     ],
   },
+  {
+    brandId: 'komodo-rips',
+    seriesName: 'Opal',
+    seriesDate: null,
+    // No finalizedOn. Opal is an illustrative sample of the line, not a
+    // closed production run, on the same footing as the Komodo examples
+    // above. It renders the Komodo caveat.
+    //
+    // Case shape: 8 packs, one case hit plus seven floor cards.
+    verbatimEntries: true,
+    cards: [
+      { position: 1, entryName: '2021 Evolving Skies #215 Umbreon VMAX, Alternate Art | PSA 10' },
+      { position: 2, entryName: '2024 Paldean Fates #234 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 3, entryName: '2025 Prismatic Evolutions #156 Sylveon ex, Special Illustration Rare | PSA 10' },
+      { position: 4, entryName: '2023 Scarlet & Violet 151 #199 Charizard ex, Special Illustration Rare | PSA 10' },
+      { position: 5, entryName: '2025 Prismatic Evolutions #144 Leafeon ex, Special Illustration Rare | PSA 10' },
+      { position: 6, entryName: '2023 Crown Zenith #GG69 Giratina VSTAR | PSA 10' },
+      { position: 7, entryName: '2023 Paldea Evolved #269 Iono, Special Illustration Rare | PSA 10' },
+      { position: 8, entryName: '2024 Twilight Masquerade #214 Greninja ex, Special Illustration Rare | PSA 10' },
+    ],
+  },
 ];

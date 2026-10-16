@@ -185,4 +185,15 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
     category: 'Trading Cards',
     brand: 'komodo-rips',
   },
+  {
+    // Art shared with the ShackPack coin Opal tile (lib/repack-catalog.ts):
+    // the same shackpack-opal.png, deliberately not copied or renamed, same
+    // treatment as Nova above.
+    id: 'komodo-opal',
+    name: 'Opal',
+    description: D,
+    image: '/images/packs/shackpack-opal.png',
+    category: 'Trading Cards',
+    brand: 'komodo-rips',
+  },
 ];
