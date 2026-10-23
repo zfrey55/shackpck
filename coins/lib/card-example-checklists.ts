@@ -271,7 +271,7 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
     cards: [
       { position: 1, entryName: '2016 XY Black Star Promo #XY230 Poncho-Wearing Pikachu | PSA 9' },
       { position: 2, entryName: '2024 Surging Sparks #239 Latias ex, Special Illustration Rare | PSA 10' },
-      { position: 3, entryName: '2026 Pokemon CRI #116 Mega Greninja ex, Special Illustration Rare | PSA 10' },
+      { position: 3, entryName: '2026 Chaos Rising #116 Mega Greninja ex, Special Illustration Rare | PSA 10' },
       { position: 4, entryName: '2019 Unbroken Bonds #197 Muk & Alolan Muk GX, Full Art | PSA 10' },
       { position: 5, entryName: '2019 SM Black Star Promo #SM210 Moltres & Zapdos & Articuno GX, Hidden Fates Elite Trainer Box Full Art | PSA 10' },
       { position: 6, entryName: '1999 Japanese Southern Island Promo Marill, Holo | PSA 9' },
