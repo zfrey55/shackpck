@@ -269,14 +269,14 @@ export const CARD_EXAMPLE_CHECKLISTS: CardExampleChecklist[] = [
     // Based on a real 8-pack case; ranked by value, most valuable first.
     verbatimEntries: true,
     cards: [
-      { position: 1, entryName: '2023 Japanese SV-P Promo #067 Umbreon, Yu Nagaba x PCG Campaign | PSA 10' },
-      { position: 2, entryName: '2009 Japanese Arceus LV.X Deck Grass & Fire #008 Arceus LV.X, Holo, 1st Edition | PSA 10' },
-      { position: 3, entryName: '2023 Scarlet & Violet 151 #202 Zapdos ex, Special Illustration Rare | PSA 10' },
-      { position: 4, entryName: '2015 XY Ancient Origins #93 Giratina EX, Full Art | PSA 10' },
-      { position: 5, entryName: '1999 Japanese Promo Ancient Mew II | PSA 9' },
-      { position: 6, entryName: '1997 Japanese Team Rocket #9 Dark Blastoise, Holo | PSA 9' },
-      { position: 7, entryName: '1998 Japanese Vending Series 3 #150 Mewtwo | PSA 8' },
-      { position: 8, entryName: '2023 Paldea Evolved #203 Magikarp, Illustration Rare | PSA 9' },
+      { position: 1, entryName: '2016 XY Black Star Promo #XY230 Poncho-Wearing Pikachu | PSA 9' },
+      { position: 2, entryName: '2024 Surging Sparks #239 Latias ex, Special Illustration Rare | PSA 10' },
+      { position: 3, entryName: '2026 Pokemon CRI #116 Mega Greninja ex, Special Illustration Rare | PSA 10' },
+      { position: 4, entryName: '2019 Unbroken Bonds #197 Muk & Alolan Muk GX, Full Art | PSA 10' },
+      { position: 5, entryName: '2019 SM Black Star Promo #SM210 Moltres & Zapdos & Articuno GX, Hidden Fates Elite Trainer Box Full Art | PSA 10' },
+      { position: 6, entryName: '1999 Japanese Southern Island Promo Marill, Holo | PSA 9' },
+      { position: 7, entryName: '2023 Scarlet & Violet 151 #171 Wartortle, Illustration Rare | PSA 10' },
+      { position: 8, entryName: '2025 Black Bolt #104 Palpitoad, Illustration Rare | PSA 10' },
     ],
   },
 ];
