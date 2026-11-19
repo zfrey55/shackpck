@@ -144,14 +144,6 @@ export const CARD_REPACK_CATALOG: RepackCatalogItem[] = [
   // was delivered as BCB-*.png and renamed to komodo-*.png before it was
   // committed. Do not rename them again — these paths are what ships.
   {
-    id: 'komodo-legend',
-    name: 'Legend',
-    description: D,
-    image: '/images/packs/komodo-legend.png',
-    category: 'Trading Cards',
-    brand: 'komodo-rips',
-  },
-  {
     // Art shared with the ShackPack sports Nova tile above: the same
     // shackpack-nova.png, deliberately not copied or renamed.
     id: 'komodo-nova',

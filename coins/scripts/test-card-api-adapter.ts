@@ -607,11 +607,6 @@ check(
   [1, 2, 3, 4, 5, 6, 7, 8]
 );
 check(
-  'Legend has 8 rows, positions 1-8 contiguous',
-  byName('Legend')?.cards.map((c) => c.position),
-  [1, 2, 3, 4, 5, 6, 7, 8]
-);
-check(
   'Prestige has 8 rows, positions 1-8 contiguous',
   byName('Prestige')?.cards.map((c) => c.position),
   [1, 2, 3, 4, 5, 6, 7, 8]
@@ -696,10 +691,6 @@ const noticeFor = (brandId: string, name: string) =>
 // Purity flipped to illustrative when Legend Series 1 came down: an example is
 // never a closed production run, so it shows the banner, not the statement.
 check("Komodo 'Purity' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Purity'), 'illustrative');
-// The EXAMPLE named 'Legend' reverted to illustrative when the real
-// 'Legend Series 1' landed in the archive - two entries must never both
-// present as the closed one.
-check("Komodo example 'Legend' -> banner (the real series is in the archive)", noticeFor('komodo-rips', 'Legend'), 'illustrative');
 // Prestige is illustrative like the other two: an example is never a closed
 // production run, so it shows the caveat, not the finalized statement.
 check("Komodo 'Prestige' -> banner, NO finalized statement", noticeFor('komodo-rips', 'Prestige'), 'illustrative');
